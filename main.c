@@ -1,64 +1,32 @@
+#include <stdio.h>
 #include <gl/gl.h>
 #include <glut/glut.h>
+#include "graphic.h"
 
-void display(void) {
+#define WIDTH	(640)
+#define HEIGHT	(480)
+#define BITDEPTH (24)
 
-    //clear white, draw with black
-    glClearColor(255, 255, 255, 0);
-    glColor3d(0, 0, 0);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //this draws a square using vertices
-    glBegin(GL_QUADS);
-    glVertex2i(0, 0);
-    glVertex2i(0, 128);
-    glVertex2i(128, 128);
-    glVertex2i(128, 0);
-    glEnd();
-
-    //a more useful helper
-    glRecti(200, 200, 250, 250);
-
-    glutSwapBuffers();
-
+static void
+display(void)
+{
+	uint8_t *frame = graphic_lock_secondary();
+	int i, j;
+	for (i = 0; i < 64; i++) {
+		for (j = 0; j < 64; j++) {
+			uint8_t c = ((((i&0x8)==0)^((j&0x8))==0))*255;
+			uint8_t *buf = frame + (i * WIDTH + j) * (BITDEPTH / 8);
+			buf[0] = c;
+			buf[1] = c;
+			buf[2] = c;
+		}
+	}
+	graphic_unlock_secondary(frame);
+	graphic_flip_display();
 }
 
-void reshape(int width, int height) {
-
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    //set the coordinate system, with the origin in the top left
-    gluOrtho2D(0, width, height, 0);
-    glMatrixMode(GL_MODELVIEW);
-
-}
-
-void idle(void) {
-
-    glutPostRedisplay();
-}
-
-int main(int argc, char *argv) {
-
-    //a basic set up...
-    glutInit(&argc, &argv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-    glutInitWindowSize(640, 480);
-
-    //create the window, the argument is the title
-    glutCreateWindow("GLUT program");
-
-    //pass the callbacks
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    glutIdleFunc(idle);
-
-    glutMainLoop();
-
-    //we never get here because glutMainLoop() is an infinite loop
-    return 0;
-
+int main(int argc, char *argv)
+{
+	graphic_run(WIDTH, HEIGHT, BITDEPTH, display);
+	return 0;
 }
