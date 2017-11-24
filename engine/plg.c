@@ -35,8 +35,8 @@ nextline(FILE *fp, char *buff, int sz)
 		int n = 0;
 		if (!fgets(buff, sz, fp))
 			return NULL;
-		for (i = 0; isspace(buff[i]); i++);
-			;
+		while (isspace(buff[i]))
+			i++;
 		n = strlen(buff);
 		if (i >= n || buff[i] == '#')
 			continue;

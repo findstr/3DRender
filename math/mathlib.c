@@ -104,3 +104,21 @@ int plane3d_intersect_param_line3d(plane3d_t *plane, paramline3d_t *pline, float
 
 */
 
+void
+vector4_mul_matrix(vector4_t *va, matrix_t *mb, vector4_t *res)
+{
+	int c, r;
+	vector4_t tmp;
+	for (c = 0; c < 4; c++) {
+		float sum = 0;
+		for (r = 0; r < 4; r++)
+			sum += va->a[r] * mb->a[r][c];
+		tmp.a[c] = sum;
+	}
+	*res = tmp;
+	return ;
+}
+
+
+
+

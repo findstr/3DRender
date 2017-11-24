@@ -27,8 +27,8 @@ struct polyf4d {
 	int attr;
 	int color;
 
-	vector4_t vlist[3];
-	vector4_t tvlist[3];
+	vector4_t vlist_local[3];
+	vector4_t vlist_trans[3];
 
 	struct polyf4d *next;
 	struct polyf4d *prev;
@@ -54,6 +54,17 @@ struct object4d {
 	int polys_num;
 	struct poly4d plist[128];
 };
+
+#define RENDERLIST4D_MAX_POLYS	(32768)
+
+struct render4d {
+	int state;
+	int attr;
+	struct polyf4d *poly_ptrs[RENDERLIST4D_MAX_POLYS];
+	struct polyf4d polys[RENDERLIST4D_MAX_POLYS];
+	int num_polys;
+};
+
 
 #define POLY4D_ATTR_2SIDED		(1 << 0)
 #define POLY4D_ATTR_TRANSPARENT		(1 << 2)

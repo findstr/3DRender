@@ -1,6 +1,11 @@
 #include <assert.h>
+#include <stdlib.h>
 #include <stdint.h>
+#ifdef __APPLE__
+#include <OPENGL/gl.h>
+#else
 #include <gl/gl.h>
+#endif
 #include <glut/glut.h>
 
 #include "graphic.h"

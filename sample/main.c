@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <gl/gl.h>
-#include <glut/glut.h>
 #include "math.h"
 #include "graphic.h"
 
@@ -15,7 +13,7 @@ display(void)
 	int i, j;
 	for (i = 0; i < 64; i++) {
 		for (j = 0; j < 64; j++) {
-			uint8_t c = ((((i&0x8)==0)^((j&0x8))==0))*255;
+			uint8_t c = ((((i&0x8)==0)^(((j&0x8))==0)))*255;
 			uint8_t *buf = frame + (i * WIDTH + j) * (BITDEPTH / 8);
 			buf[0] = c;
 			buf[1] = c;

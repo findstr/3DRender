@@ -174,5 +174,8 @@ void plane3d_init(plane3d_t *plane, vector3_t * p0, vector3_t *normal, int norma
 float plane3d_compute_point(plane3d_t *plane, vector3_t *pt);
 int plane3d_intersect_param_line3d(plane3d_t *plane, paramline3d_t *pline, float *t, vector3_t *pt);
 
+////////////////////////////////////////////////////
+void vector4_mul_matrix(vector4_t *v, matrix_t *m, vector4_t *res);
+
 #endif
 

@@ -74,7 +74,7 @@ typedef struct matrix4x4 {
 			float m30, m31, m32, m33;
 		};
 	};
-}matrix4x4_t;
+}matrix4x4_t, matrix_t;
 
 typedef struct matrix4x3 {
 	union {

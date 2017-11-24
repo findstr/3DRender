@@ -1,3 +1,5 @@
 *.exe
 *.dll
 *.swp
+main.d*
+main
