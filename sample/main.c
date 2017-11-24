@@ -26,7 +26,7 @@ display(void)
 	graphic_flip_display();
 }
 
-int main(int argc, char *argv)
+int main(int argc, char **argv)
 {
 	graphic_run(WIDTH, HEIGHT, BITDEPTH, display);
 	return 0;

@@ -1,82 +1,6 @@
-#ifndef	_MATH_H
-#define _MATH_H
+#include "mathlib.h"
 
-#include "mathtype.h"
-
-#define PI ((float)3.141592654f)
-#define PI2 (PI * 2)
-#define PI_DIV_2 (PI / 2)
-#define PI_DIV_4 (PI / 4)
-#define PI_INV ((float)0.318309886f)
-
-
-#define EPSILON_E4 ((float)1e-4)
-#define EPSILON_E5 ((float)1e-5)
-#define EPSILON_E6 ((float)1e-6)
-
-
-#define PARAM_LINE_NO_INTERSECT			0
-#define PARAM_LINE_INTERSECT_IN_SEGMENT		1
-#define PARAM_LINE_INTERSECT_OUT_SEGMENT	2
-#define PARAM_LINE_INTERSECT_EVERYWHERE		3
-
-extern matrix4x4_t IMAT_4x4;
-extern matrix4x3_t IMAT_4x3;
-extern matrix4x3_t IMAT_3x3;
-extern matrix2x2_t IMAT_2x2;
-#ifndef ARRAYSIZE
-#define ARRAYSIZE(a)	(sizeof(a)/sizeof(a[0]))
-#endif
-#define MIN(a, b)	((a) < (b) ? (a) : (b))
-#define MAX(a, b)	((a) > (b) ? (a) : (b))
-#define SWAP(a, b, t)		{t = a; a = b; b = t;}
-
-#define DEG_TO_RAD(ang)		((ang) * PI / 180.0f)
-#define RAD_TO_DEG(rads)	((rads) * 180.0f / PI)
-
-#define RAND_RANGE(x, y)	((x) + (rand() % ((y) - (x) + 1)))
-
-#define VECTOR2_ZERO(v)	{(v)->x = (v)->y = 0.0f;}
-#define VECTOR3_ZERO(v)	{(v)->x = (v)->y = (v)->z = 0.0f;}
-#define VECTOR4_ZERO(v) {(v)->x = (v)->y = (v)->z = 0.0f; (v)->w = 1.0f;}
-
-#define VECTOR2_INIT(v,x,y) {(v)->x = x;(v)->y = y;}
-#define VECTOR3_INIT(v,x,y,z) {(v)->x = x;(v)->y = y;(v)->z = z;}
-#define VECTOR4_INIT(v,x,y,z) {(v)->x = x;(v)->y = y;(v)->z = z; (v)->w = 1.0f;}
-
-#define MATRIX_ZERO(m) memset(&m, 0, sizeof(m))
-#define MATRIX_TRANSPOSE(m) {\
-	int i,j;\
-	float t[4][4];\
-	int x = ARRAYSIZE(m[0]);\
-	int y = ARRAYSIZE(m);\
-	assert(x <= 4);\
-	assert(y <= 4);\
-	for (i = 0; i < y; i++) {\
-		for (j = 0; j < x; j++) {\
-			t[i][j] = m.a[j][i];\
-		}\
-	}\
-	for (i = 0; i < y; i++) {\
-		for (j = 0; j < x; j++) {\
-			t[i][j] = m.a[i][j];\
-		}\
-	}\
-}
-
-#define MATRIX_COLUMN_SET(m, c, v) {\
-	int i;\
-	int sz = ARRAYSIZE(v.a);\
-	for (i = 0; i < sz; i++);\
-		m.a[i][c] = v.a[i];\
-}
-
-#define QUAT_ZERO(q) memset(&q, 0, sizeof(q))
-#define QUAT_INIT(q, w, x, y, z) {\
-	(q)->w = (w); (q)->x = (x); (q)->y = (y); (q)->z = (z);}
-#define QUAT_INIT_VECTOR(q, v) {\
-	(q)->w = 0; (q)->x = (v)->x;(q)->y = (v)->y; (q)->z = (v)->z;}
-
+/*
 float fast_sin(float theta);
 float fast_cos(float theta);
 
@@ -177,5 +101,6 @@ void plane3d_init(plane3d_t *plane, vector3_t * p0, vector3_t *normal, int norma
 float plane3d_compute_point(plane3d_t *plane, vector3_t *pt);
 int plane3d_intersect_param_line3d(plane3d_t *plane, paramline3d_t *pline, float *t, vector3_t *pt);
 
-#endif
+
+*/
 
