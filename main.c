@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <gl/gl.h>
 #include <glut/glut.h>
+#include "math.h"
 #include "graphic.h"
 
 #define WIDTH	(640)
