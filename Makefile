@@ -29,6 +29,7 @@ SRC=\
     engine/plg.c\
     engine/transform.c\
     engine/camera.c\
+    engine/engine.c\
 
 main:$(SRC)
 	gcc $(INCLUDE) $(CFLAG) -o $@ $^

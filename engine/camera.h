@@ -43,20 +43,23 @@ struct camera {
 	matrix_t mcam;
 	matrix_t mper;
 	matrix_t mscr;
+	struct camera *next;
 };
 
 void camera_init(struct camera *cam, vector4_t *pos,
 		vector4_t *dir, vector4_t *target,
 		float near_clip_z, float far_clip_z, float fov,
 		float viewport_width, float viewport_height);
-
 void camera_rot_xyz(struct camera *cam);
 void camera_rot_zyx(struct camera *cam);
+void camera_transform(struct camera *cam, struct object *obj);
+/*
 void camera_cull(struct camera *cam, struct object4d *obj, int cull_flag);
 void camera_backface(struct camera *cam, struct object4d *obj);
 void camera_perspective(struct camera *cam, struct object4d *obj);
 void camera_viewport(struct camera *cam, struct object4d *obj);
 void camera_draw(struct camera *cam, struct object4d *obj);
+*/
 
 #endif
 

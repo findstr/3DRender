@@ -45,7 +45,7 @@ nextline(FILE *fp, char *buff, int sz)
 }
 
 static float
-compute_radius(struct object4d *obj)
+compute_radius(struct object *obj)
 {
 	int i;
 	obj->radius_avg = 0;
@@ -63,7 +63,7 @@ compute_radius(struct object4d *obj)
 	return obj->radius_max;
 }
 
-int plg_load(struct object4d *obj, const char *filename,
+int plg_load(struct object *obj, const char *filename,
 		const vector4_t *scale, const vector4_t *pos,
 		const vector4_t *rot)
 {

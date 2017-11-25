@@ -1,6 +1,7 @@
 #include <math.h>
 #include "mathlib.h"
 #include "graphic.h"
+#include "transform.h"
 #include "camera.h"
 
 void
@@ -43,7 +44,6 @@ camera_init(struct camera *cam, vector4_t *pos,
 	tan_fov_div2 = tan(DEG_TO_RAD(fov / 2));
 	//FIXME?
 	cam->view_dist = 0.5f * cam->viewplane_width * tan_fov_div2;
-	printf("=======init:%f\n", cam->view_dist);
 	if (fov == 90.0f) {
 		vector3_init_normalize(&vn, 1.0f, 0.0f , -1.0f);//x,z
 		plane3d_init(&cam->rt_clip_plane, &ZVECTOR3, &vn);
@@ -127,11 +127,10 @@ camera_rot_zyx(struct camera *cam)
 	matrix_mul(&mz_inv, &my_inv, &mtmp);
 	matrix_mul(&mtmp, &mx_inv, &mrot);
 	matrix_mul(&mt_inv, &mrot, &cam->mcam);
-	matrix_print("mtmp x:", &cam->mcam);
 }
 
 void
-camera_cull(struct camera *cam, struct object4d *obj, int cull_flag)
+camera_cull(struct camera *cam, struct object *obj, int cull_flag)
 {
 	vector4_t sphere_pos;
 	float r = obj->radius_max;
@@ -163,7 +162,7 @@ camera_cull(struct camera *cam, struct object4d *obj, int cull_flag)
 }
 
 void
-camera_backface(struct camera *cam, struct object4d *obj)
+camera_backface(struct camera *cam, struct object *obj)
 {
 	int i;
 	if (obj->state & OBJECT4D_STATE_CULLED)
@@ -195,21 +194,19 @@ camera_backface(struct camera *cam, struct object4d *obj)
 }
 
 void
-camera_perspective(struct camera *cam, struct object4d *obj)
+camera_perspective(struct camera *cam, struct object *obj)
 {
 	int i;
 	for (i = 0; i < obj->vertices_num; i++) {
 		float z = obj->vlist_trans[i].z;
 		float scale = cam->view_dist / z;
-		vector4_print("prespect:", &obj->vlist_trans[i]);
-		printf("scale:%f, %f,%f\n", cam->view_dist, scale, cam->aspect_ratio);
 		obj->vlist_trans[i].x = obj->vlist_trans[i].x * scale;
 		obj->vlist_trans[i].y = obj->vlist_trans[i].y * scale * cam->aspect_ratio;
 	}
 }
 
 void
-camera_viewport(struct camera *cam, struct object4d *obj)
+camera_viewport(struct camera *cam, struct object *obj)
 {
 	int i;
 	float alpha = 0.5f * cam->viewport_width - 0.5f;
@@ -220,85 +217,12 @@ camera_viewport(struct camera *cam, struct object4d *obj)
 	}
 }
 
-
-static void
-draw_line(int x1, int y1, int x2, int y2, int c)
-{
-	int x, y, rem = 0;
-	if (x1 == x2 && y1 == y2) { //point
-		graphic_draw_pixel(x1, y1, c);
-	} else if (x1 == x2) {	//H line
-		int inc = y2 > y1 ? 1 : -1;
-		for (y = y1; y != y2; y += inc)
-			graphic_draw_pixel(x1, y, c);
-		graphic_draw_pixel(x1, y2, c);
-	} else if (y1 == y2) { //Y line
-		int inc = x2 > x1 ? 1 : -1;
-		for (x = x1; x != x2; x += inc)
-			graphic_draw_pixel(x, y1, c);
-		graphic_draw_pixel(x2, y1, c);
-	} else {
-		int dx = abs(x1 - x2);
-		int dy = abs(y1 - y2);
-		if (dx >= dy) {
-			if (x2 < x1) {
-				SWAP(x1, x2, x);
-				SWAP(y1, y2, y);
-			}
-			for (x = x1, y = y1; x <= x2; x++) {
-				graphic_draw_pixel(x, y, c);
-				rem += dy;
-				if (rem >= dx) {
-					rem -= dx;
-					y += (y2 >= y1) ? 1 : -1;
-					graphic_draw_pixel(x, y, c);
-				}
-			}
-			graphic_draw_pixel(x2, y2, c);
-		} else {
-			if (y2 < y1) {
-				SWAP(x1, x2, x);
-				SWAP(y1, y2, y);
-			}
-			for (x = x1, y = y1; y <= y2; y++) {
-				graphic_draw_pixel(x, y, c);
-				rem += dx;
-				if (rem >= dy) {
-					rem -= dy;
-					x += (x2 >= x1) ? 1 : -1;
-					graphic_draw_pixel(x, y, c);
-				}
-			}
-			graphic_draw_pixel(x2, y2, c);
-		}
-	}
-}
-
 void
-camera_draw(struct camera *cam, struct object4d *obj)
+camera_transform(struct camera *cam, struct object *obj)
 {
-	int i;
-	for (i = 0; i < obj->polys_num; i++) {
-		int v0, v1, v2;
-		vector4_t *vec0, *vec1, *vec2;
-		int state = obj->plist[i].state;
-		if (!(state & POLY4D_STATE_ACTIVE) ||
-			(state & POLY4D_STATE_CLIPPED) ||
-			(state & POLY4D_STATE_BACKFACE))
-			continue;
-		v0 = obj->plist[i].vert[0];
-		v1 = obj->plist[i].vert[1];
-		v2 = obj->plist[i].vert[2];
-		vec0 = &obj->vlist_trans[v0];
-		vec1 = &obj->vlist_trans[v1];
-		vec2 = &obj->vlist_trans[v2];
-		vector4_print("vec0", vec0);
-		vector4_print("vec1", vec1);
-		vector4_print("vec2", vec2);
-		draw_line(vec0->x, vec0->y, vec1->x, vec1->y, obj->plist[i].color);
-		draw_line(vec0->x, vec0->y, vec2->x, vec2->y, obj->plist[i].color);
-		draw_line(vec1->x, vec1->y, vec2->x, vec2->y, obj->plist[i].color);
-	}
+	camera_rot_zyx(cam);
+	transform_obj(obj, &cam->mcam, 0);
+	camera_perspective(cam, obj);
+	camera_viewport(cam, obj);
 }
-
 

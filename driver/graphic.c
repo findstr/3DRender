@@ -10,17 +10,6 @@
 
 #include "graphic.h"
 
-#define RGB_BYTE	(3)
-
-struct device {
-	int width;
-	int height;
-	int lockframe;
-	uint8_t *framebuffer;
-};
-
-static struct device D;
-
 static void
 reshape(int width, int height) {
 
@@ -52,16 +41,13 @@ graphic_run(int width, int height, void (*render)())
 
 	glutCreateWindow("Rasterizer");
 
-	D.width = width;
-	D.height = height;
-	D.lockframe = 0;
-	D.framebuffer = (uint8_t *)malloc(width * height * RGB_BYTE);
-
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
 	glutIdleFunc(idle);
 	glutMainLoop();
 }
+
+/*
 
 uint8_t *
 graphic_lock_primary(uint8_t **buffer)
@@ -101,16 +87,6 @@ graphic_fill_primary(int color)
     return ;
 }
 
-void
-graphic_draw_pixel(int x, int y, int color)
-{
-	uint8_t *ptr = D.framebuffer + x * RGB_BYTE + y * D.width * RGB_BYTE;
-	*ptr++ = (color >> 16) & 0xff;
-	*ptr++ = (color >> 8) & 0xff;
-	*ptr++ = (color >> 0) & 0xff;
-	return ;
-}
-
 
 void
 graphic_fill_secondary(int color)
@@ -136,6 +112,18 @@ graphic_flip_display()
 	glEnable(GL_DEPTH_TEST);
 	glutSwapBuffers();
 	return ;
+}
+
+*/
+
+void
+graphic_draw(const uint8_t *frame, size_t width, size_t height)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, frame);
+	glEnable(GL_DEPTH_TEST);
+	glutSwapBuffers();
 }
 
 

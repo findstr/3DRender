@@ -31,7 +31,7 @@ struct polyf4d {
 	vector4_t vlist_trans[3];
 };
 
-struct object4d {
+struct object {
 	int id;
 	char name[64];
 	int state;
@@ -50,6 +50,7 @@ struct object4d {
 
 	int polys_num;
 	struct poly4d plist[128];
+	struct object *next;
 };
 
 #define RENDERLIST4D_MAX_POLYS	(32768)

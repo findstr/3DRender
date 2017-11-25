@@ -1,8 +1,13 @@
 #ifndef _ENGINE_H
 #define _ENGINE_H
 
-#include "math.h"
-#include "shape.h"
+struct camera;
+struct object;
+
+void engine_add_camera(struct camera *cam);
+void engine_add_object(struct object *obj);
+void engine_run();
+void engine_start(int width, int height);
 
 #endif
 

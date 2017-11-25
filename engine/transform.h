@@ -4,23 +4,8 @@
 #include "mathlib.h"
 #include "primitive.h"
 
-
-enum transform_sel {
-	TRANSFORM_LOCAL_ONLY = 1,
-	TRANSFORM_TRANS_ONLY = 2,
-	TRANSFORM_LOCAL_TRANS = 3,
-};
-
-void transform_render(struct render4d *list, matrix_t *mt,
-		enum transform_sel sel);
-void transform_obj(struct object4d *obj,matrix_t *mt,
-		enum transform_sel sel, int transform_basis);
-void transform_model2world(struct object4d *obj, enum transform_sel sel);
-
-void transform_resetobj(struct object4d *obj);
-
-
-
+void transform_world(struct object *obj);
+void transform_obj(struct object *obj,matrix_t *mt, int transform_basis);
 
 
 #endif
