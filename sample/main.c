@@ -20,7 +20,8 @@ int main(int argc, char **argv)
 	mathlib_init();
 	engine_start(WIDTH, HEIGHT);
 	plg_load(&obj, "resource/cube1.plg", &IVECTOR4, &ZVECTOR4, &ZVECTOR4);
-	camera_init(&cam, &cam_pos, &cam_dir, NULL, 50.0f, 500.0f, 90.0f, WIDTH, HEIGHT);
+	camera_init(&cam, &cam_pos, &cam_dir, NULL,
+		50.0f, 500.0f, 90.0f, WIDTH, HEIGHT);
 	engine_add_camera(&cam);
 	engine_add_object(&obj);
 	engine_run();

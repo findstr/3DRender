@@ -113,9 +113,11 @@ draw(struct object *obj)
 		vec0 = &obj->vlist_trans[v0];
 		vec1 = &obj->vlist_trans[v1];
 		vec2 = &obj->vlist_trans[v2];
+#if 0
 		vector4_print("vec0", vec0);
 		vector4_print("vec1", vec1);
 		vector4_print("vec2", vec2);
+#endif
 		draw_line(vec0->x, vec0->y, vec1->x, vec1->y, obj->plist[i].color);
 		draw_line(vec0->x, vec0->y, vec2->x, vec2->y, obj->plist[i].color);
 		draw_line(vec1->x, vec1->y, vec2->x, vec2->y, obj->plist[i].color);
