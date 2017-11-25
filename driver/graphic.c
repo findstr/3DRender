@@ -10,10 +10,11 @@
 
 #include "graphic.h"
 
+#define RGB_BYTE	(3)
+
 struct device {
 	int width;
 	int height;
-	int bitdepth;
 	int lockframe;
 	uint8_t *framebuffer;
 };
@@ -41,7 +42,7 @@ idle(void)
 
 
 void
-graphic_run(int width, int height, int bit_depth, void (*render)())
+graphic_run(int width, int height, void (*render)())
 {
 	int argc = 1;
 	char *argv[] = {"demo"};
@@ -53,9 +54,8 @@ graphic_run(int width, int height, int bit_depth, void (*render)())
 
 	D.width = width;
 	D.height = height;
-	D.bitdepth = bit_depth;
 	D.lockframe = 0;
-	D.framebuffer = (uint8_t *)malloc(width * height * (bit_depth / 8));
+	D.framebuffer = (uint8_t *)malloc(width * height * RGB_BYTE);
 
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
@@ -102,6 +102,17 @@ graphic_fill_primary(int color)
 }
 
 void
+graphic_draw_pixel(int x, int y, int color)
+{
+	uint8_t *ptr = D.framebuffer + x * RGB_BYTE + y * D.width * RGB_BYTE;
+	*ptr++ = (color >> 16) & 0xff;
+	*ptr++ = (color >> 8) & 0xff;
+	*ptr++ = (color >> 0) & 0xff;
+	return ;
+}
+
+
+void
 graphic_fill_secondary(int color)
 {
 	int i = 0;
@@ -109,14 +120,9 @@ graphic_fill_secondary(int color)
 	uint8_t *buff = D.framebuffer;
 	assert(D.lockframe == 1);
 	while (i < sz) {
-		switch (D.bitdepth) {
-		case 3:
-			*buff++ = (color >> 16) & 0xff;
-		case 2:
-			*buff++ = (color >> 8) & 0xff;
-		case 1:
-			*buff++ = (color >> 0) & 0xff;
-		}
+		*buff++ = (color >> 16) & 0xff;
+		*buff++ = (color >> 8) & 0xff;
+		*buff++ = (color >> 0) & 0xff;
 	}
 }
 

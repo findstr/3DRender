@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <math.h>
 #include "mathlib.h"
 
 /*
@@ -97,28 +99,211 @@ void param_line2d_intersectv(paramline2d_t *p1, paramline2d_t *p2, vector2_t *pt
 void param_line3d_init(const vector3_t *init, const vector3_t *term, paramline3d_t *res);
 void param_line3d_compute(paramline3d_t *p, float t, vector3_t *pt);
 
-void plane3d_init(plane3d_t *plane, vector3_t * p0, vector3_t *normal, int normalize);
 float plane3d_compute_point(plane3d_t *plane, vector3_t *pt);
 int plane3d_intersect_param_line3d(plane3d_t *plane, paramline3d_t *pline, float *t, vector3_t *pt);
 
 
 */
 
+static float sin_table[361];
+static float cos_table[361];
+
 void
-vector4_mul_matrix(vector4_t *va, matrix_t *mb, vector4_t *res)
+mathlib_init()
 {
-	int c, r;
-	vector4_t tmp;
-	for (c = 0; c < 4; c++) {
-		float sum = 0;
-		for (r = 0; r < 4; r++)
-			sum += va->a[r] * mb->a[r][c];
-		tmp.a[c] = sum;
+	int ang;
+	for (ang = 0; ang <= 360; ang++) {
+		float theta = DEG_TO_RAD((float)ang);
+		sin_table[ang] = sin(theta);
+		cos_table[ang] = cos(theta);
+	}
+	return ;
+}
+
+static float
+fast_do(float theta, const float *table)
+{
+	int i,f;
+	theta = fmodf(theta, 360.0f);
+	if (theta < 0.0f)
+		theta += 360.0f;
+	i = (int)theta;
+	f = theta - i;
+	return table[i] + f * (table[i + 1] - table[i]);
+}
+
+float
+fast_sin(float theta)
+{
+	return fast_do(theta, sin_table);
+}
+
+float
+fast_cos(float theta)
+{
+	return fast_do(theta, cos_table);
+}
+
+/////vector
+
+void
+vector3_normalize(const vector3_t *v, vector3_t *out)
+{
+	float fact;
+	float x = v->x;
+	float y = v->y;
+	float z = v->z;
+	float len = sqrtf(x * x + y * y + z * z);
+	if (len < EPSILON_E5)
+		return ;
+	fact = 1.0f / len;
+	out->x *= fact;
+	out->y *= fact;
+	out->z *= fact;
+	return ;
+}
+
+void
+vector4_add(const vector4_t *a, const vector4_t *b, vector4_t *c)
+{
+	c->x = a->x + b->x;
+	c->y = a->y + b->y;
+	c->z = a->z + b->z;
+	c->w = 1.0f;
+	return ;
+}
+
+void
+vector4_sub(const vector4_t *a, const vector4_t *b, vector4_t *c)
+{
+	c->x = a->x - b->x;
+	c->y = a->x - b->x;
+	c->z = a->z - b->z;
+	c->w = 1.0f;
+	return ;
+}
+
+
+void
+vector4_cross(const vector4_t *a, const vector4_t *b, vector4_t *c)
+{
+	vector4_t vn;
+	vn.x = a->y * b->z - a->z * b->y;
+	vn.y = a->z * b->x - a->x * b->z;
+	vn.z = a->x * b->y - a->y * b->x;
+	vn.w = 1.0f;
+	*c = vn;
+	return ;
+}
+
+float
+vector4_dot(const vector4_t *a, const vector4_t *b)
+{
+	return (a->x * b->x + a->y * b->y + a->z * b->z);
+}
+
+void
+vector4_mul_matrix(const vector4_t *va, const matrix_t *mb, vector4_t *res)
+{
+	float x, y, z, w;
+	x = va->x;
+	y = va->y;
+	z = va->z;
+	w = va->w;
+	res->x = x * mb->m00 +  y * mb->m10 + z * mb->m20 + w * mb->m30;
+	res->y = x * mb->m01 +  y * mb->m11 + z * mb->m21 + w * mb->m31;
+	res->z = x * mb->m02 +  y * mb->m12 + z * mb->m22 + w * mb->m32;
+	res->w = x * mb->m03 +  y * mb->m13 + z * mb->m23 + w * mb->m33;
+	return ;
+}
+
+void
+vector4_print(const char *str, const vector4_t *v)
+{
+	printf("%s vector4:%f-%f-%f-%f\n", str, v->x, v->y, v->z, v->w);
+}
+
+
+typedef float (*matrix_array_t)[4];
+
+void
+matrix_mul(const matrix_t *a, const matrix_t *b, matrix_t *res)
+{
+	int i, r, c;
+	matrix_t tmp;
+	matrix_array_t ma = (matrix_array_t)&a->m00;
+	matrix_array_t mb = (matrix_array_t)&b->m00;
+	matrix_array_t mc = (matrix_array_t)&tmp.m00;
+	for (r = 0; r < 4; r++) {
+		for (c = 0; c < 4; c++) {
+			float sum = 0;
+			for (i = 0; i < 4; i++)
+				sum += ma[r][i] * mb[i][c];
+			mc[r][c] = sum;
+		}
 	}
 	*res = tmp;
 	return ;
 }
 
+void
+matrix_rotate_x(matrix_t *m, float angle)
+{
+	float s, c;
+	s = fast_sin(angle);
+	c = fast_cos(angle);
+	matrix_t val = {
+		1.0f,	0.0f,	0.0f,	0.0f,
+		0.0f,	c,	s,	0.0f,
+		0.0f,	-s,	c,	0.0f,
+		0.0f,	0.0f,	0.0f,	1.0f
+	};
+	*m = val;
+	return ;
+}
 
+void
+matrix_rotate_y(matrix_t *m, float angle)
+{
+	float s, c;
+	s = fast_sin(angle);
+	c = fast_cos(angle);
+	matrix_t val = {
+		c,	0.0f,	-s,	0.0f,
+		0.0f,	1.0f,	0.0f,	0.0f,
+		s,	0.0f,	c,	0.0f,
+		0.0f,	0.0f,	0.0f,	1.0f,
+	};
+	*m = val;
+	return ;
+}
+
+void
+matrix_rotate_z(matrix_t *m, float angle)
+{
+	float s, c;
+	s = fast_sin(angle);
+	c = fast_cos(angle);
+	matrix_t val = {
+		c,	s,	0.0f,	0.0f,
+		-s,	c,	0.0f,	0.0f,
+		0.0f,	0.0f,	1.0f,	0.0f,
+		0.0f,	0.0f,	0.0f,	1.0f,
+	};
+	*m = val;
+	return ;
+}
+
+void
+matrix_print(const char *str, const matrix_t *m)
+{
+	printf("%s matrix:\n%f-%f-%f-%f\n%f-%f-%f-%f\n%f-%f-%f-%f\n%f-%f-%f-%f\n",
+			str,
+			m->m00, m->m01, m->m02, m->m03,
+			m->m10, m->m11, m->m12, m->m13,
+			m->m20, m->m21, m->m22, m->m23,
+			m->m30, m->m31, m->m32, m->m33);
+	return ;
+}
 
 

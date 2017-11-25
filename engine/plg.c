@@ -84,23 +84,32 @@ int plg_load(struct object4d *obj, const char *filename,
 	str = nextline(fp, buff, sizeof(buff));
 	if (str == NULL)
 		return -1;
-	DBG_PRINT("Object Descriptor: %s", str);
+	DBG_PRINT("Object Descriptor: %s\n", str);
 
 	sscanf(str, "%s %d %d", obj->name, &obj->vertices_num, &obj->polys_num);
 	for (i = 0; i < obj->vertices_num; i++) {
+		char xa[10], ya[10], za[10];
 		str = nextline(fp, buff, sizeof(buff));
 		if (str == NULL) {
 			DBG_PRINT("PLG file error with file %s (vertex list invalid).",filename);
 			return -1;
 		}
-		sscanf(str, "%f %f %f", &obj->vlist_local[i].x,
-                                     &obj->vlist_local[i].y,
-                                     &obj->vlist_local[i].z);
+		DBG_PRINT("%s", str);
+		sscanf(str, "%s %s %s", xa, ya, za);
+		obj->vlist_local[i].x = atoi(xa);
+                obj->vlist_local[i].y = atoi(ya);
+		obj->vlist_local[i].z = atoi(za);
 		obj->vlist_local[i].w = 1;
+
 		obj->vlist_local[i].x*=scale->x;
 		obj->vlist_local[i].y*=scale->y;
 		obj->vlist_local[i].z*=scale->z;
-		DBG_PRINT("\nVertex %d = %f, %f, %f, %f", i,
+
+		DBG_PRINT("%s-%s %f-%f\n", xa, ya, obj->vlist_local[i].x,
+                scale->x);
+
+
+		DBG_PRINT("\nVertex %d = %f, %f, %f, %f\n", i,
                                            obj->vlist_local[i].x,
                                            obj->vlist_local[i].y,
                                            obj->vlist_local[i].z,

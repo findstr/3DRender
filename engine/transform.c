@@ -97,6 +97,40 @@ void transform_obj(struct object4d *obj,matrix_t *mt,
 }
 
 
+void
+transform_model2world(struct object4d *obj, enum transform_sel sel)
+{
+	int i;
+	size_t offsrc;
+	size_t offdst;
+	size_t offset_src, offset_dst;
+	select_idx(sel, &offset_src, &offset_dst);
+	offset_src = object4d_offset(offset_src);
+	offset_dst = object4d_offset(offset_dst);
+	vector4_t *src = (vector4_t *)((char *)obj + offset_src);
+	vector4_t *dst = (vector4_t *)((char *)obj + offset_dst);
+	struct object4d *n = 0;
+	for (i = 0; i < obj->vertices_num; i++)
+		vector4_add(&src[i], &obj->world_pos, &dst[i]);
+	return ;
+}
+
+void
+transform_resetobj(struct object4d *obj)
+{
+	int i;
+	obj->state &= ~OBJECT4D_STATE_CULLED;
+	for (i = 0; i < obj->polys_num; i++) {
+		struct poly4d *p = &obj->plist[i];
+		if (!(p->state & POLY4D_STATE_ACTIVE))
+			continue;
+		p->state &= ~POLY4D_STATE_CLIPPED;
+		p->state &= ~POLY4D_STATE_BACKFACE;
+	}
+	return ;
+}
+
+
 
 
 

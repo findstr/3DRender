@@ -28,6 +28,7 @@ SRC=\
     math/mathconst.c\
     engine/plg.c\
     engine/transform.c\
+    engine/camera.c\
 
 main:$(SRC)
 	gcc $(INCLUDE) $(CFLAG) -o $@ $^

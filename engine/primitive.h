@@ -29,9 +29,6 @@ struct polyf4d {
 
 	vector4_t vlist_local[3];
 	vector4_t vlist_trans[3];
-
-	struct polyf4d *next;
-	struct polyf4d *prev;
 };
 
 struct object4d {
@@ -75,16 +72,13 @@ struct render4d {
 #define POLY4D_ATTR_SHADE_MODE_GOURAUD	0x0080
 #define POLY4D_ATTR_SHADE_MODE_PHONG	0x0100
 
-#define POLY4D_STATE_ACTIVE		0x0001
-#define POLY4D_STATE_CLIPPED		0x0002
-#define POLY4D_STATE_BACKFACE		0x0004
+#define POLY4D_STATE_ACTIVE		(1 << 0)
+#define POLY4D_STATE_CLIPPED		(1 << 1)
+#define POLY4D_STATE_BACKFACE		(1 << 2)
 
 #define OBJECT4D_STATE_ACTIVE		0x0001
 #define OBJECT4D_STATE_VISIBLE		0x0002
 #define OBJECT4D_STATE_CULLED		0x0004
-
-
-
 
 #endif
 
