@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "driver.h"
 #include "mathlib.h"
 #include "primitive.h"
@@ -133,6 +134,7 @@ engine_render()
 	struct camera *c = ENG.camera;
 	if (ENG.update)
 		ENG.update();
+	memset(ENG.frame, 0x00, ENG.width * ENG.height * RGB_SIZE);
 	while (c) {
 		struct object *obj = ENG.render;
 		while (obj) {
@@ -141,9 +143,9 @@ engine_render()
 			draw(obj);
 			obj = obj->next;
 		}
-		driver_draw(ENG.frame, ENG.width, ENG.height);
 		c = c->next;
 	}
+	driver_draw(ENG.frame, ENG.width, ENG.height);
 }
 
 void

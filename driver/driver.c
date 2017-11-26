@@ -35,6 +35,8 @@ static void
 keydown(unsigned char key, int x, int y)
 {
 	int mod;
+	if (key > 255)
+		return ;
 	int val = DRIVER_KEY_NORMAL;
 	mod = glutGetModifiers();
 	if (mod & GLUT_ACTIVE_CTRL)
@@ -50,6 +52,8 @@ keydown(unsigned char key, int x, int y)
 static void
 keyup(unsigned char key, int x, int y)
 {
+	if (key > 255)
+		return ;
 	keyboard[key] = 0;
 	printf("key UP:%x\n", key);
 }

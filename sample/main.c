@@ -18,7 +18,6 @@ update()
 	int zi = driver_keydown('i', DRIVER_KEY_NORMAL);
 	int zo = driver_keydown('o', DRIVER_KEY_NORMAL);
 	vector4_t add = ZVECTOR4;
-	printf("key down:%d-%d\n", zi, zo);
 	if (zi != 0)
 		add.z += 10.0f;
 	if (zo != 0)
@@ -29,8 +28,8 @@ update()
 
 int main(int argc, char **argv)
 {
-	vector4_t cam_pos = { 0, 0, -300, 1 };
-	vector4_t cam_dir = { 0, 0, 0, 1 };
+	vector4_t cam_pos = { 0, 0, -50, 1 };
+	vector4_t cam_dir = { 0, 10.0f, 0, 1 };
 	mathlib_init();
 	engine_start(WIDTH, HEIGHT, update);
 	plg_load(&obj, "resource/cube1.plg", &IVECTOR4, &ZVECTOR4, &ZVECTOR4);
