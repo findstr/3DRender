@@ -50,6 +50,7 @@ void camera_init(struct camera *cam, vector4_t *pos,
 		vector4_t *dir, vector4_t *target,
 		float near_clip_z, float far_clip_z, float fov,
 		float viewport_width, float viewport_height);
+void camera_move(struct camera *cam, const vector4_t *add);
 void camera_rot_xyz(struct camera *cam);
 void camera_rot_zyx(struct camera *cam);
 void camera_transform(struct camera *cam, struct object *obj);

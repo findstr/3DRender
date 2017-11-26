@@ -1,6 +1,6 @@
 #include <math.h>
 #include "mathlib.h"
-#include "graphic.h"
+#include "driver.h"
 #include "transform.h"
 #include "camera.h"
 
@@ -72,6 +72,13 @@ camera_init(struct camera *cam, vector4_t *pos,
 		vector3_init_normalize(&vn, 0.0f, -z, -x); //-y,z
 		plane3d_init(&cam->bt_clip_plane, &ZVECTOR3, &vn);
 	}
+	return ;
+}
+
+void
+camera_move(struct camera *cam, const vector4_t *add)
+{
+	vector4_add(&cam->pos, add, &cam->pos);
 	return ;
 }
 

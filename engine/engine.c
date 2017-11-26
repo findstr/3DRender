@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "graphic.h"
+#include "driver.h"
 #include "mathlib.h"
 #include "primitive.h"
 #include "camera.h"
@@ -12,6 +12,7 @@ struct engine {
 	size_t width;
 	size_t height;
 	uint8_t *frame;
+	void (*update)();
 	struct object *render;
 	struct camera *camera;
 };
@@ -129,16 +130,20 @@ draw(struct object *obj)
 static void
 engine_render()
 {
-	struct object *obj = ENG.render;
-	while (obj) {
-		struct camera *c = ENG.camera;
-		c = ENG.camera;
-		model2world(obj);
-		camera_transform(c, obj);
-		draw(obj);
-		obj = obj->next;
+	struct camera *c = ENG.camera;
+	if (ENG.update)
+		ENG.update();
+	while (c) {
+		struct object *obj = ENG.render;
+		while (obj) {
+			model2world(obj);
+			camera_transform(c, obj);
+			draw(obj);
+			obj = obj->next;
+		}
+		driver_draw(ENG.frame, ENG.width, ENG.height);
+		c = c->next;
 	}
-	graphic_draw(ENG.frame, ENG.width, ENG.height);
 }
 
 void
@@ -160,18 +165,19 @@ engine_add_object(struct object *obj)
 void
 engine_run()
 {
-	graphic_run(ENG.width, ENG.height, engine_render);
+	driver_run(ENG.width, ENG.height, engine_render);
 	return ;
 }
 
 void
-engine_start(int width, int height)
+engine_start(int width, int height, void (*update)())
 {
 	ENG.width = width;
 	ENG.height = height;
 	ENG.frame = malloc(width * height * RGB_SIZE);
 	ENG.render = NULL;
 	ENG.camera = NULL;
+	ENG.update = update;
 	return ;
 }
 

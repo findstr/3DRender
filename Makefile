@@ -23,7 +23,7 @@ all:main
 
 SRC=\
     sample/main.c\
-    driver/graphic.c\
+    driver/driver.c\
     math/mathlib.c\
     math/mathconst.c\
     engine/plg.c\
