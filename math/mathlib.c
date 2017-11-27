@@ -288,17 +288,16 @@ quaternion_cross(const quaternion_t *a, const quaternion_t *b, quaternion_t *c)
 	x = a->x;
 	y = a->y;
 	z = a->z;
-	/*
 	w1 = w*b->w - x*b->x - y*b->y - z*b->z;
 	x1 = w*b->x + x*b->w + z*b->y - y*b->z;
 	y1 = w*b->y + y*b->w + x*b->z - z*b->x;
 	z1 = w*b->z + z*b->w + y*b->x - x*b->y;
-	*/
+	/*
 	w1 = w*b->w - x*b->x - y*b->y - z*b->z;
 	x1 = w*b->x + x*b->w + y*b->z - z*b->y;
 	y1 = w*b->y + y*b->w + z*b->x - x*b->z;
 	z1 = w*b->z + z*b->w + x*b->y - y*b->x;
-
+	*/
 	c->w = w1;
 	c->x = x1;
 	c->y = y1;
