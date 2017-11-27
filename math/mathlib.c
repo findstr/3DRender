@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <math.h>
 #include "mathlib.h"
@@ -218,10 +219,130 @@ vector4_mul_matrix(const vector4_t *va, const matrix_t *mb, vector4_t *res)
 }
 
 void
+vector4_mul_quaternion(const vector4_t *v, const quaternion_t *q, vector4_t *r)
+{
+	quaternion_t qv, inv;
+	quaternion_init(&qv, 0.0f, v->x, v->y, v->z);
+	quaternion_inverse(q, &inv);
+	quaternion_cross(&inv, &qv, &qv);
+	quaternion_cross(&qv, q, &qv);
+	r->x = qv.x;
+	r->y = qv.y;
+	r->z = qv.z;
+	r->w = v->w;
+	return ;
+}
+
+
+void
 vector4_print(const char *str, const vector4_t *v)
 {
-	printf("%s vector4:%f-%f-%f-%f\n", str, v->x, v->y, v->z, v->w);
+	printf("%s vector4:%f:%f:%f:%f\n", str, v->x, v->y, v->z, v->w);
 }
+
+void
+quaternion_rotate_x(quaternion_t *q, float angle)
+{
+	float theta = DEG_TO_RAD(angle * 0.5f);
+	q->w = cos(theta);
+	q->x = sin(theta);
+	q->y = 0.0f;
+	q->z = 0.0f;
+	return ;
+}
+
+void
+quaternion_rotate_y(quaternion_t *q, float angle)
+{
+	float theta = DEG_TO_RAD(angle * 0.5f);
+	q->w = cos(theta);
+	q->x = 0.0f;
+	q->y = sin(theta);
+	q->z = 0.0f;
+	return ;
+}
+
+void
+quaternion_rotate_z(quaternion_t *q, float angle)
+{
+	float theta = DEG_TO_RAD(angle * 0.5f);
+	q->w = cos(theta);
+	q->x = 0.0f;
+	q->y = 0.0f;
+	q->z = sin(theta);
+	return ;
+}
+
+float
+quaternion_dot(const quaternion_t *a, const quaternion_t *b)
+{
+	return a->w*b->w + a->x*b->x + a->y*b->y + a->z*b->z;
+}
+
+void
+quaternion_cross(const quaternion_t *a, const quaternion_t *b, quaternion_t *c)
+{
+	float w, x, y, z;
+	float w1, x1, y1, z1;
+	w = a->w;
+	x = a->x;
+	y = a->y;
+	z = a->z;
+	/*
+	w1 = w*b->w - x*b->x - y*b->y - z*b->z;
+	x1 = w*b->x + x*b->w + z*b->y - y*b->z;
+	y1 = w*b->y + y*b->w + x*b->z - z*b->x;
+	z1 = w*b->z + z*b->w + y*b->x - x*b->y;
+	*/
+	w1 = w*b->w - x*b->x - y*b->y - z*b->z;
+	x1 = w*b->x + x*b->w + y*b->z - z*b->y;
+	y1 = w*b->y + y*b->w + z*b->x - x*b->z;
+	z1 = w*b->z + z*b->w + x*b->y - y*b->x;
+
+	c->w = w1;
+	c->x = x1;
+	c->y = y1;
+	c->z = z1;
+	return ;
+}
+
+void
+quaternion_normalize(quaternion_t *q)
+{
+	float w = q->w, x = q->x, y = q->y, z = q->z;
+	float mag = (float)sqrt(w*w + x*x + y*y + z*z);
+	if (mag > 0.0f) {
+		float div = 1.0f / mag;
+		q->w = w * div;
+		q->x = x * div;
+		q->y = y * div;
+		q->z = z * div;
+	} else {
+		assert(0);
+		*q = IQUATERNION;
+	}
+	return ;
+}
+
+void
+quaternion_inverse(const quaternion_t *a, quaternion_t *b)
+{
+	b->w = a->w;
+	b->x = -a->x;
+	b->y = -a->y;
+	b->z = -a->z;
+	return ;
+}
+
+void
+quaternion_print(const char *str, const quaternion_t *q)
+{
+	printf("%s,w:%f,x:%f,y:%f,z:%f\n", str,
+			q->w, q->x, q->y, q->z);
+	return ;
+}
+
+
 
 
 typedef float (*matrix_array_t)[4];

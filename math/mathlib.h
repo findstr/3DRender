@@ -33,6 +33,8 @@
 #define vector3_init(v,vx,vy,vz) {(v)->x = (vx);(v)->y = (vy);(v)->z = (vz);}
 #define vector4_init(v,vx,vy,vz) {\
 	(v)->x = (vx);(v)->y = (vy);(v)->z = (vz); (v)->w = 1.0f;}
+#define quaternion_init(q, vw, vx, vy, vz) {\
+	(q)->w = (vw); (q)->x = (vx); (q)->y = (vy); (q)->z = (vz);}
 #define plane3d_init(plane, vp0, normal) {\
 	(plane)->p0 = (*vp0); (plane)->n = (*(normal));}
 #define vector3_init_normalize(v,x,y,z) {\
@@ -51,7 +53,19 @@ void vector4_sub(const vector4_t *a, const vector4_t *b, vector4_t *c);
 void vector4_cross(const vector4_t *a, const vector4_t *b, vector4_t *c);
 float vector4_dot(const vector4_t *a, const vector4_t *b);
 void vector4_mul_matrix(const vector4_t *v, const matrix_t *m, vector4_t *res);
+void vector4_mul_quaternion(const vector4_t *v, const quaternion_t *q,
+		vector4_t *r);
 void vector4_print(const char *str, const vector4_t *v);
+
+void quaternion_rotate_x(quaternion_t *q, float angle);
+void quaternion_rotate_y(quaternion_t *q, float angle);
+void quaternion_rotate_z(quaternion_t *q, float angle);
+float quaternion_dot(const quaternion_t *a, const quaternion_t *b);
+void quaternion_cross(const quaternion_t *a, const quaternion_t *b,
+		quaternion_t *c);
+void quaternion_normalize(quaternion_t *q);
+void quaternion_inverse(const quaternion_t *a, quaternion_t *b);
+void quaternion_print(const char *str, const quaternion_t *q);
 
 void matrix_mul(const matrix_t *a, const matrix_t *b, matrix_t *c);
 void matrix_rotate_x(matrix_t *m, float angle);

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "mathlib.h"
 #include "engine.h"
 #include "camera.h"
 #include "driver.h"
@@ -9,25 +10,72 @@
 #define BITDEPTH (24)
 
 vector4_t vscale = { 0.5f, 0.5f, 1.0f }, vpos = { 0, 0, 0, 1}, vrot = {0, 0, 0, 1};
-struct camera cam;
-struct object obj;
+static struct camera cam;
+static struct object obj;
+static int frame = 0;
 
+#if 0
+static void _cross(matrix_t *a, matrix_t *b, matrix_t *c)
+{
+	matrix_mul(a, b, c);
+}
+#endif
+
+static void _cross(quaternion_t *a, quaternion_t *b, quaternion_t *c)
+{
+	quaternion_cross(a, b, c);
+}
 static void
 update()
 {
+	frame = frame + 1;
+	quaternion_t rot;
 	int zi = driver_keydown('i', DRIVER_KEY_NORMAL);
 	int zo = driver_keydown('o', DRIVER_KEY_NORMAL);
+	int rl = driver_keydown('a', DRIVER_KEY_NORMAL);
+	int rr = driver_keydown('d', DRIVER_KEY_NORMAL);
+	int rt = driver_keydown('w', DRIVER_KEY_NORMAL);
+	int rb = driver_keydown('s', DRIVER_KEY_NORMAL);
+	int zl = driver_keydown('e', DRIVER_KEY_NORMAL);
+	int zr = driver_keydown('r', DRIVER_KEY_NORMAL);
 	vector4_t add = ZVECTOR4;
 	if (zi != 0)
-		add.z += 10.0f;
+		add.z += 1.0f;
 	if (zo != 0)
-		add.z -= 10.0f;
+		add.z -= 1.0f;
+	//左手坐标系
+	if (rl != 0) {
+		quaternion_rotate_y(&rot, 1.0f);
+		_cross(&obj.transform.rot, &rot, &obj.transform.rot);
+	}
+	if (rr != 0) {
+		quaternion_rotate_y(&rot, -1.0f);
+		_cross(&obj.transform.rot, &rot, &obj.transform.rot);
+	}
+	if (rt != 0) {
+		quaternion_rotate_x(&rot, 1.0f);
+		_cross(&obj.transform.rot, &rot, &obj.transform.rot);
+	}
+	if (rb != 0) {
+		quaternion_rotate_x(&rot, -1.0f);
+		_cross(&obj.transform.rot, &rot, &obj.transform.rot);
+	}
+	if (zl != 0) {
+		quaternion_rotate_z(&rot, 1.0f);
+		_cross(&obj.transform.rot, &rot, &obj.transform.rot);
+	}
+	if (zr != 0) {
+		quaternion_rotate_z(&rot, -1.0f);
+		_cross(&obj.transform.rot, &rot, &obj.transform.rot);
+	}
+
 	camera_move(&cam, &add);
 	return ;
 }
 
 int main(int argc, char **argv)
 {
+#if 1
 	vector4_t cam_pos = { 0, 0, -50, 1 };
 	vector4_t cam_dir = { 0, 10.0f, 0, 1 };
 	mathlib_init();
@@ -39,6 +87,54 @@ int main(int argc, char **argv)
 	engine_add_camera(&cam);
 	engine_add_object(&obj);
 	engine_run();
+#else
+	vector4_t z, y, x, xRy, yRz, zRx;
+	quaternion_t rx, ry, rz;
+	vector4_init(&z, 0, 0, 1);
+	vector4_init(&y, 0, 1, 0);
+	vector4_init(&x, 1, 0, 0);
+	quaternion_rotate_x(&rx, 90.0f);
+	quaternion_rotate_y(&ry, 90.0f);
+	quaternion_rotate_z(&rz, 90.0f);
+
+	quaternion_print("rx", &rx);
+	quaternion_print("ry", &ry);
+	quaternion_print("rz", &rz);
+
+	vector4_mul_quaternion(&x, &ry, &xRy);
+	vector4_mul_quaternion(&y, &rz, &yRz);
+	vector4_mul_quaternion(&z, &rx, &zRx);
+
+	vector4_print("xRy", &xRy);
+	vector4_print("yRz", &yRz);
+	vector4_print("zRx", &zRx);
+
+#endif
+	/*
+	quaternion_t c1, c2, c3, c4;
+	quaternion_t res;
+	quaternion_rotate_x(&c1, 90.0f);
+	quaternion_rotate_z(&c2, 90.0f);
+	quaternion_inverse(&c1, &c3);
+	quaternion_inverse(&c2, &c4);
+	quaternion_t v = {0.0f, 0.0f, 0.0f, 1.0f};
+
+
+	quaternion_cross(&c3, &v, &v);
+	quaternion_cross(&v, &c1, &v);
+
+	quaternion_print("res:", &v);
+	v.y = -1;
+	quaternion_cross(&c4, &v, &v);
+	quaternion_cross(&v, &c2, &v);
+
+	quaternion_print("res:", &v);
+
+	quaternion_print("res:", &v);
+	quaternion_print("c4:", &c4);
+	quaternion_print("c4':", &c4);
+	*/
+
 	return 0;
 }
 

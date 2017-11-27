@@ -5,6 +5,11 @@
 
 typedef int color_t;
 
+typedef struct transform {
+	vector4_t pos;
+	quaternion_t rot;
+} transform_t;
+
 struct poly1 {
 	vector3_t point[3];
 };
@@ -39,8 +44,7 @@ struct object {
 	float radius_avg;
 	float radius_max;
 
-	vector4_t world_pos;
-	vector4_t dir;
+	transform_t transform;
 
 	vector4_t ux,uy,uz;
 

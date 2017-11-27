@@ -26,8 +26,11 @@ model2world(struct object *obj)
 	int i;
 	vector4_t *src = obj->vlist_local;
 	vector4_t *dst = obj->vlist_trans;
-	for (i = 0; i < obj->vertices_num; i++)
-		vector4_add(&src[i], &obj->world_pos, &dst[i]);
+	transform_t *trans = &obj->transform;
+	for (i = 0; i < obj->vertices_num; i++) {
+		vector4_mul_quaternion(&src[i], &trans->rot, &dst[i]);
+		vector4_add(&dst[i], &trans->pos, &dst[i]);
+	}
 	return ;
 }
 
@@ -43,6 +46,8 @@ draw_pixel(int x, int y, int color)
 		//printf("Y over flow\n");
 		return ;
 	}
+	//OpenGL use the left-bottom as (0,0)
+	y = ENG.height - y;
 	ptr = ENG.frame + x * RGB_SIZE + y * ENG.width * RGB_SIZE;
 	*ptr++ = (color >> 16) & 0xff;
 	*ptr++ = (color >> 8) & 0xff;

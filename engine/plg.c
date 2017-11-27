@@ -6,7 +6,8 @@
 #include <math.h>
 #include "plg.h"
 
-#define DBG_PRINT	printf
+//#define DBG_PRINT	printf
+#define DBG_PRINT	(void)
 
 #define PLX_RGB_MASK          0x8000
 #define PLX_SHADE_MODE_MASK   0x6000
@@ -74,10 +75,8 @@ int plg_load(struct object *obj, const char *filename,
 	printf("load:%s\n", filename);
 	memset(obj, 0, sizeof(*obj));
 	obj->state = OBJECT4D_STATE_ACTIVE | OBJECT4D_STATE_VISIBLE;
-	obj->world_pos.x = pos->x;
-	obj->world_pos.y = pos->y;
-	obj->world_pos.z = pos->z;
-	obj->world_pos.w = pos->w;
+	obj->transform.pos = *pos;
+	obj->transform.rot = IQUATERNION;
 	fp = fopen(filename, "r");
 	if (fp == NULL)
 		return -1;

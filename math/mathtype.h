@@ -1,6 +1,18 @@
 #ifndef _MATH_TYPE_H
 #define _MATH_TYPE_H
 
+/*
+typedef struct vertex2i {
+	int x, y;
+}vextex2i_t;
+
+typedef struct vertex2f {
+	float x, y;
+}vertex2f_t;
+
+
+*/
+
 typedef struct vector2 {
 	struct {
 		float x;
@@ -21,13 +33,12 @@ typedef struct vector4 {
 	float w;
 }vector4_t;
 
-typedef struct vertex2i {
-	int x, y;
-}vextex2i_t;
-
-typedef struct vertex2f {
-	float x, y;
-}vertex2f_t;
+typedef struct quaternion {
+	float w;
+	float x;
+	float y;
+	float z;
+} quaternion_t;
 
 ////////line
 
