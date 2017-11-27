@@ -12,10 +12,11 @@ endif
 
 INCLUDE=-Idriver/ -Imath/ -Iengine/
 CFLAG=-g -m32
+LDFLAG= -lm
 
 macosx:CFLAG+=-framework OpenGL -framework GLUT -Wno-deprecated-declarations
 
-win:CFLAG+=-lopengl32 -lglu32 -lgdi32 -lglut32
+win:LDFLAG+=-lopengl32 -lglu32 -lgdi32 -lglut32
 
 macosx win:all
 
@@ -32,4 +33,4 @@ SRC=\
     engine/engine.c\
 
 main:$(SRC)
-	gcc $(INCLUDE) $(CFLAG) -o $@ $^
+	gcc $(INCLUDE) $(CFLAG) -o $@ $^ $(LDFLAG)

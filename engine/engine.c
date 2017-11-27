@@ -35,6 +35,14 @@ static void
 draw_pixel(int x, int y, int color)
 {
 	uint8_t *ptr;
+	if (x >= ENG.width) {
+		//printf("X over flow\n");
+		return ;
+	}
+	if (y >= ENG.height) {
+		//printf("Y over flow\n");
+		return ;
+	}
 	ptr = ENG.frame + x * RGB_SIZE + y * ENG.width * RGB_SIZE;
 	*ptr++ = (color >> 16) & 0xff;
 	*ptr++ = (color >> 8) & 0xff;
