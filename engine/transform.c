@@ -20,23 +20,3 @@ transform_obj(struct object *obj,matrix_t *mt, int transform_basis)
 	return ;
 }
 
-
-void
-transform_resetobj(struct object *obj)
-{
-	int i;
-	obj->state &= ~OBJECT4D_STATE_CULLED;
-	for (i = 0; i < obj->polys_num; i++) {
-		struct poly4d *p = &obj->plist[i];
-		if (!(p->state & POLY4D_STATE_ACTIVE))
-			continue;
-		p->state &= ~POLY4D_STATE_CLIPPED;
-		p->state &= ~POLY4D_STATE_BACKFACE;
-	}
-	return ;
-}
-
-
-
-
-

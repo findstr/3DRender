@@ -18,7 +18,24 @@ struct engine {
 	struct camera *camera;
 };
 
+struct engine_buffer {
+	vector4_t *buf;
+	size_t size;
+};
+
 struct engine ENG;
+struct engine_buffer BUFF;
+
+static vector4_t *
+getbuf(size_t sz)
+{
+	if (BUFF.size < sz) {
+		BUFF.buf = realloc(BUFF.buf, sz * sizeof(*BUFF.buf));
+		BUFF.size = sz;
+	}
+	return BUFF.buf;
+}
+
 
 static void
 model2world(struct object *obj)
@@ -113,18 +130,13 @@ draw_line(int x1, int y1, int x2, int y2, int c)
 void
 draw(struct object *obj)
 {
-	int i;
-	for (i = 0; i < obj->polys_num; i++) {
+	struct tri *p = obj->rlist;
+	while (p) {
 		int v0, v1, v2;
 		vector4_t *vec0, *vec1, *vec2;
-		int state = obj->plist[i].state;
-		if (!(state & POLY4D_STATE_ACTIVE) ||
-			(state & POLY4D_STATE_CLIPPED) ||
-			(state & POLY4D_STATE_BACKFACE))
-			continue;
-		v0 = obj->plist[i].vert[0];
-		v1 = obj->plist[i].vert[1];
-		v2 = obj->plist[i].vert[2];
+		v0 = p->vert[0];
+		v1 = p->vert[1];
+		v2 = p->vert[2];
 		vec0 = &obj->vlist_trans[v0];
 		vec1 = &obj->vlist_trans[v1];
 		vec2 = &obj->vlist_trans[v2];
@@ -133,9 +145,10 @@ draw(struct object *obj)
 		vector4_print("vec1", vec1);
 		vector4_print("vec2", vec2);
 #endif
-		draw_line(vec0->x, vec0->y, vec1->x, vec1->y, obj->plist[i].color);
-		draw_line(vec0->x, vec0->y, vec2->x, vec2->y, obj->plist[i].color);
-		draw_line(vec1->x, vec1->y, vec2->x, vec2->y, obj->plist[i].color);
+		draw_line(vec0->x, vec0->y, vec1->x, vec1->y, p->color);
+		draw_line(vec0->x, vec0->y, vec2->x, vec2->y, p->color);
+		draw_line(vec1->x, vec1->y, vec2->x, vec2->y, p->color);
+		p = p->next;
 	}
 }
 
@@ -151,9 +164,15 @@ engine_render()
 	while (c) {
 		struct object *obj = ENG.render;
 		while (obj) {
+			vector4_t *trans = getbuf(obj->vertices_num);
+			obj->vlist_trans = trans;
+			obj->rlist = NULL;
+			obj->next = NULL;
 			model2world(obj);
 			camera_transform(c, obj);
 			draw(obj);
+			obj->vlist_trans = NULL;
+			obj->next = NULL;
 			obj = obj->next;
 		}
 		c = c->next;
@@ -193,6 +212,8 @@ engine_start(int width, int height, void (*update)())
 	ENG.render = NULL;
 	ENG.camera = NULL;
 	ENG.update = update;
+	BUFF.size = 0;
+	BUFF.buf = NULL;
 	return ;
 }
 

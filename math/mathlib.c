@@ -178,7 +178,7 @@ void
 vector4_sub(const vector4_t *a, const vector4_t *b, vector4_t *c)
 {
 	c->x = a->x - b->x;
-	c->y = a->x - b->x;
+	c->y = a->y - b->y;
 	c->z = a->z - b->z;
 	c->w = 1.0f;
 	return ;

@@ -174,28 +174,25 @@ camera_backface(struct camera *cam, struct object *obj)
 	int i;
 	if (obj->state & OBJECT4D_STATE_CULLED)
 		return ;
+	struct tri **rlist = &obj->rlist;
 	for (i = 0; i < obj->polys_num; i++) {
 		float dp;
 		int v0, v1, v2;
 		vector4_t u,v,n;
 		vector4_t view;
-		struct poly4d *p = &obj->plist[i];
-		if (!((p->state & POLY4D_STATE_ACTIVE) ||
-			(p->state & POLY4D_STATE_CLIPPED) ||
-			(p->attr & POLY4D_ATTR_2SIDED) ||
-			(p->state & POLY4D_STATE_BACKFACE)))
-			continue;
+		struct tri *p = &obj->plist[i];
 		v0 = p->vert[0];
 		v1 = p->vert[1];
 		v2 = p->vert[2];
-
 		vector4_sub(&obj->vlist_trans[v1], &obj->vlist_trans[v0], &u);
 		vector4_sub(&obj->vlist_trans[v2], &obj->vlist_trans[v0], &v);
 		vector4_cross(&u, &v, &n);
 		vector4_sub(&cam->pos, &obj->vlist_trans[v0], &view);
 		dp = vector4_dot(&n, &view);
-		if (dp <= 0.0f)
-			p->state |= POLY4D_STATE_BACKFACE;
+		if (dp > 0.0f) {
+			p->next = *rlist;
+			*rlist = p;
+		}
 	}
 	return ;
 }
@@ -224,9 +221,10 @@ camera_viewport(struct camera *cam, struct object *obj)
 	}
 }
 
-void
+int
 camera_transform(struct camera *cam, struct object *obj)
 {
+	camera_backface(cam, obj);
 	camera_rot_zyx(cam);
 	transform_obj(obj, &cam->mcam, 0);
 	camera_perspective(cam, obj);

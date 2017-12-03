@@ -19,12 +19,13 @@ struct poly2 {
 	int vertices[3];
 };
 
-struct poly4d {
+struct tri {
 	int state;
 	int attr;
+	int vert[3];
 	color_t color;
 	vector4_t *vlist;
-	int vert[3];
+	struct tri *next;
 };
 
 struct polyf4d {
@@ -50,10 +51,11 @@ struct object {
 
 	int vertices_num;
 	vector4_t vlist_local[64];
-	vector4_t vlist_trans[64];
+	vector4_t *vlist_trans;
 
 	int polys_num;
-	struct poly4d plist[128];
+	struct tri plist[128];
+	struct tri *rlist;
 	struct object *next;
 };
 
