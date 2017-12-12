@@ -61,7 +61,7 @@ keyup(unsigned char key, int x, int y)
 
 
 void
-driver_run(int width, int height, void (*render)())
+driver_start(int width, int height, void (*render)())
 {
 	int argc = 1;
 	char *argv[] = {"demo"};
@@ -77,6 +77,11 @@ driver_run(int width, int height, void (*render)())
 	glutIgnoreKeyRepeat(1);
 	glutKeyboardFunc(keydown);
 	glutKeyboardUpFunc(keyup);
+}
+
+void
+driver_run()
+{
 	glutMainLoop();
 }
 
