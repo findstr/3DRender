@@ -162,6 +162,8 @@ device_draw(struct tri *p)
 	int v0, v1, v2;
 	int lx, ty, rx, by;
 	int x1, x2, x3, y1, y2, y3;
+	int dx21, dx32, dx13, dy21, dy32, dy13;
+
 	vector4_t *vec0, *vec1, *vec2;
 	v0 = p->vert[0];
 	v1 = p->vert[1];
@@ -175,17 +177,29 @@ device_draw(struct tri *p)
 	rx = max(x1, x2, x3);
 	ty = min(y1, y2, y3);
 	by = max(y1, y2, y3);
-	for (y = ty; y < by; y++) {
+	dx21 = x2 - x1; dx32 = x3 - x2; dx13 = x1 - x3;
+	dy21 = y2 - y1; dy32 = y3 - y2; dy13 = y1 - y3;
+
+	int X21 = dx21 * (by - y1) + dy21 * x1 - (lx - 1) * dy21; //- dy21 * x
+	int X32 = dx32 * (by - y2) + dy32 * x2 - (lx - 1) * dy32; //- dy32 * x
+	int X13 = dx13 * (by - y3) + dy13 * x3 - (lx - 1) * dy13; //- dy13 * x
+	for (y = by - 1; y >= ty; y--) {
+		X21 -= dx21;
+		X32 -= dx32;
+		X13 -= dx13;
+		int x21 = X21;
+		int x32 = X32;
+		int x13 = X13;
 		for (x = lx; x < rx; x++) {
 			int r;
-			r = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
-			if (r < 0)
+			x21 -= dy21;
+			x32 -= dy32;
+			x13 -= dy13;
+			if (x21 < 0)
 				continue;
-			r = (x3 - x2) * (y - y2) - (y3 - y2) * (x - x2);
-			if (r < 0)
+			if (x32 < 0)
 				continue;
-			r = (x1 - x3) * (y - y3) - (y1 - y3) * (x - x3);
-			if (r < 0)
+			if (x13 < 0)
 				continue;
 			draw_pixel(x, y, p->color);
 		}
