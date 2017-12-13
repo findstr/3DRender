@@ -190,6 +190,10 @@ device_draw(struct tri *p)
 		int x21 = X21;
 		int x32 = X32;
 		int x13 = X13;
+		//Left-Top
+		if (dy21 < 0 || (dy21 == 0 && dx21 > 0)) x21++;
+		if (dy32 < 0 || (dy32 == 0 && dx32 > 0)) x32++;
+		if (dy13 < 0 || (dy13 == 0 && dx13 > 0)) x13++;
 		for (x = lx; x < rx; x++) {
 			int r;
 			x21 -= dy21;
