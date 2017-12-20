@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include "mathlib.h"
 #include "primitive.h"
-
-#define RGB_SIZE	(3)
+#include "rgb.h"
 
 void device_init(size_t width, size_t height);
 void device_exit();
