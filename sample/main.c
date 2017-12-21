@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "camera.h"
 #include "driver.h"
+#include "light.h"
 #include "plg.h"
 
 #define WIDTH	(640)
@@ -12,6 +13,7 @@
 vector4_t vscale = { 0.5f, 0.5f, 1.0f }, vpos = { 0, 0, 0, 1}, vrot = {0, 0, 0, 1};
 static struct camera cam;
 static struct object obj;
+static struct light *l;
 static int frame = 0;
 
 #if 0
@@ -39,18 +41,22 @@ update()
 	int zl = driver_keydown('e', DRIVER_KEY_NORMAL);
 	int zr = driver_keydown('r', DRIVER_KEY_NORMAL);
 	vector4_t add = ZVECTOR4;
-	if (zi != 0)
-		add.z += 1.0f;
-	if (zo != 0)
-		add.z -= 1.0f;
+	if (zi != 0) {
+		l->ambient = rgba_add(l->ambient, RGBA(10, 10, 10, 0));
+	}
+	if (zo != 0) {
+		l->ambient = rgba_sub(l->ambient, RGBA(10, 10, 10, 0));
+	}
 	//左手坐标系
 	if (rl != 0) {
-		quaternion_rotate_y(&rot, 1.0f);
-		_cross(&obj.transform.rot, &rot, &obj.transform.rot);
+		l->pos.x -= 1.0f;
+		//quaternion_rotate_y(&rot, 1.0f);
+		//_cross(&obj.transform.rot, &rot, &obj.transform.rot);
 	}
 	if (rr != 0) {
-		quaternion_rotate_y(&rot, -1.0f);
-		_cross(&obj.transform.rot, &rot, &obj.transform.rot);
+		l->pos.x += 1.0f;
+		//quaternion_rotate_y(&rot, -1.0f);
+		//_cross(&obj.transform.rot, &rot, &obj.transform.rot);
 	}
 	if (rt != 0) {
 		quaternion_rotate_x(&rot, 1.0f);
@@ -80,10 +86,12 @@ int main(int argc, char **argv)
 	vector4_t cam_dir = { 0, 10.0f, 0, 1 };
 	mathlib_init();
 	engine_start(WIDTH, HEIGHT, update);
-	plg_load(&obj, "resource/cube1.plg", &IVECTOR4, &ZVECTOR4, &ZVECTOR4);
-
+	vector4_t pos;
+	vector4_init(&pos, 0, 0, 0);
+	plg_load(&obj, "resource/cube1.plg", &IVECTOR4, &ZVECTOR4, &pos);
 	camera_init(&cam, &cam_pos, &cam_dir, NULL,
 		50.0f, 500.0f, 90.0f, WIDTH, HEIGHT);
+	l = light_create();
 	engine_add_camera(&cam);
 	engine_add_object(&obj);
 	engine_run();

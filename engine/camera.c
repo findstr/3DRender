@@ -224,7 +224,6 @@ camera_viewport(struct camera *cam, struct object *obj)
 int
 camera_transform(struct camera *cam, struct object *obj)
 {
-	camera_backface(cam, obj);
 	camera_rot_zyx(cam);
 	transform_obj(obj, &cam->mcam, 0);
 	camera_perspective(cam, obj);

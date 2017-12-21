@@ -32,6 +32,8 @@ SRC=\
     engine/camera.c\
     engine/engine.c\
     engine/device.c\
+    engine/matrial.c\
+    engine/light.c\
 
 main:$(SRC)
 	gcc $(INCLUDE) $(CFLAG) -o $@ $^ $(LDFLAG)

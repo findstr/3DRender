@@ -53,10 +53,10 @@ void camera_init(struct camera *cam, vector4_t *pos,
 void camera_move(struct camera *cam, const vector4_t *add);
 void camera_rot_xyz(struct camera *cam);
 void camera_rot_zyx(struct camera *cam);
+void camera_backface(struct camera *cam, struct object *obj);
 int camera_transform(struct camera *cam, struct object *obj);
 /*
 void camera_cull(struct camera *cam, struct object4d *obj, int cull_flag);
-void camera_backface(struct camera *cam, struct object4d *obj);
 void camera_perspective(struct camera *cam, struct object4d *obj);
 void camera_viewport(struct camera *cam, struct object4d *obj);
 void camera_draw(struct camera *cam, struct object4d *obj);

@@ -35,7 +35,7 @@ max(int a, int b, int c)
 
 
 static void
-draw_pixel(int x, int y, int color)
+draw_pixel(int x, int y, rgba_t color)
 {
 	uint8_t *ptr;
 	if (x >= DEV.width) {
@@ -49,9 +49,9 @@ draw_pixel(int x, int y, int color)
 	//OpenGL use the left-bottom as (0,0)
 	y = DEV.height - y;
 	ptr = DEV.frame + x * RGB_SIZE + y * DEV.width * RGB_SIZE;
-	*ptr++ = (color >> 16) & 0xff;
-	*ptr++ = (color >> 8) & 0xff;
-	*ptr++ = (color >> 0) & 0xff;
+	*ptr++ = RGBA_R(color);
+	*ptr++ = RGBA_G(color);
+	*ptr++ = RGBA_B(color);
 	return ;
 }
 
@@ -205,7 +205,7 @@ device_draw(struct tri *p)
 				continue;
 			if (x13 < 0)
 				continue;
-			draw_pixel(x, y, p->color);
+			draw_pixel(x, y, p->light);
 		}
 	}
 

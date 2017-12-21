@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "engine.h"
 #include "device.h"
+#include "light.h"
 
 
 struct engine {
@@ -76,6 +77,8 @@ engine_render()
 			obj->rlist = NULL;
 			obj->next = NULL;
 			model2world(obj);
+			camera_backface(c, obj);
+			light_transform(c, obj);
 			camera_transform(c, obj);
 			draw(obj);
 			obj->vlist_trans = NULL;

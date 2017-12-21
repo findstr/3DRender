@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include "rgb.h"
 #include "plg.h"
 
 //#define DBG_PRINT	printf
@@ -150,9 +151,10 @@ int plg_load(struct object *obj, const char *filename,
 			DBG_PRINT("\n1 sided.");
 		}
 		if ((poly_surface_desc & PLX_COLOR_MODE_RGB_FLAG)) {
-			int color = poly_surface_desc & 0xfff;
-			obj->plist[i].color = color;
-			DBG_PRINT("\nRGB color = [%x]", color);
+			if (i % 2 == 0)
+				obj->plist[i].color = RGBA(255, 0, 0, 255);
+			else
+				obj->plist[i].color = RGBA(0, 255, 0, 255);
 		} else {
 			assert(0);
 		}

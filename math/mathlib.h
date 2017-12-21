@@ -52,6 +52,9 @@ void vector4_add(const vector4_t *a, const vector4_t *b, vector4_t *c);
 void vector4_sub(const vector4_t *a, const vector4_t *b, vector4_t *c);
 void vector4_cross(const vector4_t *a, const vector4_t *b, vector4_t *c);
 float vector4_dot(const vector4_t *a, const vector4_t *b);
+float vector4_magnitude(const vector4_t *a);
+float vector4_magnitude_fast(const vector4_t *a);
+
 void vector4_mul_matrix(const vector4_t *v, const matrix_t *m, vector4_t *res);
 void vector4_mul_quaternion(const vector4_t *v, const quaternion_t *q,
 		vector4_t *r);

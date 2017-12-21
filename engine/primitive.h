@@ -2,8 +2,7 @@
 #define _SHAPE_H
 
 #include "mathlib.h"
-
-typedef int color_t;
+#include "rgb.h"
 
 typedef struct transform {
 	vector4_t pos;
@@ -23,7 +22,8 @@ struct tri {
 	int state;
 	int attr;
 	int vert[3];
-	color_t color;
+	rgba_t color;
+	rgba_t light;
 	vector4_t *vlist;
 	struct tri *next;
 };
