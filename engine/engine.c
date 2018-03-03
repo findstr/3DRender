@@ -9,28 +9,28 @@
 #include "light.h"
 
 
+struct engine_buffer {
+	vertex_t *buf;
+	size_t size;
+};
+
 struct engine {
 	void (*update)();
 	struct object *render;
 	struct camera *camera;
+	struct engine_buffer TRANS;
 };
 
-struct engine_buffer {
-	vector4_t *buf;
-	size_t size;
-};
+static struct engine ENG;
 
-struct engine ENG;
-struct engine_buffer BUFF;
-
-static vector4_t *
-getbuf(size_t sz)
+static vertex_t *
+getbuf(struct engine_buffer *buff, size_t sz)
 {
-	if (BUFF.size < sz) {
-		BUFF.buf = realloc(BUFF.buf, sz * sizeof(*BUFF.buf));
-		BUFF.size = sz;
+	if (buff->size < sz) {
+		buff->buf = realloc(buff->buf, sz * sizeof(*buff->buf));
+		buff->size = sz;
 	}
-	return BUFF.buf;
+	return buff->buf;
 }
 
 
@@ -38,12 +38,17 @@ static void
 model2world(struct object *obj)
 {
 	int i;
-	vector4_t *src = obj->vlist_local;
-	vector4_t *dst = obj->vlist_trans;
+	vertex_t *src = obj->vlist_local;
+	vertex_t *dst = obj->vlist_trans;
 	transform_t *trans = &obj->transform;
 	for (i = 0; i < obj->vertices_num; i++) {
-		vector4_mul_quaternion(&src[i], &trans->rot, &dst[i]);
-		vector4_add(&dst[i], &trans->pos, &dst[i]);
+		vector4_mul_quaternion(&src[i].v, &trans->rot, &dst[i].v);
+		vector4_mul_quaternion(&src[i].n, &trans->rot, &dst[i].n);
+		vector4_add(&dst[i].v, &trans->pos, &dst[i].v);
+	}
+	for (i = 0; i < obj->tri_num; i++) {
+		struct tri *p = &obj->plist[i];
+		vector4_mul_quaternion(&p->normal_local, &trans->rot, &p->normal);
 	}
 	return ;
 }
@@ -72,17 +77,16 @@ engine_render()
 	while (c) {
 		struct object *obj = ENG.render;
 		while (obj) {
-			vector4_t *trans = getbuf(obj->vertices_num);
+			vertex_t *trans;
+			trans = getbuf(&ENG.TRANS, obj->vertices_num);
 			obj->vlist_trans = trans;
 			obj->rlist = NULL;
-			obj->next = NULL;
 			model2world(obj);
 			camera_backface(c, obj);
 			light_transform(c, obj);
 			camera_transform(c, obj);
 			draw(obj);
 			obj->vlist_trans = NULL;
-			obj->next = NULL;
 			obj = obj->next;
 		}
 		c = c->next;
@@ -119,8 +123,8 @@ engine_start(int width, int height, void (*update)())
 	ENG.render = NULL;
 	ENG.camera = NULL;
 	ENG.update = update;
-	BUFF.size = 0;
-	BUFF.buf = NULL;
+	ENG.TRANS.size = 0;
+	ENG.TRANS.buf = NULL;
 	device_init(width, height);
 	driver_start(width, height, engine_render);
 	return ;

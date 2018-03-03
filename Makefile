@@ -34,6 +34,7 @@ SRC=\
     engine/device.c\
     engine/matrial.c\
     engine/light.c\
+    engine/primitive.c\
 
 main:$(SRC)
 	gcc $(INCLUDE) $(CFLAG) -o $@ $^ $(LDFLAG)

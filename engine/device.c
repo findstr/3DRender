@@ -146,9 +146,9 @@ device_drawframe(struct tri *p)
 	v0 = p->vert[0];
 	v1 = p->vert[1];
 	v2 = p->vert[2];
-	vec0 = &p->vlist[v0];
-	vec1 = &p->vlist[v1];
-	vec2 = &p->vlist[v2];
+	vec0 = &p->vlist[v0].v;
+	vec1 = &p->vlist[v1].v;
+	vec2 = &p->vlist[v2].v;
 	draw_line(vec0->x, vec0->y, vec1->x, vec1->y, 0x333333);
 	draw_line(vec0->x, vec0->y, vec2->x, vec2->y, 0x333333);
 	draw_line(vec1->x, vec1->y, vec2->x, vec2->y, 0x333333);
@@ -168,9 +168,9 @@ device_draw(struct tri *p)
 	v0 = p->vert[0];
 	v1 = p->vert[1];
 	v2 = p->vert[2];
-	vec0 = &p->vlist[v0];
-	vec1 = &p->vlist[v1];
-	vec2 = &p->vlist[v2];
+	vec0 = &p->vlist[v0].v;
+	vec1 = &p->vlist[v1].v;
+	vec2 = &p->vlist[v2].v;
 	x1 = vec0->x; x2 = vec1->x; x3 = vec2->x;
 	y1 = vec0->y; y2 = vec1->y; y3 = vec2->y;
 	lx = min(x1, x2, x3);
@@ -205,7 +205,7 @@ device_draw(struct tri *p)
 				continue;
 			if (x13 < 0)
 				continue;
-			draw_pixel(x, y, p->light);
+			draw_pixel(x, y, p->light[0]);
 		}
 	}
 

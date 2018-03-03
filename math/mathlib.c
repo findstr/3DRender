@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include "mathlib.h"
 
@@ -18,7 +19,7 @@ mathlib_init()
 	return ;
 }
 
-static float
+static inline float
 fast_do(float theta, const float *table)
 {
 	int i,f;

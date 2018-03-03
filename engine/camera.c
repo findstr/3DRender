@@ -175,20 +175,14 @@ camera_backface(struct camera *cam, struct object *obj)
 	if (obj->state & OBJECT4D_STATE_CULLED)
 		return ;
 	struct tri **rlist = &obj->rlist;
-	for (i = 0; i < obj->polys_num; i++) {
+	for (i = 0; i < obj->tri_num; i++) {
 		float dp;
 		int v0, v1, v2;
-		vector4_t u,v,n;
 		vector4_t view;
 		struct tri *p = &obj->plist[i];
 		v0 = p->vert[0];
-		v1 = p->vert[1];
-		v2 = p->vert[2];
-		vector4_sub(&obj->vlist_trans[v1], &obj->vlist_trans[v0], &u);
-		vector4_sub(&obj->vlist_trans[v2], &obj->vlist_trans[v0], &v);
-		vector4_cross(&u, &v, &n);
-		vector4_sub(&cam->pos, &obj->vlist_trans[v0], &view);
-		dp = vector4_dot(&n, &view);
+		vector4_sub(&cam->pos, &obj->vlist_trans[v0].v, &view);
+		dp = vector4_dot(&p->normal, &view);
 		if (dp > 0.0f) {
 			p->next = *rlist;
 			*rlist = p;
@@ -202,10 +196,11 @@ camera_perspective(struct camera *cam, struct object *obj)
 {
 	int i;
 	for (i = 0; i < obj->vertices_num; i++) {
-		float z = obj->vlist_trans[i].z;
+		vector4_t *v = &obj->vlist_trans[i].v;
+		float z = v->z;
 		float scale = cam->view_dist / z;
-		obj->vlist_trans[i].x = obj->vlist_trans[i].x * scale;
-		obj->vlist_trans[i].y = obj->vlist_trans[i].y * scale * cam->aspect_ratio;
+		v->x *= scale;
+		v->y *= scale * cam->aspect_ratio;
 	}
 }
 
@@ -216,8 +211,9 @@ camera_viewport(struct camera *cam, struct object *obj)
 	float alpha = 0.5f * cam->viewport_width - 0.5f;
 	float beta = 0.5f * cam->viewport_height - 0.5f;
 	for (i = 0; i < obj->vertices_num; i++) {
-		obj->vlist_trans[i].x = alpha + alpha * obj->vlist_trans[i].x;
-		obj->vlist_trans[i].y = beta - beta * obj->vlist_trans[i].y;
+		vector4_t *v = &obj->vlist_trans[i].v;
+		v->x = alpha + alpha * v->x;
+		v->y = beta - beta * v->y;
 	}
 }
 
@@ -228,5 +224,6 @@ camera_transform(struct camera *cam, struct object *obj)
 	transform_obj(obj, &cam->mcam, 0);
 	camera_perspective(cam, obj);
 	camera_viewport(cam, obj);
+	return 0;
 }
 

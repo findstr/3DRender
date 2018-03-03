@@ -12,7 +12,7 @@
 
 vector4_t vscale = { 0.5f, 0.5f, 1.0f }, vpos = { 0, 0, 0, 1}, vrot = {0, 0, 0, 1};
 static struct camera cam;
-static struct object obj;
+static struct object obj, obj2;
 static struct light *l;
 static int frame = 0;
 
@@ -49,12 +49,12 @@ update()
 	}
 	//左手坐标系
 	if (rl != 0) {
-		l->pos.x -= 1.0f;
+		obj.transform.pos.x -= 1.0f;
 		//quaternion_rotate_y(&rot, 1.0f);
 		//_cross(&obj.transform.rot, &rot, &obj.transform.rot);
 	}
 	if (rr != 0) {
-		l->pos.x += 1.0f;
+		obj.transform.pos.x += 1.0f;
 		//quaternion_rotate_y(&rot, -1.0f);
 		//_cross(&obj.transform.rot, &rot, &obj.transform.rot);
 	}
@@ -89,33 +89,46 @@ int main(int argc, char **argv)
 	vector4_t pos;
 	vector4_init(&pos, 0, 0, 0);
 	plg_load(&obj, "resource/cube1.plg", &IVECTOR4, &ZVECTOR4, &pos);
+	vector4_init(&pos, 0, 0, -1.0f);
+	plg_load(&obj2, "resource/cube1.plg", &IVECTOR4, &ZVECTOR4, &pos);
 	camera_init(&cam, &cam_pos, &cam_dir, NULL,
 		50.0f, 500.0f, 90.0f, WIDTH, HEIGHT);
 	l = light_create();
 	engine_add_camera(&cam);
+	engine_add_object(&obj2);
 	engine_add_object(&obj);
 	engine_run();
 #else
-	vector4_t z, y, x, xRy, yRz, zRx;
+	vector4_t a, b, c, u, v, n1, n2, n3, xRy, yRz, zRx;
 	quaternion_t rx, ry, rz;
-	vector4_init(&z, 0, 0, 1);
-	vector4_init(&y, 0, 1, 0);
-	vector4_init(&x, 1, 0, 0);
+	vector4_init(&a, 0, 1, 0);
+	vector4_init(&b, 1, 1, 0);
+	vector4_init(&c, 1, 0, 0);
+
+	vector4_sub(&b, &a, &u);
+	vector4_sub(&c, &a, &v);
+	vector4_cross(&u, &v, &n1);
+	vector4_print("normal1", &n1);
+
+
 	quaternion_rotate_x(&rx, 90.0f);
-	quaternion_rotate_y(&ry, 90.0f);
-	quaternion_rotate_z(&rz, 90.0f);
+	vector4_mul_quaternion(&a, &rx, &a);
+	vector4_mul_quaternion(&b, &rx, &b);
+	vector4_mul_quaternion(&c, &rx, &c);
+
+	vector4_sub(&b, &a, &u);
+	vector4_sub(&c, &a, &v);
+	vector4_cross(&u, &v, &n2);
+	vector4_print("normal2", &n2);
+
+
+	vector4_mul_quaternion(&n1, &rx, &n3);
+	vector4_print("normal3", &n3);
 
 	quaternion_print("rx", &rx);
 	quaternion_print("ry", &ry);
 	quaternion_print("rz", &rz);
 
-	vector4_mul_quaternion(&x, &ry, &xRy);
-	vector4_mul_quaternion(&y, &rz, &yRz);
-	vector4_mul_quaternion(&z, &rx, &zRx);
-
-	vector4_print("xRy", &xRy);
-	vector4_print("yRz", &yRz);
-	vector4_print("zRx", &zRx);
 
 #endif
 	/*

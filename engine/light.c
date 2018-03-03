@@ -24,7 +24,7 @@ light_create()
 {
 	struct light *l = malloc(sizeof(*l));
 	memset(l, 0, sizeof(*l));
-#if 0
+#if 1
 	l->type = LIGHT_AMBIENT;
 	l->ambient = RGBA(255, 255, 255, 0);
 #endif
@@ -33,13 +33,14 @@ light_create()
 	l->diffuse = RGBA(255, 255, 255, 0);
 	vector4_init(&l->dir, 1, 0, 0);
 #endif
+#if 0
 	l->type = LIGHT_POINT;
 	vector4_init(&l->pos, 0, 10, 0);
 	l->diffuse = RGBA(255, 255, 0, 0);
 	l->kc = 0.0f;
 	l->kl = 0.1f;
 	l->kq = 0.0f;
-
+#endif
 
 	l->next = L;
 	L = l;
@@ -52,6 +53,7 @@ light_tri(struct tri *p)
 	struct light *l = L;
 	vector4_t u,v,n,d;
 	int v0, v1, v2;
+	vertex_t *vlist = p->vlist;
 	unsigned int r_base, g_base, b_base,	//原来的颜色
 		r_sum, g_sum, b_sum,		//全部光源的总体光照效果
 		shaded_color;			//最后的颜色
@@ -78,8 +80,8 @@ light_tri(struct tri *p)
 			b_sum += RGBA_B(l->ambient) * b_base / 256;
 			break;
 		case LIGHT_DIRECTION:
-			vector4_sub(&p->vlist[v1], &p->vlist[v0], &u);
-			vector4_sub(&p->vlist[v2], &p->vlist[v0], &v);
+			vector4_sub(&vlist[v1].v, &vlist[v0].v, &u);
+			vector4_sub(&vlist[v2].v, &vlist[v0].v, &v);
 			vector4_cross(&u, &v, &n);
 			nl = vector4_magnitude(&n);
 			dp = vector4_dot(&n, &l->dir);
@@ -92,11 +94,11 @@ light_tri(struct tri *p)
 			b_sum += RGBA_B(l->diffuse) * b_base * i / (256 * 128);
 			break;
 		case LIGHT_POINT:
-			vector4_sub(&p->vlist[v1], &p->vlist[v0], &u);
-			vector4_sub(&p->vlist[v2], &p->vlist[v0], &v);
+			vector4_sub(&vlist[v1].v, &vlist[v0].v, &u);
+			vector4_sub(&vlist[v2].v, &vlist[v0].v, &v);
 			vector4_cross(&u, &v, &n);
 			nl = vector4_magnitude(&n);
-			vector4_sub(&p->vlist[v0], &l->pos, &d);
+			vector4_sub(&vlist[v0].v, &l->pos, &d);
 			dist = vector4_magnitude(&d);
 			dp = vector4_dot(&n, &d);
 			if (dp >= 0)
@@ -121,7 +123,7 @@ light_tri(struct tri *p)
 		g_sum = 255;
 	if (b_sum > 255)
 		b_sum = 255;
-	p->light = RGBA(r_sum, g_sum, b_sum, 255);
+	p->light[0] = RGBA(r_sum, g_sum, b_sum, 255);
 	return ;
 }
 
@@ -129,6 +131,7 @@ void
 light_transform(struct camera *camera, struct object *obj)
 {
 	struct tri *p = obj->rlist;
+
 	while (p) {
 		p->vlist = obj->vlist_trans;
 		light_tri(p);

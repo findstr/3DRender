@@ -9,9 +9,9 @@ void
 transform_obj(struct object *obj,matrix_t *mt, int transform_basis)
 {
 	int i;
-	vector4_t *list = obj->vlist_trans;
+	vertex_t *list = obj->vlist_trans;
 	for (i = 0; i < obj->vertices_num; i++)
-		vector4_mul_matrix(&list[i], mt, &list[i]);
+		vector4_mul_matrix(&list[i].v, mt, &list[i].v);
 	if (transform_basis) {
 		vector4_mul_matrix(&obj->ux, mt, &obj->ux);
 		vector4_mul_matrix(&obj->uy, mt, &obj->uy);

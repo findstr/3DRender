@@ -11,6 +11,7 @@
 #define PI_INV ((float)0.318309886f)
 
 
+#define EPSILON_E3 ((float)1e-3)
 #define EPSILON_E4 ((float)1e-4)
 #define EPSILON_E5 ((float)1e-5)
 #define EPSILON_E6 ((float)1e-6)
@@ -20,7 +21,8 @@
 #endif
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 #define MAX(a, b)	((a) > (b) ? (a) : (b))
-#define SWAP(a, b, t)		{t = a; a = b; b = t;}
+#define SWAP(a, b, t)	{t = a; a = b; b = t;}
+#define FCMP(a,b)	((fabs(a - b) < EPSILON_E3) ? 1 : 0)
 
 #define DEG_TO_RAD(ang)		((ang) * PI / 180.0f)
 #define RAD_TO_DEG(rads)	((rads) * 180.0f / PI)

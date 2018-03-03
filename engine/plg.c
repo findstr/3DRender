@@ -8,7 +8,7 @@
 #include "plg.h"
 
 //#define DBG_PRINT	printf
-#define DBG_PRINT	(void)
+void DBG_PRINT(const char *p, ...) {}
 
 #define PLX_RGB_MASK          0x8000
 #define PLX_SHADE_MODE_MASK   0x6000
@@ -53,9 +53,9 @@ compute_radius(struct object *obj)
 	obj->radius_avg = 0;
 	obj->radius_max = 0;
 	for (i = 0; i < obj->vertices_num; i++) {
-		float x = obj->vlist_local[i].x;
-		float y = obj->vlist_local[i].y;
-		float z = obj->vlist_local[i].z;
+		float x = obj->vlist_local[i].v.x;
+		float y = obj->vlist_local[i].v.y;
+		float z = obj->vlist_local[i].v.z;
 		float dis = sqrt(x * x + y * y + z * z);
 		obj->radius_avg += dis;
 		if (dis > obj->radius_max)
@@ -74,19 +74,16 @@ int plg_load(struct object *obj, const char *filename,
 	char *str;
 	char buff[256];
 	printf("load:%s\n", filename);
-	memset(obj, 0, sizeof(*obj));
-	obj->state = OBJECT4D_STATE_ACTIVE | OBJECT4D_STATE_VISIBLE;
-	obj->transform.pos = *pos;
-	obj->transform.rot = IQUATERNION;
 	fp = fopen(filename, "r");
 	if (fp == NULL)
 		return -1;
 	str = nextline(fp, buff, sizeof(buff));
 	if (str == NULL)
 		return -1;
+	memset(obj, 0, sizeof(*obj));
 	DBG_PRINT("Object Descriptor: %s\n", str);
-
-	sscanf(str, "%s %d %d", obj->name, &obj->vertices_num, &obj->polys_num);
+	sscanf(str, "%s %d %d", obj->name, &obj->vertices_num, &obj->tri_num);
+	object_init(obj);
 	for (i = 0; i < obj->vertices_num; i++) {
 		char xa[10], ya[10], za[10];
 		str = nextline(fp, buff, sizeof(buff));
@@ -96,24 +93,24 @@ int plg_load(struct object *obj, const char *filename,
 		}
 		DBG_PRINT("%s", str);
 		sscanf(str, "%s %s %s", xa, ya, za);
-		obj->vlist_local[i].x = atoi(xa);
-                obj->vlist_local[i].y = atoi(ya);
-		obj->vlist_local[i].z = atoi(za);
-		obj->vlist_local[i].w = 1;
+		obj->vlist_local[i].v.x = atoi(xa);
+                obj->vlist_local[i].v.y = atoi(ya);
+		obj->vlist_local[i].v.z = atoi(za);
+		obj->vlist_local[i].v.w = 1;
 
-		obj->vlist_local[i].x*=scale->x;
-		obj->vlist_local[i].y*=scale->y;
-		obj->vlist_local[i].z*=scale->z;
+		obj->vlist_local[i].v.x*=scale->x;
+		obj->vlist_local[i].v.y*=scale->y;
+		obj->vlist_local[i].v.z*=scale->z;
 
-		DBG_PRINT("%s-%s %f-%f\n", xa, ya, obj->vlist_local[i].x,
+		DBG_PRINT("%s-%s %f-%f\n", xa, ya, obj->vlist_local[i].v.x,
                 scale->x);
 
 
 		DBG_PRINT("\nVertex %d = %f, %f, %f, %f\n", i,
-                                           obj->vlist_local[i].x,
-                                           obj->vlist_local[i].y,
-                                           obj->vlist_local[i].z,
-                                           obj->vlist_local[i].w);
+                                           obj->vlist_local[i].v.x,
+                                           obj->vlist_local[i].v.y,
+                                           obj->vlist_local[i].v.z,
+                                           obj->vlist_local[i].v.w);
 	}
 	compute_radius(obj);
 	DBG_PRINT("\nObject average radius = %f, max radius = %f",
@@ -123,7 +120,7 @@ int plg_load(struct object *obj, const char *filename,
 	int poly_num_verts    = 0; // number of vertices for current poly (always 3)
 	char tmp_string[8];        // temp string to hold surface descriptor in and
 				   // test if it need to be converted from hex
-	for (i = 0; i < obj->polys_num; i++) {
+	for (i = 0; i < obj->tri_num; i++) {
 		str = nextline(fp, buff, sizeof(buff));
 		if (str == NULL) {
 			DBG_PRINT("PLG file error with file %s (polygon descriptor invalid).",filename);
@@ -181,6 +178,11 @@ int plg_load(struct object *obj, const char *filename,
 		}
 		obj->plist[i].state = POLY4D_STATE_ACTIVE;
 	}
+	obj->state = OBJECT4D_STATE_ACTIVE | OBJECT4D_STATE_VISIBLE;
+	obj->transform.pos = *pos;
+	obj->transform.rot = IQUATERNION;
+	object_polynormals(obj);
+	object_vertexnormals(obj);
 	fclose(fp);
 	return 0;
 }

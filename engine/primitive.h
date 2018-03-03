@@ -9,6 +9,12 @@ typedef struct transform {
 	quaternion_t rot;
 } transform_t;
 
+typedef struct vertex {
+	vector4_t v;	//vertex
+	vector4_t n;	//normal
+	vector2_t t;	//texture coord
+} vertex_t;
+
 struct poly1 {
 	vector3_t point[3];
 };
@@ -18,13 +24,18 @@ struct poly2 {
 	int vertices[3];
 };
 
+
 struct tri {
 	int state;
 	int attr;
 	int vert[3];
 	rgba_t color;
-	rgba_t light;
-	vector4_t *vlist;
+	rgba_t light[3];	//顶点颜色
+	vector4_t normal_local;
+	vector4_t normal;	//
+	float nlength;
+	float avg_z;
+	vertex_t *vlist;
 	struct tri *next;
 };
 
@@ -50,11 +61,14 @@ struct object {
 	vector4_t ux,uy,uz;
 
 	int vertices_num;
-	vector4_t vlist_local[64];
-	vector4_t *vlist_trans;
+	vertex_t *vlist_local;
+	vertex_t *vlist_trans;
+	vertex_t *vlist_local_head;;
+	vertex_t *vlist_trans_head;
 
-	int polys_num;
-	struct tri plist[128];
+
+	int tri_num;
+	struct tri *plist;
 	struct tri *rlist;
 	struct object *next;
 };
@@ -86,6 +100,14 @@ struct render4d {
 #define OBJECT4D_STATE_ACTIVE		0x0001
 #define OBJECT4D_STATE_VISIBLE		0x0002
 #define OBJECT4D_STATE_CULLED		0x0004
+
+
+void object_init(struct object *obj);
+void object_finalize(struct object *obj);
+void object_polynormals(struct object *obj);
+void object_vertexnormals(struct object *obj);
+
+
 
 #endif
 
