@@ -1,7 +1,9 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include "driver.h"
 #include "device.h"
+#include "rgb.h"
 
 struct device {
 	size_t width;
@@ -155,6 +157,10 @@ device_drawframe(struct tri *p)
 	return ;
 }
 
+
+#if 0
+
+//edge function
 void
 device_draw(struct tri *p)
 {
@@ -168,9 +174,9 @@ device_draw(struct tri *p)
 	v0 = p->vert[0];
 	v1 = p->vert[1];
 	v2 = p->vert[2];
-	vec0 = &p->vlist[v0].v;
-	vec1 = &p->vlist[v1].v;
-	vec2 = &p->vlist[v2].v;
+	vec0 = &p->vlist[v0];
+	vec1 = &p->vlist[v1];
+	vec2 = &p->vlist[v2];
 	x1 = vec0->x; x2 = vec1->x; x3 = vec2->x;
 	y1 = vec0->y; y2 = vec1->y; y3 = vec2->y;
 	lx = min(x1, x2, x3);
@@ -205,7 +211,7 @@ device_draw(struct tri *p)
 				continue;
 			if (x13 < 0)
 				continue;
-			draw_pixel(x, y, p->light[0]);
+			draw_pixel(x, y, p->color);
 		}
 	}
 
@@ -213,7 +219,246 @@ device_draw(struct tri *p)
 
 }
 
+#else
+
+static inline void
+draw_top(float x0, float y0, float x1, float y1, float x2, float y2, rgba_t color[3])
+{
+	rgba_t rgb, c0, c1, c2;
+	float x, y, xstart, xend;
+	float dl_x, dl_r, dl_g, dl_b, dr_x, dr_r, dr_g, dr_b;
+	float left_r, left_g, left_b;
+	float right_r, right_g, right_b;
+	float bottom_r, bottom_g, bottom_b;
+	float tmp, dx_left, dx_right;
+	float h = y2 - y0;
+	c0 = color[0]; c1 = color[1]; c2 = color[2];
+	if (x0 > x1) {
+		SWAP(x0, x1, tmp);
+		SWAP(c0, c1, rgb);
+	}
+	dl_x = (x2-x0); dx_left = dl_x / h;
+	dr_x = (x2-x1); dx_right = dr_x / h;
+	//left color
+	rgb = c0;
+	left_r = RGBA_R(rgb); left_g = RGBA_G(rgb); left_b = RGBA_B(rgb);
+	//right color
+	rgb = c1;
+	right_r = RGBA_R(rgb); right_g = RGBA_G(rgb); right_b = RGBA_B(rgb);
+	//bottom color
+	rgb = c2;
+	bottom_r = RGBA_R(rgb); bottom_g = RGBA_G(rgb); bottom_b = RGBA_B(rgb);
+
+	//delta color
+	dl_r = -(left_r - bottom_r) / h;
+	dl_g = -(left_g - bottom_g) / h;
+	dl_b = -(left_b - bottom_b) / h;
+
+	dr_r = -(right_r - bottom_r) / h;
+	dr_g = -(right_g - bottom_g) / h;
+	dr_b = -(right_b - bottom_b) / h;
+
+	//draw
+	xstart = x0; xend = x1;
+	for (y = ceil(y0); y < ceil(y2); y++) {
+		float r, g, b, rr, gg, bb, dx;
+		dx = xend - xstart;
+		if (dx > 0) {
+			rr = (right_r - left_r) / dx;
+			gg = (right_g - left_g) / dx;
+			bb = (right_b - left_b) / dx;
+		} else {
+			rr = right_r - left_r;
+			gg = right_g - left_g;
+			bb = right_b - left_b;
+		}
+		r = left_r; g = left_g; b = left_b;
+		for (x = xstart; x < xend; x++) {
+			rgba_t c = RGBA((int)r, (int)g, (int)b, 255);
+			draw_pixel(x, y, c);
+			r += rr; g += gg; b += bb;
+		}
+		left_r += dl_r; left_g += dl_g; left_b += dl_b;
+		right_r += dr_r; right_g += dr_g; right_b += dr_b;
+		xstart += dx_left;
+		xend += dx_right;
+	}
+	return ;
+}
+
+static inline void
+draw_bottom(float x0, float y0, float x1, float y1, float x2, float y2, rgba_t color[3])
+{
+	rgba_t rgb, c0, c1, c2;
+	float x, y, xstart, xend;
+	float dl_x, dl_r, dl_g, dl_b, dr_x, dr_r, dr_g, dr_b;
+	float left_r, left_g, left_b;
+	float right_r, right_g, right_b;
+	float top_r, top_g, top_b;
+	float tmp, dx_left, dx_right;
+	float h = y2 - y0;
+	c0 = color[0]; c1 = color[1]; c2 = color[2];
+	if (x1 > x2) {
+		SWAP(x1, x2, tmp);
+		SWAP(c1, c2, rgb);
+	}
+	dl_x = (x1 - x0); dx_left = dl_x / h;
+	dr_x = (x2 - x0); dx_right = dr_x / h;
+	//left color
+	rgb = c1;
+	left_r = RGBA_R(rgb); left_g = RGBA_G(rgb); left_b = RGBA_B(rgb);
+	//top color
+	rgb = c0;
+	top_r = RGBA_R(rgb); top_g = RGBA_G(rgb); top_b = RGBA_B(rgb);
+	//right color
+	rgb = c2;
+	right_r = RGBA_R(rgb); right_g = RGBA_G(rgb); right_b = RGBA_B(rgb);
+	//delta color
+	dl_r = (left_r - top_r) / h;
+	dl_g = (left_g - top_g) / h;
+	dl_b = (left_b - top_b) / h;
+
+	dr_r = (right_r - top_r) / h;
+	dr_g = (right_g - top_g) / h;
+	dr_b = (right_b - top_b) / h;
+
+	//draw
+	xstart = x0; xend = x0;
+	left_r = right_r = top_r;
+	left_g = right_g = top_g;
+	left_b = right_b = top_b;
+	for (y = ceil(y0); y < ceil(y1); y++) {
+		float r, g, b, rr, gg, bb, dx;
+		dx = xend - xstart;
+		if (dx > 0) {
+			rr = (right_r - left_r) / dx;
+			gg = (right_g - left_g) / dx;
+			bb = (right_b - left_b) / dx;
+		} else {
+			rr = right_r - left_r;
+			gg = right_g - left_g;
+			bb = right_b - left_b;
+		}
+		r = left_r; g = left_g; b = left_b;
+		for (x = xstart; x < xend; x++) {
+			rgba_t c = RGBA((int)r, (int)g, (int)b, 255);
+			draw_pixel(x, y, c);
+			r += rr; g += gg; b += bb;
+		}
+		left_r += dl_r; left_g += dl_g; left_b += dl_b;
+		right_r += dr_r; right_g += dr_g; right_b += dr_b;
+		xstart += dx_left;
+		xend += dx_right;
+	}
+	return ;
+}
+
+void
+device_draw(struct tri *p)
+{
+#if 1
+	int v0, v1, v2;
+	rgba_t color[3], tc;
+	float x0, x1, x2, y0, y1, y2, tmp;
+	vector4_t *vec0, *vec1, *vec2;
+	v0 = p->vert[0];
+	v1 = p->vert[1];
+	v2 = p->vert[2];
+	vec0 = &p->vlist[v0].v;
+	vec1 = &p->vlist[v1].v;
+	vec2 = &p->vlist[v2].v;
+	x0 = vec0->x; x1 = vec1->x; x2 = vec2->x;
+	y0 = vec0->y; y1 = vec1->y; y2 = vec2->y;
+
+	if (FCMP(x0, x1) && FCMP(x1, x2) || (FCMP(y0, y1) && FCMP(y1, y2)))
+		return ;
+	color[0] = RGBA(255, 0, 0, 255);
+	color[1] = RGBA(0, 255, 0, 255);
+	color[2] = RGBA(0, 0, 255, 255);
+
+	//根据y坐标升序排p0, p1, p2
+	if (y1 < y0) {
+		SWAP(x0, x1, tmp);
+		SWAP(y0, y1, tmp);
+		SWAP(color[0], color[1], tc);
+	}
+	//此时p0 < p1
+	if (y2 < y1) {
+		SWAP(x2, x1, tmp);
+		SWAP(y2, y1, tmp);
+		SWAP(color[2], color[1], tc);
+		if (y1 < y0) {
+			SWAP(x0, x1, tmp);
+			SWAP(y0, y1, tmp);
+			SWAP(color[0], color[1], tc);
+		}
+	}
+	assert(y0 <= y1);
+	assert(y1 <= y2);
+	if (FCMP(y0, y1)) {
+		draw_top(x0, y0, x1, y1, x2, y2, color);
+	} else if (FCMP(y1, y2)) {
+		draw_bottom(x0, y0, x1, y1, x2, y2, color);
+	} else {
+		int newcolor[3];
+		float r1, g1, b1, r2, g2, b2;
+		float h = y2 - y0;
+		float newh = y1 - y0;
+		float newx = x0 + newh * (x2 - x0) / h;
+		r1 = RGBA_R(color[0]);
+		g1 = RGBA_G(color[0]);
+		b1 = RGBA_B(color[0]);
+
+		r2 = RGBA_R(color[2]);
+		g2 = RGBA_G(color[2]);
+		b2 = RGBA_B(color[2]);
+
+		r1 += newh * (r2 - r1) / h;
+		g1 += newh * (g2 - g1) / h;
+		b1 += newh * (b2 - b1) / h;
+		newcolor[0] = color[0];
+		newcolor[1] = RGBA(r1, g1, b1, 255);
+		newcolor[2] = color[1];
+		draw_bottom(x0, y0, newx, y1, x1, y1, newcolor);
+		newcolor[0] = RGBA(r1, g1, b1, 255);
+		newcolor[1] = color[1];
+		newcolor[2] = color[2];
+		draw_top(newx, y1, x1, y1, x2, y2, newcolor);
+	}
+#else
+#if 0
+	{
+	rgba_t c = RGBA(255, 0, 0, 255);
+	int color[3];
+	float x0, y0, x1, y1, x2, y2;
+	color[0] = RGBA(255, 0, 0, 255);
+	color[1] = RGBA(0, 255, 0, 255);
+	color[2] = RGBA(0, 0, 255, 255);
+	x0 = 300.f; y0 = 30.f; x1 = 0.f; y1 = 300.f; x2 = 600.f; y2 = 300.f;
+	draw_line(x0, y0, x1, y1, c);
+	draw_line(x2, y2, x1, y1, c);
+	draw_line(x2, y2, x0, y0, c);
+	draw_bottom(x0, y0, x1, y1, x2, y2, color);
+	}
+#endif
+	{
+	rgba_t c = RGBA(255, 0, 0, 255);
+	int color[3];
+	float x0, y0, x1, y1, x2, y2;
+	color[0] = RGBA(255, 0, 0, 255);
+	color[1] = RGBA(0, 255, 0, 255);
+	color[2] = RGBA(0, 0, 255, 255);
+	x0 = 0.f; y0 = 30.f; x1 = 600.f; y1 = 30.f; x2 = 300.f; y2 = 300.f;
+	draw_line(x0, y0, x1, y1, c);
+	draw_line(x2, y2, x1, y1, c);
+	draw_line(x2, y2, x0, y0, c);
+	draw_top(x0, y0, x1, y1, x2, y2, color);
+	}
 
 
+#endif
+	return ;
+}
 
+#endif
 

@@ -1,6 +1,8 @@
-#ifndef	_MATH_H
-#define _MATH_H
+#ifndef	_MATH_LIB_H
+#define _MATH_LIB_H
 
+#include <math.h>
+#include <stdlib.h>
 #include "mathtype.h"
 #include "mathconst.h"
 
@@ -41,6 +43,12 @@
 	(plane)->p0 = (*vp0); (plane)->n = (*(normal));}
 #define vector3_init_normalize(v,x,y,z) {\
 	vector3_init(v,x,y,z);vector3_normalize(v, v);}
+
+#define clamp(f, min, max) {\
+	if (f > max) { \
+		f = max; return ;}\
+	if (f < min) { \
+		f = min; return ;}}
 
 void mathlib_init();
 

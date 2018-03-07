@@ -2,7 +2,8 @@
 #define _RGB_H
 
 #define RGB_SIZE	(3)
-#define RGBA(r,g,b,a)	((r) << 24 | (g) << 16 | (b) << 8 | (a))
+#define RGBA(r,g,b,a)	((rgba_t)(r) << 24 | (rgba_t)(g) << 16 |\
+		(rgba_t)(b) << 8 | (rgba_t)(a))
 #define RGBA_R(rgba)	(((rgba) >> 24) & 0xff)
 #define RGBA_G(rgba)	(((rgba) >> 16) & 0xff)
 #define RGBA_B(rgba)	(((rgba) >> 8) & 0xff)
@@ -19,6 +20,14 @@ static inline rgba_t rgb_max(rgba_t n)
 static inline rgba_t rgb_min(rgba_t n)
 {
 	return n < 0 ? 0 : n;
+}
+
+static inline rgba_t rgb_clamp(rgba_t n)
+{
+	if (n > 255)
+		return 255;
+	if (n < 0)
+		return 0;
 }
 
 static inline rgba_t rgba_add(rgba_t a, rgba_t b)
@@ -45,6 +54,18 @@ static inline rgba_t rgba_mul(rgba_t rgba, float factor)
 	int a = RGBA_A(rgba) * factor;
 	return RGBA(r, g, b, a);
 }
+
+static inline rgba_t rgba_div(rgba_t rgba, float factor)
+{
+	int r = RGBA_R(rgba) / factor;
+	int g = RGBA_G(rgba) / factor;
+	int b = RGBA_B(rgba) / factor;
+	int a = RGBA_A(rgba) / factor;
+	return RGBA(r, g, b, a);
+}
+
+
+
 
 
 

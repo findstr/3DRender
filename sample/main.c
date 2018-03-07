@@ -82,7 +82,7 @@ update()
 int main(int argc, char **argv)
 {
 #if 1
-	vector4_t cam_pos = { 0, 0, -50, 1 };
+	vector4_t cam_pos = { 0, 0, -20, 1 };
 	vector4_t cam_dir = { 0, 10.0f, 0, 1 };
 	mathlib_init();
 	engine_start(WIDTH, HEIGHT, update);
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 		50.0f, 500.0f, 90.0f, WIDTH, HEIGHT);
 	l = light_create();
 	engine_add_camera(&cam);
-	engine_add_object(&obj2);
+	//engine_add_object(&obj2);
 	engine_add_object(&obj);
 	engine_run();
 #else
