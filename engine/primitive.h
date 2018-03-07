@@ -29,7 +29,7 @@ struct tri {
 	int state;
 	int attr;
 	int vert[3];
-	rgba_t color;
+	rgba_t color[3];
 	rgba_t light[3];	//顶点颜色
 	vector4_t normal_local;
 	vector4_t normal;	//

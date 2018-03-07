@@ -148,10 +148,9 @@ int plg_load(struct object *obj, const char *filename,
 			DBG_PRINT("\n1 sided.");
 		}
 		if ((poly_surface_desc & PLX_COLOR_MODE_RGB_FLAG)) {
-			if (i % 2 == 0)
-				obj->plist[i].color = RGBA(255, 0, 0, 255);
-			else
-				obj->plist[i].color = RGBA(0, 255, 0, 255);
+			obj->plist[i].color[0] = RGBA(255, 0, 0, 255);
+			obj->plist[i].color[1] = RGBA(0, 255, 0, 255);
+			obj->plist[i].color[2] = RGBA(0, 0, 255, 255);
 		} else {
 			assert(0);
 		}

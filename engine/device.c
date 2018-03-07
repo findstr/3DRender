@@ -372,10 +372,15 @@ device_draw(struct tri *p)
 
 	if (FCMP(x0, x1) && FCMP(x1, x2) || (FCMP(y0, y1) && FCMP(y1, y2)))
 		return ;
+#if 0
 	color[0] = RGBA(255, 0, 0, 255);
 	color[1] = RGBA(0, 255, 0, 255);
 	color[2] = RGBA(0, 0, 255, 255);
-
+#else
+	color[0] = p->light[0];
+	color[1] = p->light[1];
+	color[2] = p->light[2];
+#endif
 	//根据y坐标升序排p0, p1, p2
 	if (y1 < y0) {
 		SWAP(x0, x1, tmp);
