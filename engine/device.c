@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "driver.h"
-#include "device.h"
 #include "rgb.h"
+#include "bitmap.h"
+#include "device.h"
 
 struct device {
 	size_t width;
@@ -112,12 +113,15 @@ draw_line(int x1, int y1, int x2, int y2, int c)
 	}
 }
 
+static struct bitmap BITMAP;
+
 void
 device_init(size_t width, size_t height)
 {
 	DEV.width = width;
 	DEV.height = height;
 	DEV.frame = malloc(width * height * RGB_SIZE);
+	bitmap_load("resource/wall01.bmp", &BITMAP);
 	return ;
 }
 
@@ -356,7 +360,7 @@ draw_bottom(float x0, float y0, float x1, float y1, float x2, float y2, rgba_t c
 void
 device_draw(struct tri *p)
 {
-#if 1
+#if 0
 	int v0, v1, v2;
 	rgba_t color[3], tc;
 	float x0, x1, x2, y0, y1, y2, tmp;
@@ -446,6 +450,7 @@ device_draw(struct tri *p)
 	draw_bottom(x0, y0, x1, y1, x2, y2, color);
 	}
 #endif
+#if 0
 	{
 	rgba_t c = RGBA(255, 0, 0, 255);
 	int color[3];
@@ -459,7 +464,15 @@ device_draw(struct tri *p)
 	draw_line(x2, y2, x0, y0, c);
 	draw_top(x0, y0, x1, y1, x2, y2, color);
 	}
-
+#endif
+#if 1
+	int x, y;
+	rgba_t *ptr = BITMAP.buffer;
+	for (y = 0; y < BITMAP.info.height; y++) {
+		for (x = 0; x < BITMAP.info.width; x++)
+			draw_pixel(x, y, *ptr++);
+	}
+#endif
 
 #endif
 	return ;

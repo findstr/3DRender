@@ -30,7 +30,7 @@ light_create()
 #endif
 #if 1
 	l->type = LIGHT_DIRECTION;
-	l->diffuse = RGBA(128, 200, 60, 0);
+	l->diffuse = RGBA(255, 255, 255, 0);
 	vector4_init(&l->dir, 1, 0, 0);
 #endif
 #if 0

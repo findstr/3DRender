@@ -27,7 +27,6 @@ SRC=\
     driver/driver.c\
     math/mathlib.c\
     math/mathconst.c\
-    engine/plg.c\
     engine/transform.c\
     engine/camera.c\
     engine/engine.c\
@@ -35,6 +34,8 @@ SRC=\
     engine/matrial.c\
     engine/light.c\
     engine/primitive.c\
+    engine/bitmap.c\
+    engine/plg.c\
 
 main:$(SRC)
 	gcc $(INCLUDE) $(CFLAG) -o $@ $^ $(LDFLAG)
