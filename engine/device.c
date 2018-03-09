@@ -121,7 +121,7 @@ device_init(size_t width, size_t height)
 	DEV.width = width;
 	DEV.height = height;
 	DEV.frame = malloc(width * height * RGB_SIZE);
-	bitmap_load("resource/wall01.bmp", &BITMAP);
+	bitmap_load("resource/std.bmp", &BITMAP);
 	return ;
 }
 

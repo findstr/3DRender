@@ -35,7 +35,7 @@ bitmap_load(const char *name, struct bitmap *map)
 	buff = &buff[pixel] - map->info.width;
 	for (y = 0; y < map->info.height; y++) {
 		for (x = 0; x < map->info.width; x++) {
-			*buff++ = RGBA(ptr[0], ptr[1], ptr[2], 255);
+			*buff++ = RGBA(ptr[2], ptr[1], ptr[0], 255);
 			ptr += 3;
 		}
 		buff -= 2 * map->info.width;
