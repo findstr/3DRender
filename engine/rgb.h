@@ -28,6 +28,7 @@ static inline rgba_t rgb_clamp(rgba_t n)
 		return 255;
 	if (n < 0)
 		return 0;
+	return n;
 }
 
 static inline rgba_t rgba_add(rgba_t a, rgba_t b)

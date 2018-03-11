@@ -1,8 +1,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "driver.h"
 #include "rgb.h"
+#include "mathlib.h"
+#include "driver.h"
 #include "bitmap.h"
 #include "device.h"
 
@@ -50,7 +51,7 @@ draw_pixel(int x, int y, rgba_t color)
 		return ;
 	}
 	//OpenGL use the left-bottom as (0,0)
-	y = DEV.height - y;
+	y = DEV.height - y - 1;
 	ptr = DEV.frame + x * RGB_SIZE + y * DEV.width * RGB_SIZE;
 	*ptr++ = RGBA_R(color);
 	*ptr++ = RGBA_G(color);
@@ -357,6 +358,120 @@ draw_bottom(float x0, float y0, float x1, float y1, float x2, float y2, rgba_t c
 	return ;
 }
 
+struct render {
+	float ytop;
+	float ybottom;
+	float xleft;	//left
+	float xright;
+	float xlstep;
+	float xrstep;
+	vector2_t vrstep;
+	vector2_t tleft; //texture
+	vector2_t tright;
+	vector2_t tlstep;
+	vector2_t trstep;
+};
+
+static inline void
+top_texture(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct render *r)
+{
+	float h, width, height;
+	float u0, u1, u2, v0, v1, v2;
+	if (ver0->v.x > ver1->v.x) {
+		vertex_t *tmp;
+		SWAP(ver0, ver1, tmp);
+	}
+	width = BITMAP.info.width;
+	height = BITMAP.info.height;
+	r->ytop = ver0->v.y;
+	r->ybottom = ver2->v.y;
+	r->xleft = ver0->v.x;
+	r->xright = ver1->v.x;
+	h = ver2->v.y - ver0->v.y;
+	r->xlstep = (ver2->v.x - ver0->v.x) / h; //left
+	r->xrstep = (ver2->v.x - ver1->v.x) / h; //right
+	u0 = width * ver0->t.x; v0 = height * ver0->t.y;
+	u1 = width * ver1->t.x; v1 = height * ver1->t.y;
+	u2 = width * ver2->t.x; v2 = height * ver2->t.y;
+	r->tleft.x = u0; r->tleft.y = v0;
+	r->tright.x = u1; r->tright.y = v1;
+	r->tlstep.x = (u2 - u0) / h;
+	r->tlstep.y = (v2 - v0) / h;
+	r->trstep.x = (u2 - u1) / h;
+	r->trstep.y = (v2 - v1) / h;
+	return ;
+}
+
+static inline void
+bottom_texture(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct render *r)
+{
+	float h, width, height;
+	float u0, u1, u2, v0, v1, v2;
+	if (ver1->v.x > ver2->v.x) {
+		vertex_t *tmp;
+		SWAP(ver1, ver2, tmp);
+	}
+	width = BITMAP.info.width;
+	height = BITMAP.info.height;
+	r->ytop = ver0->v.y;
+	r->ybottom = ver2->v.y;
+	r->xleft = ver0->v.x;
+	r->xright = ver0->v.x;
+	h = ver2->v.y - ver0->v.y;
+	r->xlstep = (ver1->v.x - ver0->v.x) / h; //left
+	r->xrstep = (ver2->v.x - ver0->v.x) / h; //right
+	u0 = width * ver0->t.x; v0 = height * ver0->t.y;
+	u1 = width * ver1->t.x; v1 = height * ver1->t.y;
+	u2 = width * ver2->t.x; v2 = height * ver2->t.y;
+	r->tleft.x = u0; r->tleft.y = v0;
+	r->tright.x = u0; r->tright.y = v0;
+	r->tlstep.x = (u1 - u0) / h;
+	r->tlstep.y = (v1 - v0) / h;
+	r->trstep.x = (u2 - u0) / h;
+	r->trstep.y = (v2 - v0) / h;
+	return ;
+}
+
+static inline void
+render_texture(struct render *r)
+{
+	float x, y;
+	rgba_t *color = BITMAP.buffer;
+	int widthn = BITMAP.info.width;
+	float xstart = r->xleft, xend = r->xright;
+	float ustart = r->tleft.x, vstart = r->tleft.y;
+	float uend = r->tright.x, vend = r->tright.y;
+	float dl_x = r->xlstep, dr_x = r->xrstep;
+	float dl_u = r->tlstep.x, dl_v = r->tlstep.y;
+	float dr_u = r->trstep.x, dr_v = r->trstep.y;
+	for (y = ceil(r->ytop); y < ceil(r->ybottom); y++) {
+		float du, dv, u, v;
+		float dx = xend - xstart;
+		if (dx > 0) {
+			du = (uend - ustart) / dx;
+			dv = (vend - vstart) / dx;
+		} else {
+			du = uend - ustart;
+			dv = vend - vstart;
+		}
+		u = ustart; v = vstart;
+		for (x = xstart; x < xend; x++) {
+			assert(v >= 0);
+			assert(u >= 0);
+			int uu, vv;
+			uu = u; vv = v;
+			draw_pixel(x, y, color[vv * widthn + uu]);
+			u += du; v += dv;
+		}
+		xstart += dl_x;
+		xend += dr_x;
+		ustart += dl_u; uend += dr_u;
+		vstart += dl_v; vend += dr_v;
+	}
+	return ;
+
+}
+
 void
 device_draw(struct tri *p)
 {
@@ -465,7 +580,7 @@ device_draw(struct tri *p)
 	draw_top(x0, y0, x1, y1, x2, y2, color);
 	}
 #endif
-#if 1
+#if 0
 	int x, y;
 	rgba_t *ptr = BITMAP.buffer;
 	for (y = 0; y < BITMAP.info.height; y++) {
@@ -473,6 +588,55 @@ device_draw(struct tri *p)
 			draw_pixel(x, y, *ptr++);
 	}
 #endif
+#if 0
+	{
+	int color[3];
+	vertex_t v[3];
+	struct render r;
+	rgba_t c = RGBA(255, 0, 0, 255);
+	float x0, y0, x1, y1, x2, y2;
+	color[0] = RGBA(255, 0, 0, 255);
+	color[1] = RGBA(0, 255, 0, 255);
+	color[2] = RGBA(0, 0, 255, 255);
+	vector3_init(&v[0].v, 300.f, 0.f, 0.f);
+	vector3_init(&v[1].v, 0.f, 300.f, 0.f);
+	vector3_init(&v[2].v, 600.f, 300.f, 0.f);
+	vector2_init(&v[0].t, 0.5f, 0.f);
+	vector2_init(&v[1].t, 0.f, 0.5f);
+	vector2_init(&v[2].t, 1.f, 0.5f);
+
+	draw_line(v[0].v.x, v[0].v.y, v[1].v.x, v[1].v.y, c);
+	draw_line(v[2].v.x, v[2].v.y, v[1].v.x, v[1].v.y, c);
+	draw_line(v[2].v.x, v[2].v.y, v[0].v.x, v[0].v.y, c);
+	bottom_texture(&v[0], &v[1], &v[2], &r);
+	render_texture(&r);
+	}
+#endif
+#if 1
+	{
+	int color[3];
+	vertex_t v[3];
+	struct render r;
+	rgba_t c = RGBA(255, 0, 0, 255);
+	float x0, y0, x1, y1, x2, y2;
+	color[0] = RGBA(255, 0, 0, 255);
+	color[1] = RGBA(0, 255, 0, 255);
+	color[2] = RGBA(0, 0, 255, 255);
+	vector3_init(&v[0].v, 0.f, 0.f, 0.f);
+	vector3_init(&v[1].v, 600.f, 0.f, 0.f);
+	vector3_init(&v[2].v, 300.f, 300.f, 0.f);
+	vector2_init(&v[0].t, 0.f, 0.f);
+	vector2_init(&v[1].t, 1.f, 0.f);
+	vector2_init(&v[2].t, 0.5f, 0.5f);
+
+	draw_line(v[0].v.x, v[0].v.y, v[1].v.x, v[1].v.y, c);
+	draw_line(v[2].v.x, v[2].v.y, v[1].v.x, v[1].v.y, c);
+	draw_line(v[2].v.x, v[2].v.y, v[0].v.x, v[0].v.y, c);
+	top_texture(&v[0], &v[1], &v[2], &r);
+	render_texture(&r);
+	}
+#endif
+
 
 #endif
 	return ;
