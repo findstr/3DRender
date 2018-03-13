@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "rgb.h"
 #include "mathlib.h"
 #include "driver.h"
@@ -8,14 +9,16 @@
 #include "device.h"
 
 struct device {
-	size_t width;
-	size_t height;
+	int width;
+	int height;
 	uint8_t *frame;
 };
 
 static struct device DEV;
 
-static int
+#ifndef min
+
+static inline int
 min(int a, int b, int c)
 {
 	int r = a;
@@ -25,6 +28,10 @@ min(int a, int b, int c)
 		r = c;
 	return r;
 }
+#endif
+
+
+#ifndef max
 
 static int
 max(int a, int b, int c)
@@ -36,6 +43,8 @@ max(int a, int b, int c)
 		r = c;
 	return r;
 }
+
+#endif
 
 
 static void
@@ -365,7 +374,6 @@ struct render {
 	float xright;
 	float xlstep;
 	float xrstep;
-	vector2_t vrstep;
 	vector2_t tleft; //texture
 	vector2_t tright;
 	vector2_t tlstep;
@@ -456,10 +464,10 @@ render_texture(struct render *r)
 		}
 		u = ustart; v = vstart;
 		for (x = xstart; x < xend; x++) {
-			assert(v >= 0);
-			assert(u >= 0);
 			int uu, vv;
 			uu = u; vv = v;
+			assert(uu >= 0);
+			assert(vv >= 0);
 			draw_pixel(x, y, color[vv * widthn + uu]);
 			u += du; v += dv;
 		}
@@ -475,79 +483,59 @@ render_texture(struct render *r)
 void
 device_draw(struct tri *p)
 {
-#if 0
-	int v0, v1, v2;
+#if 1
+	struct render r;
 	rgba_t color[3], tc;
-	float x0, x1, x2, y0, y1, y2, tmp;
-	vector4_t *vec0, *vec1, *vec2;
-	v0 = p->vert[0];
-	v1 = p->vert[1];
-	v2 = p->vert[2];
-	vec0 = &p->vlist[v0].v;
-	vec1 = &p->vlist[v1].v;
-	vec2 = &p->vlist[v2].v;
-	x0 = vec0->x; x1 = vec1->x; x2 = vec2->x;
-	y0 = vec0->y; y1 = vec1->y; y2 = vec2->y;
+	vertex_t *ver0, *ver1, *ver2;
+	ver0= &p->vlist[p->vert[0]];
+	ver1 = &p->vlist[p->vert[1]];
+	ver2 = &p->vlist[p->vert[2]];
 
-	if (FCMP(x0, x1) && FCMP(x1, x2) || (FCMP(y0, y1) && FCMP(y1, y2)))
+	if (FCMP(ver0->v.x, ver1->v.x) && FCMP(ver1->v.x, ver2->v.x) || (FCMP(ver0->v.y, ver1->v.y) && FCMP(ver1->v.y, ver2->v.y)))
 		return ;
-#if 0
-	color[0] = RGBA(255, 0, 0, 255);
-	color[1] = RGBA(0, 255, 0, 255);
-	color[2] = RGBA(0, 0, 255, 255);
-#else
-	color[0] = p->light[0];
-	color[1] = p->light[1];
-	color[2] = p->light[2];
-#endif
+	/********
+	ver0->t.x = 0.f;
+	ver0->t.y = 0.f;
+	ver1->t.x = 1.f;
+	ver1->t.y = 0.f;
+	ver2->t.x = 0.f;
+	ver2->t.y = 1.f;
+	*/
 	//根据y坐标升序排p0, p1, p2
-	if (y1 < y0) {
-		SWAP(x0, x1, tmp);
-		SWAP(y0, y1, tmp);
-		SWAP(color[0], color[1], tc);
+	if (ver1->v.y < ver0->v.y) {
+		vertex_t *tmp;
+		SWAP(ver0, ver1, tmp);
 	}
 	//此时p0 < p1
-	if (y2 < y1) {
-		SWAP(x2, x1, tmp);
-		SWAP(y2, y1, tmp);
-		SWAP(color[2], color[1], tc);
-		if (y1 < y0) {
-			SWAP(x0, x1, tmp);
-			SWAP(y0, y1, tmp);
-			SWAP(color[0], color[1], tc);
-		}
+	if (ver2->v.y < ver1->v.y) {
+		vertex_t *tmp;
+		SWAP(ver2, ver1, tmp);
+		if (ver1->v.y < ver0->v.y)
+			SWAP(ver0, ver1, tmp);
 	}
-	assert(y0 <= y1);
-	assert(y1 <= y2);
-	if (FCMP(y0, y1)) {
-		draw_top(x0, y0, x1, y1, x2, y2, color);
-	} else if (FCMP(y1, y2)) {
-		draw_bottom(x0, y0, x1, y1, x2, y2, color);
+	assert(ver0->v.y <= ver1->v.y);
+	assert(ver1->v.y <= ver2->v.y);
+	if (FCMP(ver0->v.y, ver1->v.y)) {
+		top_texture(ver0, ver1, ver2, &r);
+		render_texture(&r);
+	} else if (FCMP(ver1->v.y, ver2->v.y)) {
+		bottom_texture(ver0, ver1, ver2, &r);
+		render_texture(&r);
 	} else {
-		int newcolor[3];
-		float r1, g1, b1, r2, g2, b2;
-		float h = y2 - y0;
-		float newh = y1 - y0;
-		float newx = x0 + newh * (x2 - x0) / h;
-		r1 = RGBA_R(color[0]);
-		g1 = RGBA_G(color[0]);
-		b1 = RGBA_B(color[0]);
-
-		r2 = RGBA_R(color[2]);
-		g2 = RGBA_G(color[2]);
-		b2 = RGBA_B(color[2]);
-
-		r1 += newh * (r2 - r1) / h;
-		g1 += newh * (g2 - g1) / h;
-		b1 += newh * (b2 - b1) / h;
-		newcolor[0] = color[0];
-		newcolor[1] = RGBA(r1, g1, b1, 255);
-		newcolor[2] = color[1];
-		draw_bottom(x0, y0, newx, y1, x1, y1, newcolor);
-		newcolor[0] = RGBA(r1, g1, b1, 255);
-		newcolor[1] = color[1];
-		newcolor[2] = color[2];
-		draw_top(newx, y1, x1, y1, x2, y2, newcolor);
+		vertex_t medium;
+		float h = ver2->v.y - ver0->v.y;
+		float newh = ver1->v.y - ver0->v.y;
+		float newx = ver0->v.x + newh * (ver2->v.x - ver0->v.x) / h;
+		float newu = ver0->t.x + newh * (ver2->t.x - ver0->t.x) / h;
+		float newv = ver0->t.y + newh * (ver2->t.y - ver0->t.y) / h;
+		medium.v.x = newx;
+		medium.v.y = ver1->v.y;
+		medium.t.x = newu;
+		medium.t.y = newv;
+		bottom_texture(ver0, &medium, ver1, &r);
+		render_texture(&r);
+		top_texture(&medium, ver1, ver2, &r);
+		render_texture(&r);
 	}
 #else
 #if 0
@@ -612,7 +600,7 @@ device_draw(struct tri *p)
 	render_texture(&r);
 	}
 #endif
-#if 1
+#if 0
 	{
 	int color[3];
 	vertex_t v[3];

@@ -1,6 +1,7 @@
 #include <math.h>
 #include "mathlib.h"
 #include "driver.h"
+#include "primitive.h"
 #include "transform.h"
 #include "camera.h"
 

@@ -12,6 +12,8 @@
 
 typedef int rgba_t;
 
+#define inline __inline
+
 static inline rgba_t rgb_max(rgba_t n)
 {
 	return n > 255 ? 255 : n;
@@ -49,19 +51,19 @@ static inline rgba_t rgba_sub(rgba_t a, rgba_t b)
 
 static inline rgba_t rgba_mul(rgba_t rgba, float factor)
 {
-	int r = RGBA_R(rgba) * factor;
-	int g = RGBA_G(rgba) * factor;
-	int b = RGBA_B(rgba) * factor;
-	int a = RGBA_A(rgba) * factor;
+	int r = (int)(RGBA_R(rgba) * factor);
+	int g = (int)(RGBA_G(rgba) * factor);
+	int b = (int)(RGBA_B(rgba) * factor);
+	int a = (int)(RGBA_A(rgba) * factor);
 	return RGBA(r, g, b, a);
 }
 
 static inline rgba_t rgba_div(rgba_t rgba, float factor)
 {
-	int r = RGBA_R(rgba) / factor;
-	int g = RGBA_G(rgba) / factor;
-	int b = RGBA_B(rgba) / factor;
-	int a = RGBA_A(rgba) / factor;
+	int r = (int)(RGBA_R(rgba) / factor);
+	int g = (int)(RGBA_G(rgba) / factor);
+	int b = (int)(RGBA_B(rgba) / factor);
+	int a = (int)(RGBA_A(rgba) / factor);
 	return RGBA(r, g, b, a);
 }
 

@@ -1,22 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include "mathlib.h"
+#include "primitive.h"
 #include "light.h"
 
-/*
-struct light {
-	int type;
-	rgba_t ambient;	//环境光强度
-	rgba_t diffuse; //漫反射光强度
-	rgba_t specular;//镜面反射光强度
-	vector4_t pos;	//光源位置
-	vector4_t dir;	//光源方向
-	float kc, kl, kq;//衰减因子
-	float spot_inner;//聚光灯内锥角
-	float spot_outer;//聚光灯外锥角
-	float pf;	 //聚光灯指数因子
-};
-*/
 struct light *L;
 
 struct light*
@@ -55,13 +42,13 @@ light_tri(struct tri *p)
 	vector4_t u,v,d;
 	vertex_t *v0, *v1, *v2;
 	vertex_t *vlist = p->vlist;
-	unsigned int r_base[3], g_base[3], b_base[3],	//原来的颜色
-		r_sum[3], g_sum[3], b_sum[3];	//全部光源的总体光照效果
-	float dp,	//点积
-		dist,	//表面和光源的距离
-		i,	//强度
-		nl,	//法线长度
-		atten;	//衰减计算结果
+	unsigned int r_base[3], g_base[3], b_base[3],	//ԭ������ɫ
+		r_sum[3], g_sum[3], b_sum[3];	//ȫ����Դ���������Ч��
+	float dp,	//���
+		dist,	//����͹�Դ�ľ���
+		i,	//ǿ��
+		nl,	//���߳���
+		atten;	//˥��������
 	r_base[0] = RGBA_R(p->color[0]);
 	g_base[0] = RGBA_G(p->color[0]);
 	b_base[0] = RGBA_B(p->color[0]);

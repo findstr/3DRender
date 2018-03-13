@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include "driver.h"
@@ -45,6 +46,9 @@ model2world(struct object *obj)
 		vector4_mul_quaternion(&src[i].v, &trans->rot, &dst[i].v);
 		vector4_mul_quaternion(&src[i].n, &trans->rot, &dst[i].n);
 		vector4_add(&dst[i].v, &trans->pos, &dst[i].v);
+		dst[i].t = src[i].t;
+		assert(dst[i].t.x <= 1.0f);
+		assert(dst[i].t.y <= 1.0f);
 	}
 	for (i = 0; i < obj->tri_num; i++) {
 		struct tri *p = &obj->plist[i];

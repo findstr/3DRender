@@ -7,8 +7,8 @@
 #include "rgb.h"
 #include "plg.h"
 
-//#define DBG_PRINT	printf
-void DBG_PRINT(const char *p, ...) {}
+#define DBG_PRINT	printf
+//void DBG_PRINT(const char *p, ...) {}
 
 #define PLX_RGB_MASK          0x8000
 #define PLX_SHADE_MODE_MASK   0x6000
@@ -56,7 +56,7 @@ compute_radius(struct object *obj)
 		float x = obj->vlist_local[i].v.x;
 		float y = obj->vlist_local[i].v.y;
 		float z = obj->vlist_local[i].v.z;
-		float dis = sqrt(x * x + y * y + z * z);
+		float dis = (float)sqrt(x * x + y * y + z * z);
 		obj->radius_avg += dis;
 		if (dis > obj->radius_max)
 			obj->radius_max = dis;
@@ -85,32 +85,33 @@ int plg_load(struct object *obj, const char *filename,
 	sscanf(str, "%s %d %d", obj->name, &obj->vertices_num, &obj->tri_num);
 	object_init(obj);
 	for (i = 0; i < obj->vertices_num; i++) {
-		char xa[10], ya[10], za[10];
+		char xa[10], ya[10], za[10], ua[10], va[10];
 		str = nextline(fp, buff, sizeof(buff));
 		if (str == NULL) {
 			DBG_PRINT("PLG file error with file %s (vertex list invalid).",filename);
 			return -1;
 		}
+		sscanf(str, "%s %s %s %s %s", xa, ya, za, ua, va);
 		DBG_PRINT("%s", str);
-		sscanf(str, "%s %s %s", xa, ya, za);
 		obj->vlist_local[i].v.x = atoi(xa);
                 obj->vlist_local[i].v.y = atoi(ya);
 		obj->vlist_local[i].v.z = atoi(za);
 		obj->vlist_local[i].v.w = 1;
+		obj->vlist_local[i].t.x = atof(ua);
+		obj->vlist_local[i].t.y = atof(va);
 
 		obj->vlist_local[i].v.x*=scale->x;
 		obj->vlist_local[i].v.y*=scale->y;
 		obj->vlist_local[i].v.z*=scale->z;
 
-		DBG_PRINT("%s-%s %f-%f\n", xa, ya, obj->vlist_local[i].v.x,
-                scale->x);
-
-
-		DBG_PRINT("\nVertex %d = %f, %f, %f, %f\n", i,
+		DBG_PRINT("\nVertex %d = %f, %f, %f, %f %f %f\n", i,
                                            obj->vlist_local[i].v.x,
                                            obj->vlist_local[i].v.y,
                                            obj->vlist_local[i].v.z,
-                                           obj->vlist_local[i].v.w);
+                                           obj->vlist_local[i].v.w,
+                                           obj->vlist_local[i].t.x,
+                                           obj->vlist_local[i].t.y
+					   );
 	}
 	compute_radius(obj);
 	DBG_PRINT("\nObject average radius = %f, max radius = %f",

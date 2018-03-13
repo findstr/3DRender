@@ -4,10 +4,15 @@
 #include <stdint.h>
 #ifdef __APPLE__
 #include <OPENGL/gl.h>
-#else
-#include <gl/gl.h>
-#endif
 #include <glut/glut.h>
+#elif mingw
+#include <gl/gl.h>
+#include <glut/glut.h>
+#else
+#include <Windows.h>
+#include <gl/gl.h>
+#include "glut.h"
+#endif
 
 #include "driver.h"
 

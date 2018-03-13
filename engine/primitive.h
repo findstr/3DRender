@@ -1,5 +1,5 @@
-#ifndef _SHAPE_H
-#define _SHAPE_H
+#ifndef _PRIMITIVE_H
+#define _PRIMITIVE_H
 
 #include "mathlib.h"
 #include "rgb.h"
@@ -63,7 +63,7 @@ struct object {
 	int vertices_num;
 	vertex_t *vlist_local;
 	vertex_t *vlist_trans;
-	vertex_t *vlist_local_head;;
+	vertex_t *vlist_local_head;
 	vertex_t *vlist_trans_head;
 
 

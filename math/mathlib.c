@@ -19,7 +19,7 @@ mathlib_init()
 	return ;
 }
 
-static inline float
+static __inline float
 fast_do(float theta, const float *table)
 {
 	int i,f;

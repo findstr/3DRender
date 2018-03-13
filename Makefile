@@ -18,6 +18,8 @@ macosx:CFLAG+=-framework OpenGL -framework GLUT -Wno-deprecated-declarations
 
 win:LDFLAG+=-lopengl32 -lglu32 -lgdi32 -lglut32
 
+win:CFLAG+=-Dmingw
+
 macosx win:all
 
 all:main
