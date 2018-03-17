@@ -1,7 +1,7 @@
 # begin plg/plx file
 
 # define PLX_COLOR_MODE_RGB_FLAG     0x8000   // this poly uses RGB color
-# define PLX_COLOR_MODE_INDEXED_FLAG 0x0000   // this poly uses an indexed 8-bit color
+# define PLX_COLOR_MODE_INDEXED_FLAG 0x0000   // this poly uses an indexed 8-bit color 
 # define PLX_2SIDED_FLAG              0x1000   // this poly is double sided
 # define PLX_1SIDED_FLAG              0x0000   // this poly is single sided
 # define PLX_SHADE_MODE_PURE_FLAG      0x0000  // this poly is a constant color
@@ -12,69 +12,33 @@
 # define PLX_SHADE_MODE_FASTPHONG_FLAG 0x6000  // this poly uses phong shading (alias)
 
 # simple cube
-tri 32 12
+tri 8 12   
 
-# vertex list
- 5  5 5		1.0	1.0
--5  5 5		0.0	1.0
--5  5 -5	0.0	1.0
- 5  5 -5	1.0	1.0
- 5 -5 5		1.0	0.0
--5 -5 5		0.0	0.0
--5 -5 -5	0.0	0.0
- 5 -5 -5	1.0	0.0
+# vertex list 
+ 5  5 5
+-5  5 5
+-5  5 -5
+ 5  5 -5
+ 5 -5 5
+-5 -5 5
+-5 -5 -5
+ 5 -5 -5
 
-
-#8 top
- 5  5 5		1.0	1.0
--5  5 5		0.0	1.0
--5  5 -5	0.0	0.0
- 5  5 -5	1.0	0.0
-#12 right
- 5  5 5		1.0	1.0
- 5  5 -5	1.0	0.0
- 5 -5 5		0.0	1.0
- 5 -5 -5	0.0	0.0
-#16 bottom
- 5 -5 5		1.0	1.0
--5 -5 5		0.0	1.0
--5 -5 -5	0.0	0.0
- 5 -5 -5	1.0	0.0
-#20 left
--5  5 5		1.0	1.0
--5  5 -5	1.0	0.0
--5 -5 5		0.0	1.0
--5 -5 -5	0.0	0.0
-#24 front
--5  5 -5	0.0	1.0
- 5  5 -5	1.0	1.0
--5 -5 -5	0.0	0.0
- 5 -5 -5	1.0	0.0
-#28
- 5  5 5		1.0	1.0
--5  5 5		0.0	1.0
- 5 -5 5		1.0	0.0
--5 -5 5		0.0	0.0
 
 # polygon list
-#top
-0xd0f0 3 10 9 8
-0xd0f0 3 11 10 8
-#right
-0xd0f0 3 14 15 12
-0xd0f0 3 15 13 12
-#bottom
-0xd0f0 3 18 19 16
-0xd0f0 3 17 18 16
-#left
-0xd0f0 3 21 23 20
-0xd0f0 3 23 22 20
-#front
-0xd0f0 3 27 26 25
-0xd0f0 3 26 24 25
-#back
-0xd0f0 3 31 30 28
-0xd0f0 3 29 31 28
+
+0xd0f0 3 2 1 0 
+0xd0f0 3 3 2 0
+0xd0f0 3 4 7 0 
+0xd0f0 3 7 3 0
+0xd0f0 3 6 7 4 
+0xd0f0 3 5 6 4
+0xd0f0 3 2 6 1 
+0xd0f0 3 6 5 1
+0xd0f0 3 7 6 3 
+0xd0f0 3 6 2 3
+0xd0f0 3 5 4 0 
+0xd0f0 3 1 5 0 
 
 # end plg/plx file
 

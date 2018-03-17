@@ -60,6 +60,7 @@ draw_pixel(int x, int y, rgba_t color)
 		return ;
 	}
 	//OpenGL use the left-bottom as (0,0)
+	//printf("draw pixel:%d %d\n", x, y);
 	y = DEV.height - y - 1;
 	ptr = DEV.frame + x * RGB_SIZE + y * DEV.width * RGB_SIZE;
 	*ptr++ = RGBA_R(color);
@@ -70,7 +71,7 @@ draw_pixel(int x, int y, rgba_t color)
 
 
 
-static void
+void
 draw_line(int x1, int y1, int x2, int y2, int c)
 {
 	int x, y, rem = 0;
@@ -131,7 +132,7 @@ device_init(size_t width, size_t height)
 	DEV.width = width;
 	DEV.height = height;
 	DEV.frame = malloc(width * height * RGB_SIZE);
-	bitmap_load("resource/std.bmp", &BITMAP);
+	bitmap_load("resource/wall01.bmp", &BITMAP);
 	return ;
 }
 
@@ -151,6 +152,27 @@ device_clear()
 void
 device_flip()
 {
+#if 0
+	int x, y;
+	const uint8_t *ptr = &DEV.frame[DEV.width * DEV.height * RGB_SIZE];
+	printf("width:%d height:%d\n", DEV.width, DEV.height);
+	for (y = DEV.height - 1; y >= 0; y--) {
+		printf("height:%d \n", DEV.height - y - 1);
+		ptr -= DEV.width * RGB_SIZE;
+		for (x = 0; x < DEV.width; x++) {
+			if (x < 500) {
+				if (ptr[0] || ptr[1] || ptr[2])
+					printf("1");
+				else
+					printf("0");
+			}
+			ptr += RGB_SIZE;
+		}
+		ptr -= DEV.width * RGB_SIZE;
+		printf("\n");
+	}
+	exit(0);
+#endif
 	driver_draw(DEV.frame, DEV.width, DEV.height);
 }
 
@@ -443,7 +465,7 @@ bottom_texture(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct render *r)
 static inline void
 render_texture(struct render *r)
 {
-	float x, y;
+	int x, y;
 	rgba_t *color = BITMAP.buffer;
 	int widthn = BITMAP.info.width;
 	float xstart = r->xleft, xend = r->xright;
@@ -452,7 +474,9 @@ render_texture(struct render *r)
 	float dl_x = r->xlstep, dr_x = r->xrstep;
 	float dl_u = r->tlstep.x, dl_v = r->tlstep.y;
 	float dr_u = r->trstep.x, dr_v = r->trstep.y;
-	for (y = ceil(r->ytop); y < ceil(r->ybottom); y++) {
+	xstart += (1 - r->ytop + (int)r->ytop) * dl_x;
+	xend += (1 - r->ytop + (int)r->ytop) * dr_x;
+	for (y = (int)r->ytop + 1; y < (int)r->ybottom + 1; y++) {
 		float du, dv, u, v;
 		float dx = xend - xstart;
 		if (dx > 0) {
@@ -463,12 +487,14 @@ render_texture(struct render *r)
 			dv = vend - vstart;
 		}
 		u = ustart; v = vstart;
-		for (x = xstart; x < xend; x++) {
+		for (x = (int)xstart + 1; x < (int)xend + 1; x++) {
 			int uu, vv;
 			uu = u; vv = v;
 			assert(uu >= 0);
 			assert(vv >= 0);
+			printf("%d-%d\n", uu, vv);
 			draw_pixel(x, y, color[vv * widthn + uu]);
+			//draw_pixel(x, y, RGBA(0xff, 0x0, 0x0, 0xff));
 			u += du; v += dv;
 		}
 		xstart += dl_x;
@@ -480,6 +506,8 @@ render_texture(struct render *r)
 
 }
 
+static int debug = 0;
+
 void
 device_draw(struct tri *p)
 {
@@ -490,8 +518,13 @@ device_draw(struct tri *p)
 	ver0= &p->vlist[p->vert[0]];
 	ver1 = &p->vlist[p->vert[1]];
 	ver2 = &p->vlist[p->vert[2]];
-
-	if (FCMP(ver0->v.x, ver1->v.x) && FCMP(ver1->v.x, ver2->v.x) || (FCMP(ver0->v.y, ver1->v.y) && FCMP(ver1->v.y, ver2->v.y)))
+/*
+	printf("tri ver0:%p x0:%f y0:%f, ver1:%p x1:%f y1:%f, ver2:%p x2:%f y2:%f\n",
+			ver0, ver0->v.x, ver0->v.y,
+			ver1, ver1->v.x, ver1->v.y,
+			ver2, ver2->v.x, ver2->v.y);
+*/
+	if ((FCMP(ver0->v.x, ver1->v.x) && FCMP(ver1->v.x, ver2->v.x)) || ((FCMP(ver0->v.y, ver1->v.y) && FCMP(ver1->v.y, ver2->v.y))))
 		return ;
 	/********
 	ver0->t.x = 0.f;
@@ -522,20 +555,29 @@ device_draw(struct tri *p)
 		bottom_texture(ver0, ver1, ver2, &r);
 		render_texture(&r);
 	} else {
-		vertex_t medium;
-		float h = ver2->v.y - ver0->v.y;
-		float newh = ver1->v.y - ver0->v.y;
-		float newx = ver0->v.x + newh * (ver2->v.x - ver0->v.x) / h;
-		float newu = ver0->t.x + newh * (ver2->t.x - ver0->t.x) / h;
-		float newv = ver0->t.y + newh * (ver2->t.y - ver0->t.y) / h;
-		medium.v.x = newx;
-		medium.v.y = ver1->v.y;
-		medium.t.x = newu;
-		medium.t.y = newv;
-		bottom_texture(ver0, &medium, ver1, &r);
-		render_texture(&r);
-		top_texture(&medium, ver1, ver2, &r);
-		render_texture(&r);
+		if (debug == 0) {
+			debug = 0;
+			vertex_t medium;
+			float h = ver2->v.y - ver0->v.y;
+			float newh = ver1->v.y - ver0->v.y;
+			float newx = ver0->v.x + newh * (ver2->v.x - ver0->v.x) / h;
+			float newu = ver0->t.x + newh * (ver2->t.x - ver0->t.x) / h;
+			float newv = ver0->t.y + newh * (ver2->t.y - ver0->t.y) / h;
+			medium.v.x = newx;
+			medium.v.y = ver1->v.y;
+			medium.t.x = newu;
+			medium.t.y = newv;
+			bottom_texture(ver0, &medium, ver1, &r);
+			render_texture(&r);
+			top_texture(&medium, ver1, ver2, &r);
+			render_texture(&r);
+		} else {
+			debug = 1;
+			vertex_t medium = *ver0;
+			medium.v.x = ver2->v.x;
+			top_texture(&medium, ver0, ver2, &r);
+			render_texture(&r);
+		}
 	}
 #else
 #if 0
