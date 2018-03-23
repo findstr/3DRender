@@ -63,7 +63,7 @@ draw(struct object *obj)
 	struct tri *p = obj->rlist;
 	while (p) {
 		p->vlist = obj->vlist_trans;
-		device_drawframe(p);
+		//device_drawframe(p);
 		device_draw(p);
 		p = p->next;
 	}

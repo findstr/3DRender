@@ -492,7 +492,6 @@ render_texture(struct render *r)
 			uu = u; vv = v;
 			assert(uu >= 0);
 			assert(vv >= 0);
-			printf("%d-%d\n", uu, vv);
 			draw_pixel(x, y, color[vv * widthn + uu]);
 			//draw_pixel(x, y, RGBA(0xff, 0x0, 0x0, 0xff));
 			u += du; v += dv;
@@ -505,8 +504,6 @@ render_texture(struct render *r)
 	return ;
 
 }
-
-static int debug = 0;
 
 void
 device_draw(struct tri *p)
@@ -555,29 +552,20 @@ device_draw(struct tri *p)
 		bottom_texture(ver0, ver1, ver2, &r);
 		render_texture(&r);
 	} else {
-		if (debug == 0) {
-			debug = 0;
-			vertex_t medium;
-			float h = ver2->v.y - ver0->v.y;
-			float newh = ver1->v.y - ver0->v.y;
-			float newx = ver0->v.x + newh * (ver2->v.x - ver0->v.x) / h;
-			float newu = ver0->t.x + newh * (ver2->t.x - ver0->t.x) / h;
-			float newv = ver0->t.y + newh * (ver2->t.y - ver0->t.y) / h;
-			medium.v.x = newx;
-			medium.v.y = ver1->v.y;
-			medium.t.x = newu;
-			medium.t.y = newv;
-			bottom_texture(ver0, &medium, ver1, &r);
-			render_texture(&r);
-			top_texture(&medium, ver1, ver2, &r);
-			render_texture(&r);
-		} else {
-			debug = 1;
-			vertex_t medium = *ver0;
-			medium.v.x = ver2->v.x;
-			top_texture(&medium, ver0, ver2, &r);
-			render_texture(&r);
-		}
+		vertex_t medium;
+		float h = ver2->v.y - ver0->v.y;
+		float newh = ver1->v.y - ver0->v.y;
+		float newx = ver0->v.x + newh * (ver2->v.x - ver0->v.x) / h;
+		float newu = ver0->t.x + newh * (ver2->t.x - ver0->t.x) / h;
+		float newv = ver0->t.y + newh * (ver2->t.y - ver0->t.y) / h;
+		medium.v.x = newx;
+		medium.v.y = ver1->v.y;
+		medium.t.x = newu;
+		medium.t.y = newv;
+		bottom_texture(ver0, &medium, ver1, &r);
+		render_texture(&r);
+		top_texture(&medium, ver1, ver2, &r);
+		render_texture(&r);
 	}
 #else
 #if 0
