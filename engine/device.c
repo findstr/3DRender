@@ -152,27 +152,6 @@ device_clear()
 void
 device_flip()
 {
-#if 0
-	int x, y;
-	const uint8_t *ptr = &DEV.frame[DEV.width * DEV.height * RGB_SIZE];
-	printf("width:%d height:%d\n", DEV.width, DEV.height);
-	for (y = DEV.height - 1; y >= 0; y--) {
-		printf("height:%d \n", DEV.height - y - 1);
-		ptr -= DEV.width * RGB_SIZE;
-		for (x = 0; x < DEV.width; x++) {
-			if (x < 500) {
-				if (ptr[0] || ptr[1] || ptr[2])
-					printf("1");
-				else
-					printf("0");
-			}
-			ptr += RGB_SIZE;
-		}
-		ptr -= DEV.width * RGB_SIZE;
-		printf("\n");
-	}
-	exit(0);
-#endif
 	driver_draw(DEV.frame, DEV.width, DEV.height);
 }
 
@@ -411,8 +390,8 @@ top_texture(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct render *r)
 		vertex_t *tmp;
 		SWAP(ver0, ver1, tmp);
 	}
-	width = BITMAP.info.width;
-	height = BITMAP.info.height;
+	width = BITMAP.info.width - 1;
+	height = BITMAP.info.height - 1;
 	r->ytop = ver0->v.y;
 	r->ybottom = ver2->v.y;
 	r->xleft = ver0->v.x;
@@ -441,8 +420,8 @@ bottom_texture(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct render *r)
 		vertex_t *tmp;
 		SWAP(ver1, ver2, tmp);
 	}
-	width = BITMAP.info.width;
-	height = BITMAP.info.height;
+	width = BITMAP.info.width - 1;
+	height = BITMAP.info.height - 1;
 	r->ytop = ver0->v.y;
 	r->ybottom = ver2->v.y;
 	r->xleft = ver0->v.x;
@@ -467,6 +446,7 @@ render_texture(struct render *r)
 {
 	int x, y;
 	rgba_t *color = BITMAP.buffer;
+	int heightn = BITMAP.info.height;
 	int widthn = BITMAP.info.width;
 	float xstart = r->xleft, xend = r->xright;
 	float ustart = r->tleft.x, vstart = r->tleft.y;
@@ -474,9 +454,12 @@ render_texture(struct render *r)
 	float dl_x = r->xlstep, dr_x = r->xrstep;
 	float dl_u = r->tlstep.x, dl_v = r->tlstep.y;
 	float dr_u = r->trstep.x, dr_v = r->trstep.y;
-	xstart += (1 - r->ytop + (int)r->ytop) * dl_x;
-	xend += (1 - r->ytop + (int)r->ytop) * dr_x;
-	for (y = (int)r->ytop + 1; y < (int)r->ybottom + 1; y++) {
+	float delta_y = ceil(r->ytop) - r->ytop;
+	xstart += delta_y * dl_x;
+	xend += delta_y * dr_x;
+	ustart += delta_y * dl_u; vstart += delta_y * dl_v;
+	uend += delta_y * dr_u; vend += delta_y * dr_v;
+	for (y = ceil(r->ytop); y < ceil(r->ybottom); y++) {
 		float du, dv, u, v;
 		float dx = xend - xstart;
 		if (dx > 0) {
@@ -487,13 +470,12 @@ render_texture(struct render *r)
 			dv = vend - vstart;
 		}
 		u = ustart; v = vstart;
-		for (x = (int)xstart + 1; x < (int)xend + 1; x++) {
+		for (x = ceil(xstart); x < ceil(xend); x++) {
 			int uu, vv;
 			uu = u; vv = v;
-			assert(uu >= 0);
-			assert(vv >= 0);
+			assert(uu >= 0 && uu < widthn);
+			assert(vv >= 0 && vv < heightn);
 			draw_pixel(x, y, color[vv * widthn + uu]);
-			//draw_pixel(x, y, RGBA(0xff, 0x0, 0x0, 0xff));
 			u += du; v += dv;
 		}
 		xstart += dl_x;
@@ -502,7 +484,6 @@ render_texture(struct render *r)
 		vstart += dl_v; vend += dr_v;
 	}
 	return ;
-
 }
 
 void
@@ -515,22 +496,11 @@ device_draw(struct tri *p)
 	ver0= &p->vlist[p->vert[0]];
 	ver1 = &p->vlist[p->vert[1]];
 	ver2 = &p->vlist[p->vert[2]];
-/*
-	printf("tri ver0:%p x0:%f y0:%f, ver1:%p x1:%f y1:%f, ver2:%p x2:%f y2:%f\n",
-			ver0, ver0->v.x, ver0->v.y,
-			ver1, ver1->v.x, ver1->v.y,
-			ver2, ver2->v.x, ver2->v.y);
-*/
-	if ((FCMP(ver0->v.x, ver1->v.x) && FCMP(ver1->v.x, ver2->v.x)) || ((FCMP(ver0->v.y, ver1->v.y) && FCMP(ver1->v.y, ver2->v.y))))
+
+	if (FCMP(ver0->v.x, ver1->v.x) && FCMP(ver1->v.x, ver2->v.x))
 		return ;
-	/********
-	ver0->t.x = 0.f;
-	ver0->t.y = 0.f;
-	ver1->t.x = 1.f;
-	ver1->t.y = 0.f;
-	ver2->t.x = 0.f;
-	ver2->t.y = 1.f;
-	*/
+	if ((FCMP(ver0->v.y, ver1->v.y) && FCMP(ver1->v.y, ver2->v.y)))
+		return ;
 	//根据y坐标升序排p0, p1, p2
 	if (ver1->v.y < ver0->v.y) {
 		vertex_t *tmp;
