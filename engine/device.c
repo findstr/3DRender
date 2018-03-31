@@ -48,7 +48,7 @@ max(int a, int b, int c)
 
 
 static void
-draw_pixel(int x, int y, rgba_t color)
+draw_pixel(unsigned int x, unsigned int y, rgba_t color)
 {
 	uint8_t *ptr;
 	if (x >= DEV.width) {
@@ -60,7 +60,6 @@ draw_pixel(int x, int y, rgba_t color)
 		return ;
 	}
 	//OpenGL use the left-bottom as (0,0)
-	//printf("draw pixel:%d %d\n", x, y);
 	y = DEV.height - y - 1;
 	ptr = DEV.frame + x * RGB_SIZE + y * DEV.width * RGB_SIZE;
 	*ptr++ = RGBA_R(color);

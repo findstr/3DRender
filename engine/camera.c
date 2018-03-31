@@ -42,8 +42,7 @@ camera_init(struct camera *cam, vector4_t *pos,
 	cam->viewplane_width = 2.0f;
 	cam->viewplane_height = 2.0f / cam->aspect_ratio;
 
-	tan_fov_div2 = tan(DEG_TO_RAD(fov / 2));
-	//FIXME?
+	tan_fov_div2 = 1.0f / tanf(DEG_TO_RAD(fov / 2));
 	cam->view_dist = 0.5f * cam->viewplane_width * tan_fov_div2;
 	if (fov == 90.0f) {
 		vector3_init_normalize(&vn, 1.0f, 0.0f , -1.0f);//x,z
@@ -213,8 +212,8 @@ camera_viewport(struct camera *cam, struct object *obj)
 	float beta = 0.5f * cam->viewport_height - 0.5f;
 	for (i = 0; i < obj->vertices_num; i++) {
 		vector4_t *v = &obj->vlist_trans[i].v;
-		v->x = alpha + alpha * v->x;
-		v->y = beta - beta * v->y;
+		v->x = (v->x + 1.0f) * alpha;
+		v->y = -v->y * beta + beta;
 	}
 }
 
