@@ -13,8 +13,8 @@ mathlib_init()
 	int ang;
 	for (ang = 0; ang <= 360; ang++) {
 		float theta = DEG_TO_RAD((float)ang);
-		sin_table[ang] = sin(theta);
-		cos_table[ang] = cos(theta);
+		sin_table[ang] = (float)sin(theta);
+		cos_table[ang] = (float)cos(theta);
 	}
 	return ;
 }
@@ -58,9 +58,9 @@ fast_distance_3d(float fx, float fy, float fz)
 {
 	int temp, dist;
 	int x, y, z;
-	x = fabs(fx) * 1024;
-	y = fabs(fy) * 1024;
-	z = fabs(fz) * 1024;
+	x = (int)(fabs(fx) * 1024);
+	y = (int)(fabs(fy) * 1024);
+	z = (int)(fabs(fz) * 1024);
 	if (y < x) SWAP(x, y, temp);
 	if (z < y) SWAP(z, y, temp);
 	if (y < x) SWAP(x, y, temp);
@@ -89,6 +89,81 @@ vector3_normalize(const vector3_t *v, vector3_t *out)
 }
 
 void
+vector2_add(const vector2_t *a, const vector2_t *b, vector2_t *c)
+{
+	c->x = a->x + b->x;
+	c->y = a->y + b->y;
+}
+
+void
+vector2_sub(const vector2_t *a, const vector2_t *b, vector2_t *c)
+{
+	c->x = a->x - b->x;
+	c->y = a->y - b->y;
+}
+
+void
+vector2_mul(const vector2_t *a, const vector2_t *b, vector2_t *c)
+{
+	c->x = a->x * b->x;
+	c->y = a->y * b->y;
+}
+
+void
+vector2_div(const vector2_t *a, const vector2_t *b, vector2_t *c)
+{
+	c->x = a->x / b->x;
+	c->y = a->y / b->y;
+}
+
+void
+vector2_mulf(const vector2_t *a, float f, vector2_t *c)
+{
+	c->x = a->x * f;
+	c->y = a->y * f;
+}
+
+void
+vector2_divf(const vector2_t *a, float f, vector2_t *c)
+{
+	c->x = a->x / f;
+	c->y = a->y / f;
+}
+
+void
+vector2_lerp(const vector2_t *a, const vector2_t *b, float t, vector2_t *c)
+{
+	assert(1.0f - t > -0.1f);
+	c->x = a->x + (b->x - a->x) * t;
+	c->y = a->y + (b->y - a->y) * t;
+	return ;
+}
+
+void
+vector2_print(const char *str, const vector2_t *v)
+{
+	printf("%s vector2:%f:%f\n", str, v->x, v->y);
+}
+
+void
+vector3_lerp(const vector3_t *a, const vector3_t *b, float t, vector3_t *c)
+{
+	c->x = a->x + (b->x - a->x) * t;
+	c->y = a->y + (b->y - a->y) * t;
+	c->z = a->z + (b->z - a->z) * t;
+	return ;
+}
+
+void
+vector4_lerp(const vector4_t *a, const vector4_t *b, float t, vector4_t *c)
+{
+	c->x = a->x + (b->x - a->x) * t;
+	c->y = a->y + (b->y - a->y) * t;
+	c->z = a->z + (b->z - a->z) * t;
+	return ;
+}
+
+void
 vector4_add(const vector4_t *a, const vector4_t *b, vector4_t *c)
 {
 	c->x = a->x + b->x;
@@ -108,6 +183,13 @@ vector4_sub(const vector4_t *a, const vector4_t *b, vector4_t *c)
 	return ;
 }
 
+void
+vector4_divf(const vector4_t *a, float t, vector4_t *b)
+{
+	b->x = a->x / t;
+	b->y = a->y / t;
+	b->z = a->z / t;
+}
 
 void
 vector4_cross(const vector4_t *a, const vector4_t *b, vector4_t *c)

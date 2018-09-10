@@ -1,4 +1,4 @@
-#ifndef _LIGHT_H
+﻿#ifndef _LIGHT_H
 #define _LIGHT_H
 
 #include "rgb.h"

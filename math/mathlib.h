@@ -55,11 +55,22 @@ void mathlib_init();
 float fast_sin(float theta);
 float fast_cos(float theta);
 
+void vector2_add(const vector2_t *a, const vector2_t *b, vector2_t *c);
+void vector2_sub(const vector2_t *a, const vector2_t *b, vector2_t *c);
+void vector2_mul(const vector2_t *a, const vector2_t *b, vector2_t *c);
+void vector2_div(const vector2_t *a, const vector2_t *b, vector2_t *c);
+void vector2_mulf(const vector2_t *a, float f, vector2_t *c);
+void vector2_divf(const vector2_t *a, float f, vector2_t *c);
+void vector2_print(const char *str, const vector2_t *v);
+
+void vector2_lerp(const vector2_t *a, const vector2_t *b, float t, vector2_t *c);
+void vector3_lerp(const vector3_t *a, const vector3_t *b, float t, vector3_t *c);
+void vector4_lerp(const vector4_t *a, const vector4_t *b, float t, vector4_t *c);
 
 void vector3_normalize(const vector3_t *v, vector3_t *res);
-
 void vector4_add(const vector4_t *a, const vector4_t *b, vector4_t *c);
 void vector4_sub(const vector4_t *a, const vector4_t *b, vector4_t *c);
+void vector4_divf(const vector4_t *a, float t, vector4_t *b);
 void vector4_cross(const vector4_t *a, const vector4_t *b, vector4_t *c);
 float vector4_dot(const vector4_t *a, const vector4_t *b);
 float vector4_magnitude(const vector4_t *a);

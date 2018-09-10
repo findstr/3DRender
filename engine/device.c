@@ -131,7 +131,7 @@ device_init(size_t width, size_t height)
 	DEV.width = width;
 	DEV.height = height;
 	DEV.frame = malloc(width * height * RGB_SIZE);
-	bitmap_load("resource/wall01.bmp", &BITMAP);
+	bitmap_load("resource/std.bmp", &BITMAP);
 	return ;
 }
 
@@ -438,6 +438,12 @@ bottom_texture(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct render *r)
 	r->trstep.x = (u2 - u0) / h;
 	r->trstep.y = (v2 - v0) / h;
 	return ;
+}
+
+static rgba_t
+texture_sample(float u, float v)
+{
+
 }
 
 static inline void

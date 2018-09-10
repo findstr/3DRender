@@ -2,6 +2,14 @@
 #include <string.h>
 #include "primitive.h"
 
+
+void
+vertex_lerp(const vertex_t *a, const vertex_t *b, float t, vertex_t *c)
+{
+	vector4_lerp(&a->v, &b->v, t, &c->v);
+	vector2_lerp(&a->t, &b->t, t, &c->t);
+}
+
 void
 object_init(struct object *obj)
 {

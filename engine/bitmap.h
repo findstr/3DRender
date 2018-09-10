@@ -52,9 +52,5 @@ struct bitmap {
 void bitmap_load(const char *name, struct bitmap *map);
 
 
-
-
-
-
 #endif
 

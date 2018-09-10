@@ -13,7 +13,7 @@ typedef struct vertex {
 	vector4_t v;	//vertex
 	vector4_t n;	//normal
 	vector2_t t;	//texture coord
-} vertex_t;
+} vertex_t; 
 
 struct poly1 {
 	vector3_t point[3];
@@ -102,6 +102,7 @@ struct render4d {
 #define OBJECT4D_STATE_CULLED		0x0004
 
 
+void vertex_lerp(const vertex_t *a, const vertex_t *b, float t, vertex_t *c);
 void object_init(struct object *obj);
 void object_finalize(struct object *obj);
 void object_polynormals(struct object *obj);
