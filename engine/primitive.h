@@ -24,7 +24,6 @@ struct poly2 {
 	int vertices[3];
 };
 
-
 struct tri {
 	int state;
 	int attr;
@@ -37,15 +36,6 @@ struct tri {
 	float avg_z;
 	vertex_t *vlist;
 	struct tri *next;
-};
-
-struct polyf4d {
-	int state;
-	int attr;
-	int color;
-
-	vector4_t vlist_local[3];
-	vector4_t vlist_trans[3];
 };
 
 struct object {
@@ -74,14 +64,6 @@ struct object {
 };
 
 #define RENDERLIST4D_MAX_POLYS	(32768)
-
-struct render4d {
-	int state;
-	int attr;
-	struct polyf4d *poly_ptrs[RENDERLIST4D_MAX_POLYS];
-	struct polyf4d polys[RENDERLIST4D_MAX_POLYS];
-	int num_polys;
-};
 
 
 #define POLY4D_ATTR_2SIDED		(1 << 0)

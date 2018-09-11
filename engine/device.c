@@ -171,341 +171,91 @@ device_drawframe(struct tri *p)
 	return ;
 }
 
-
-#if 0
-
-//edge function
-void
-device_draw(struct tri *p)
-{
-	int x, y;
-	int v0, v1, v2;
-	int lx, ty, rx, by;
-	int x1, x2, x3, y1, y2, y3;
-	int dx21, dx32, dx13, dy21, dy32, dy13;
-
-	vector4_t *vec0, *vec1, *vec2;
-	v0 = p->vert[0];
-	v1 = p->vert[1];
-	v2 = p->vert[2];
-	vec0 = &p->vlist[v0];
-	vec1 = &p->vlist[v1];
-	vec2 = &p->vlist[v2];
-	x1 = vec0->x; x2 = vec1->x; x3 = vec2->x;
-	y1 = vec0->y; y2 = vec1->y; y3 = vec2->y;
-	lx = min(x1, x2, x3);
-	rx = max(x1, x2, x3);
-	ty = min(y1, y2, y3);
-	by = max(y1, y2, y3);
-	dx21 = x2 - x1; dx32 = x3 - x2; dx13 = x1 - x3;
-	dy21 = y2 - y1; dy32 = y3 - y2; dy13 = y1 - y3;
-
-	int X21 = dx21 * (by - y1) + dy21 * x1 - (lx - 1) * dy21; //- dy21 * x
-	int X32 = dx32 * (by - y2) + dy32 * x2 - (lx - 1) * dy32; //- dy32 * x
-	int X13 = dx13 * (by - y3) + dy13 * x3 - (lx - 1) * dy13; //- dy13 * x
-	for (y = by - 1; y >= ty; y--) {
-		X21 -= dx21;
-		X32 -= dx32;
-		X13 -= dx13;
-		int x21 = X21;
-		int x32 = X32;
-		int x13 = X13;
-		//Left-Top
-		if (dy21 < 0 || (dy21 == 0 && dx21 > 0)) x21++;
-		if (dy32 < 0 || (dy32 == 0 && dx32 > 0)) x32++;
-		if (dy13 < 0 || (dy13 == 0 && dx13 > 0)) x13++;
-		for (x = lx; x < rx; x++) {
-			int r;
-			x21 -= dy21;
-			x32 -= dy32;
-			x13 -= dy13;
-			if (x21 < 0)
-				continue;
-			if (x32 < 0)
-				continue;
-			if (x13 < 0)
-				continue;
-			draw_pixel(x, y, p->color);
-		}
-	}
-
-	return ;
-
-}
-
-#else
-
-static inline void
-draw_top(float x0, float y0, float x1, float y1, float x2, float y2, rgba_t color[3])
-{
-	rgba_t rgb, c0, c1, c2;
-	float x, y, xstart, xend;
-	float dl_x, dl_r, dl_g, dl_b, dr_x, dr_r, dr_g, dr_b;
-	float left_r, left_g, left_b;
-	float right_r, right_g, right_b;
-	float bottom_r, bottom_g, bottom_b;
-	float tmp, dx_left, dx_right;
-	float h = y2 - y0;
-	c0 = color[0]; c1 = color[1]; c2 = color[2];
-	if (x0 > x1) {
-		SWAP(x0, x1, tmp);
-		SWAP(c0, c1, rgb);
-	}
-	dl_x = (x2-x0); dx_left = dl_x / h;
-	dr_x = (x2-x1); dx_right = dr_x / h;
-	//left color
-	rgb = c0;
-	left_r = RGBA_R(rgb); left_g = RGBA_G(rgb); left_b = RGBA_B(rgb);
-	//right color
-	rgb = c1;
-	right_r = RGBA_R(rgb); right_g = RGBA_G(rgb); right_b = RGBA_B(rgb);
-	//bottom color
-	rgb = c2;
-	bottom_r = RGBA_R(rgb); bottom_g = RGBA_G(rgb); bottom_b = RGBA_B(rgb);
-
-	//delta color
-	dl_r = -(left_r - bottom_r) / h;
-	dl_g = -(left_g - bottom_g) / h;
-	dl_b = -(left_b - bottom_b) / h;
-
-	dr_r = -(right_r - bottom_r) / h;
-	dr_g = -(right_g - bottom_g) / h;
-	dr_b = -(right_b - bottom_b) / h;
-
-	//draw
-	xstart = x0; xend = x1;
-	for (y = ceil(y0); y < ceil(y2); y++) {
-		float r, g, b, rr, gg, bb, dx;
-		dx = xend - xstart;
-		if (dx > 0) {
-			rr = (right_r - left_r) / dx;
-			gg = (right_g - left_g) / dx;
-			bb = (right_b - left_b) / dx;
-		} else {
-			rr = right_r - left_r;
-			gg = right_g - left_g;
-			bb = right_b - left_b;
-		}
-		r = left_r; g = left_g; b = left_b;
-		for (x = xstart; x < xend; x++) {
-			rgba_t c = RGBA((int)r, (int)g, (int)b, 255);
-			draw_pixel(x, y, c);
-			r += rr; g += gg; b += bb;
-		}
-		left_r += dl_r; left_g += dl_g; left_b += dl_b;
-		right_r += dr_r; right_g += dr_g; right_b += dr_b;
-		xstart += dx_left;
-		xend += dx_right;
-	}
-	return ;
-}
-
-static inline void
-draw_bottom(float x0, float y0, float x1, float y1, float x2, float y2, rgba_t color[3])
-{
-	rgba_t rgb, c0, c1, c2;
-	float x, y, xstart, xend;
-	float dl_x, dl_r, dl_g, dl_b, dr_x, dr_r, dr_g, dr_b;
-	float left_r, left_g, left_b;
-	float right_r, right_g, right_b;
-	float top_r, top_g, top_b;
-	float tmp, dx_left, dx_right;
-	float h = y2 - y0;
-	c0 = color[0]; c1 = color[1]; c2 = color[2];
-	if (x1 > x2) {
-		SWAP(x1, x2, tmp);
-		SWAP(c1, c2, rgb);
-	}
-	dl_x = (x1 - x0); dx_left = dl_x / h;
-	dr_x = (x2 - x0); dx_right = dr_x / h;
-	//left color
-	rgb = c1;
-	left_r = RGBA_R(rgb); left_g = RGBA_G(rgb); left_b = RGBA_B(rgb);
-	//top color
-	rgb = c0;
-	top_r = RGBA_R(rgb); top_g = RGBA_G(rgb); top_b = RGBA_B(rgb);
-	//right color
-	rgb = c2;
-	right_r = RGBA_R(rgb); right_g = RGBA_G(rgb); right_b = RGBA_B(rgb);
-	//delta color
-	dl_r = (left_r - top_r) / h;
-	dl_g = (left_g - top_g) / h;
-	dl_b = (left_b - top_b) / h;
-
-	dr_r = (right_r - top_r) / h;
-	dr_g = (right_g - top_g) / h;
-	dr_b = (right_b - top_b) / h;
-
-	//draw
-	xstart = x0; xend = x0;
-	left_r = right_r = top_r;
-	left_g = right_g = top_g;
-	left_b = right_b = top_b;
-	for (y = ceil(y0); y < ceil(y1); y++) {
-		float r, g, b, rr, gg, bb, dx;
-		dx = xend - xstart;
-		if (dx > 0) {
-			rr = (right_r - left_r) / dx;
-			gg = (right_g - left_g) / dx;
-			bb = (right_b - left_b) / dx;
-		} else {
-			rr = right_r - left_r;
-			gg = right_g - left_g;
-			bb = right_b - left_b;
-		}
-		r = left_r; g = left_g; b = left_b;
-		for (x = xstart; x < xend; x++) {
-			rgba_t c = RGBA((int)r, (int)g, (int)b, 255);
-			draw_pixel(x, y, c);
-			r += rr; g += gg; b += bb;
-		}
-		left_r += dl_r; left_g += dl_g; left_b += dl_b;
-		right_r += dr_r; right_g += dr_g; right_b += dr_b;
-		xstart += dx_left;
-		xend += dx_right;
-	}
-	return ;
-}
-
-struct render {
-	float ytop;
-	float ybottom;
-	float xleft;	//left
-	float xright;
-	float xlstep;
-	float xrstep;
-	vector2_t tleft; //texture
-	vector2_t tright;
-	vector2_t tlstep;
-	vector2_t trstep;
+struct trapezoid {
+	vertex_t left[2];
+	vertex_t right[2];
 };
 
 static inline void
-top_texture(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct render *r)
+top_trapezoid(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct trapezoid *r)
 {
-	float h, width, height;
-	float u0, u1, u2, v0, v1, v2;
 	if (ver0->v.x > ver1->v.x) {
 		vertex_t *tmp;
 		SWAP(ver0, ver1, tmp);
 	}
-	width = BITMAP.info.width - 1;
-	height = BITMAP.info.height - 1;
-	r->ytop = ver0->v.y;
-	r->ybottom = ver2->v.y;
-	r->xleft = ver0->v.x;
-	r->xright = ver1->v.x;
-	h = ver2->v.y - ver0->v.y;
-	r->xlstep = (ver2->v.x - ver0->v.x) / h; //left
-	r->xrstep = (ver2->v.x - ver1->v.x) / h; //right
-	u0 = width * ver0->t.x; v0 = height * ver0->t.y;
-	u1 = width * ver1->t.x; v1 = height * ver1->t.y;
-	u2 = width * ver2->t.x; v2 = height * ver2->t.y;
-	r->tleft.x = u0; r->tleft.y = v0;
-	r->tright.x = u1; r->tright.y = v1;
-	r->tlstep.x = (u2 - u0) / h;
-	r->tlstep.y = (v2 - v0) / h;
-	r->trstep.x = (u2 - u1) / h;
-	r->trstep.y = (v2 - v1) / h;
-	return ;
+	r->left[0] = *ver0;
+	r->left[1] = *ver2;
+	r->right[0] = *ver1;
+	r->right[1] = *ver2;
 }
 
 static inline void
-bottom_texture(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct render *r)
+bottom_trapezoid(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct trapezoid *r)
 {
-	float h, width, height;
-	float u0, u1, u2, v0, v1, v2;
 	if (ver1->v.x > ver2->v.x) {
 		vertex_t *tmp;
 		SWAP(ver1, ver2, tmp);
 	}
-	width = BITMAP.info.width - 1;
-	height = BITMAP.info.height - 1;
-	r->ytop = ver0->v.y;
-	r->ybottom = ver2->v.y;
-	r->xleft = ver0->v.x;
-	r->xright = ver0->v.x;
-	h = ver2->v.y - ver0->v.y;
-	r->xlstep = (ver1->v.x - ver0->v.x) / h; //left
-	r->xrstep = (ver2->v.x - ver0->v.x) / h; //right
-	u0 = width * ver0->t.x; v0 = height * ver0->t.y;
-	u1 = width * ver1->t.x; v1 = height * ver1->t.y;
-	u2 = width * ver2->t.x; v2 = height * ver2->t.y;
-	r->tleft.x = u0; r->tleft.y = v0;
-	r->tright.x = u0; r->tright.y = v0;
-	r->tlstep.x = (u1 - u0) / h;
-	r->tlstep.y = (v1 - v0) / h;
-	r->trstep.x = (u2 - u0) / h;
-	r->trstep.y = (v2 - v0) / h;
-	return ;
+	r->left[0] = *ver0;
+	r->left[1] = *ver1;
+	r->right[0] = *ver0;
+	r->right[1] = *ver2;
 }
 
 static rgba_t
 texture_sample(float u, float v)
 {
-
+	int x = u * (BITMAP.info.width - 1);
+	int y = v * (BITMAP.info.height - 1);
+	return BITMAP.buffer[y * BITMAP.info.width + x];
 }
 
 static inline void
-render_texture(struct render *r)
+render_trapezoid(struct trapezoid *r)
 {
-	int x, y;
-	rgba_t *color = BITMAP.buffer;
-	int heightn = BITMAP.info.height;
-	int widthn = BITMAP.info.width;
-	float xstart = r->xleft, xend = r->xright;
-	float ustart = r->tleft.x, vstart = r->tleft.y;
-	float uend = r->tright.x, vend = r->tright.y;
-	float dl_x = r->xlstep, dr_x = r->xrstep;
-	float dl_u = r->tlstep.x, dl_v = r->tlstep.y;
-	float dr_u = r->trstep.x, dr_v = r->trstep.y;
-	float delta_y = ceil(r->ytop) - r->ytop;
-	xstart += delta_y * dl_x;
-	xend += delta_y * dr_x;
-	ustart += delta_y * dl_u; vstart += delta_y * dl_v;
-	uend += delta_y * dr_u; vend += delta_y * dr_v;
-	for (y = ceil(r->ytop); y < ceil(r->ybottom); y++) {
-		float du, dv, u, v;
-		float dx = xend - xstart;
-		if (dx > 0) {
-			du = (uend - ustart) / dx;
-			dv = (vend - vstart) / dx;
-		} else {
-			du = uend - ustart;
-			dv = vend - vstart;
+	float x, y, top, bottom;
+	float ystart, yheight;
+	assert(FCMP(r->left[0].v.y, r->right[0].v.y));
+	assert(FCMP(r->left[1].v.y, r->right[1].v.y));
+	ystart = r->left[0].v.y;
+	yheight =  r->left[1].v.y - ystart;
+	top = ceil(ystart);
+	bottom = ceil(r->left[1].v.y);
+	for (y = top; y < bottom; y += 1.0f) {
+		vertex_t vleft, vright;
+		float lerp, left, right;
+		float x, xstart, xwidth;
+		lerp = (y - ystart) / yheight;
+		vertex_lerp(&r->left[0], &r->left[1], lerp, &vleft);
+		vertex_lerp(&r->right[0], &r->right[1], lerp, &vright);
+		xstart = vleft.v.x; 
+		xwidth = vright.v.x - vleft.v.x;
+		left = ceil(vleft.v.x);
+		right = ceil(vright.v.x);
+		for (x = left; x < right; x += 1.0f) {
+			float lerp;
+			vector2_t uv;
+			rgba_t color;
+			lerp = (x - xstart) / xwidth;
+			vector2_lerp(&vleft.t, &vright.t, lerp, &uv);
+			color = texture_sample(uv.x, uv.y);
+			draw_pixel((int)x, (int)y, color);
 		}
-		u = ustart; v = vstart;
-		for (x = ceil(xstart); x < ceil(xend); x++) {
-			int uu, vv;
-			uu = u; vv = v;
-			assert(uu >= 0 && uu < widthn);
-			assert(vv >= 0 && vv < heightn);
-			draw_pixel(x, y, color[vv * widthn + uu]);
-			u += du; v += dv;
-		}
-		xstart += dl_x;
-		xend += dr_x;
-		ustart += dl_u; uend += dr_u;
-		vstart += dl_v; vend += dr_v;
 	}
-	return ;
 }
 
-void
-device_draw(struct tri *p)
+static inline int
+tri_to_trapezoid(struct tri *p, struct trapezoid r[2])
 {
-#if 1
-	struct render r;
 	rgba_t color[3], tc;
 	vertex_t *ver0, *ver1, *ver2;
 	ver0= &p->vlist[p->vert[0]];
 	ver1 = &p->vlist[p->vert[1]];
 	ver2 = &p->vlist[p->vert[2]];
-
 	if (FCMP(ver0->v.x, ver1->v.x) && FCMP(ver1->v.x, ver2->v.x))
-		return ;
+		return 0;
 	if ((FCMP(ver0->v.y, ver1->v.y) && FCMP(ver1->v.y, ver2->v.y)))
-		return ;
+		return 0;
 	//根据y坐标升序排p0, p1, p2
 	if (ver1->v.y < ver0->v.y) {
 		vertex_t *tmp;
@@ -521,27 +271,40 @@ device_draw(struct tri *p)
 	assert(ver0->v.y <= ver1->v.y);
 	assert(ver1->v.y <= ver2->v.y);
 	if (FCMP(ver0->v.y, ver1->v.y)) {
-		top_texture(ver0, ver1, ver2, &r);
-		render_texture(&r);
+		top_trapezoid(ver0, ver1, ver2, &r[0]);
+		return 1;
 	} else if (FCMP(ver1->v.y, ver2->v.y)) {
-		bottom_texture(ver0, ver1, ver2, &r);
-		render_texture(&r);
+		bottom_trapezoid(ver0, ver1, ver2, &r[0]);
+		return 2;
 	} else {
 		vertex_t medium;
 		float h = ver2->v.y - ver0->v.y;
 		float newh = ver1->v.y - ver0->v.y;
-		float newx = ver0->v.x + newh * (ver2->v.x - ver0->v.x) / h;
-		float newu = ver0->t.x + newh * (ver2->t.x - ver0->t.x) / h;
-		float newv = ver0->t.y + newh * (ver2->t.y - ver0->t.y) / h;
-		medium.v.x = newx;
-		medium.v.y = ver1->v.y;
-		medium.t.x = newu;
-		medium.t.y = newv;
-		bottom_texture(ver0, &medium, ver1, &r);
-		render_texture(&r);
-		top_texture(&medium, ver1, ver2, &r);
-		render_texture(&r);
+		vertex_lerp(ver0, ver2, newh / h, &medium);
+		bottom_trapezoid(ver0, &medium, ver1, &r[0]);
+		top_trapezoid(&medium, ver1, ver2, &r[1]);
+		return 2;
 	}
+}
+
+
+
+void
+device_draw(struct tri *p)
+{
+#if 1
+	int n;
+	struct trapezoid r[2];
+	n = tri_to_trapezoid(p, r);
+	switch (n) {
+	case 2:
+		render_trapezoid(&r[1]);
+		//fall through
+	case 1:
+		render_trapezoid(&r[0]);
+		break;
+	}
+
 #else
 #if 0
 	{
@@ -605,7 +368,7 @@ device_draw(struct tri *p)
 	render_texture(&r);
 	}
 #endif
-#if 0
+#if 1
 	{
 	int color[3];
 	vertex_t v[3];
@@ -634,6 +397,4 @@ device_draw(struct tri *p)
 #endif
 	return ;
 }
-
-#endif
 
