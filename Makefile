@@ -29,11 +29,11 @@ SRC=\
     driver/driver.c\
     math/mathlib.c\
     math/mathconst.c\
-    engine/transform.c\
     engine/camera.c\
-    engine/engine.c\
+    engine/pipeline.c\
     engine/device.c\
     engine/matrial.c\
+    engine/shader.c\
     engine/light.c\
     engine/primitive.c\
     engine/bitmap.c\

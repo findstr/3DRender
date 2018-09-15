@@ -95,7 +95,7 @@ driver_draw(const uint8_t *frame, size_t width, size_t height)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
-	glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, frame);
+	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, frame);
 	glEnable(GL_DEPTH_TEST);
 	glutSwapBuffers();
 }

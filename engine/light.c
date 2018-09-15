@@ -37,6 +37,7 @@ light_create()
 static inline void
 light_tri(struct tri *p)
 {
+#if 0
 	int ii;
 	struct light *l = L;
 	vector4_t u,v,d;
@@ -62,9 +63,9 @@ light_tri(struct tri *p)
 	b_base[2] = RGBA_B(p->color[2]);
 
 
-	v0 = &vlist[p->vert[0]];
-	v1 = &vlist[p->vert[1]];
-	v2 = &vlist[p->vert[2]];
+	v0 = &vlist[p->vert[0]].app;
+	v1 = &vlist[p->vert[1]].app;
+	v2 = &vlist[p->vert[2]].app;
 
 	memset(r_sum, 0, sizeof(r_sum));
 	memset(g_sum, 0, sizeof(g_sum));
@@ -173,6 +174,7 @@ light_tri(struct tri *p)
 			b_sum[ii] = 255;
 		p->light[ii] = RGBA(r_sum[ii], g_sum[ii], b_sum[ii], 255);
 	}
+#endif
 	return ;
 }
 
@@ -182,7 +184,7 @@ light_transform(struct camera *camera, struct object *obj)
 	struct tri *p = obj->rlist;
 
 	while (p) {
-		p->vlist = obj->vlist_trans;
+		p->vlist = obj->vlist_local;
 		light_tri(p);
 		p = p->next;
 	}

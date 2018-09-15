@@ -10,7 +10,7 @@ void device_init(size_t width, size_t height);
 void device_exit();
 void device_clear();
 void device_flip();
-void device_draw(struct tri *primitive);
+void device_drawpixel(unsigned int x, unsigned int y, rgba_t color, float z);
 void draw_line(int x1, int y1, int x2, int y2, int c);
 void device_drawframe(struct tri *primitive);
 

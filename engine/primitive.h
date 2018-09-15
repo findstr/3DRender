@@ -2,6 +2,7 @@
 #define _PRIMITIVE_H
 
 #include "mathlib.h"
+#include "matrial.h"
 #include "rgb.h"
 
 typedef struct transform {
@@ -12,7 +13,9 @@ typedef struct transform {
 typedef struct vertex {
 	vector4_t v;	//vertex
 	vector4_t n;	//normal
-	vector2_t t;	//texture coord
+	vector2_t t;
+	struct shader_appdata  app;
+	struct shader_v2f v2f;
 } vertex_t; 
 
 struct poly1 {
@@ -52,10 +55,7 @@ struct object {
 
 	int vertices_num;
 	vertex_t *vlist_local;
-	vertex_t *vlist_trans;
-	vertex_t *vlist_local_head;
-	vertex_t *vlist_trans_head;
-
+	struct matrial martial;
 
 	int tri_num;
 	struct tri *plist;

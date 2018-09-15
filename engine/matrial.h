@@ -2,14 +2,17 @@
 #define _MATRIAL_H
 
 #include "rgb.h"
+#include "shader.h"
 
 struct matrial {
 	char name[64];
 	rgba_t color;
 	float ka, kd, ks, power;
 	rgba_t ra, rd, rs;
+	struct shader_routine shader;
 	struct matrial *next;
 };
+
 
 struct matrial *matrial_create();
 

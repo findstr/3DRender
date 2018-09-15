@@ -3,7 +3,6 @@
 #include "mathlib.h"
 #include "driver.h"
 #include "primitive.h"
-#include "transform.h"
 #include "camera.h"
 
 void
@@ -93,7 +92,6 @@ camera_matrix(struct camera *cam,
 		matrix_t *mz_inv)
 {
 	float theta_x, theta_y, theta_z;
-	float cos_theta, sin_theta;
 	*mt_inv = (matrix_t){
 		1, 0, 0, 0,
 		0, 1, 0, 0,
@@ -178,12 +176,12 @@ camera_backface(struct camera *cam, struct object *obj)
 		return ;
 	struct tri **rlist = &obj->rlist;
 	for (i = 0; i < obj->tri_num; i++) {
+		int v0;
 		float dp;
-		int v0, v1, v2;
 		vector4_t view;
 		struct tri *p = &obj->plist[i];
 		v0 = p->vert[0];
-		vector4_sub(&cam->pos, &obj->vlist_trans[v0].v, &view);
+		vector4_sub(&cam->pos, &obj->vlist_local[v0].app.position, &view);
 		dp = vector4_dot(&p->normal, &view);
 		if (dp > 0.0f) {
 			p->next = *rlist;
@@ -193,13 +191,20 @@ camera_backface(struct camera *cam, struct object *obj)
 	return ;
 }
 
+int
+camera_transform(struct camera *cam)
+{
+	camera_rot_zyx(cam);
+	return 0;
+}
+
 void
 camera_perspective(struct camera *cam, struct object *obj)
 {
 	int i;
 	for (i = 0; i < obj->vertices_num; i++) {
-		vector4_t *v = &obj->vlist_trans[i].v;
-		vector2_t *t = &obj->vlist_trans[i].t;
+		vector4_t *v = &obj->vlist_local[i].v2f.sv_position;
+		vector2_t *t = &obj->vlist_local[i].v2f.texcoord0;
 		float z = 1 / v->z;
 		v->x *= z;
 		v->y *= z * cam->aspect_ratio;
@@ -216,19 +221,9 @@ camera_viewport(struct camera *cam, struct object *obj)
 	float alpha = 0.5f * cam->viewport_width - 0.5f;
 	float beta = 0.5f * cam->viewport_height - 0.5f;
 	for (i = 0; i < obj->vertices_num; i++) {
-		vector4_t *v = &obj->vlist_trans[i].v;
+		vector4_t *v = &obj->vlist_local[i].v2f.sv_position;
 		v->x = (v->x + 1.0f) * alpha;
 		v->y = -v->y * beta + beta;
 	}
-}
-
-int
-camera_transform(struct camera *cam, struct object *obj)
-{
-	camera_rot_zyx(cam);
-	transform_obj(obj, &cam->mcam, 0);
-	camera_perspective(cam, obj);
-	camera_viewport(cam, obj);
-	return 0;
 }
 

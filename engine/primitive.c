@@ -16,9 +16,7 @@ object_init(struct object *obj)
 	size_t sz;
 	sz = obj->vertices_num * sizeof(vertex_t);
 	obj->vlist_local = malloc(sz);
-	obj->vlist_trans = malloc(sz);
 	memset(obj->vlist_local, 0, sz);
-	memset(obj->vlist_trans, 0, sz);
 	sz = obj->tri_num * sizeof(struct tri);
 	obj->plist = malloc(sz);
 	memset(obj->plist, 0, sz);
@@ -29,7 +27,6 @@ void
 object_finalize(struct object *obj)
 {
 	free(obj->vlist_local);
-	free(obj->vlist_trans);
 	free(obj->plist);
 	return ;
 }

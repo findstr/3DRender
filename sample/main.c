@@ -1,9 +1,10 @@
 ﻿#include <stdio.h>
 #include "mathlib.h"
-#include "engine.h"
+#include "pipeline.h"
 #include "camera.h"
 #include "driver.h"
 #include "light.h"
+#include "shader.h"
 #include "plg.h"
 
 #define WIDTH	(640)
@@ -85,7 +86,7 @@ int main(int argc, char **argv)
 	vector4_t cam_pos = { 0, 0, -20, 1 };
 	vector4_t cam_dir = { 0, 10.0f, 0, 1 };
 	mathlib_init();
-	engine_start(WIDTH, HEIGHT, update);
+	pipeline_start(WIDTH, HEIGHT, update);
 	vector4_t pos;
 	vector4_init(&pos, 0, 0, 0);
 	plg_load(&obj, "resource/cube1.plg", &IVECTOR4, &ZVECTOR4, &pos);
@@ -94,10 +95,12 @@ int main(int argc, char **argv)
 	camera_init(&cam, &cam_pos, &cam_dir, NULL,
 		50.0f, 500.0f, 90.0f, WIDTH, HEIGHT);
 	l = light_create();
-	engine_add_camera(&cam);
-	//engine_add_object(&obj2);
-	engine_add_object(&obj);
-	engine_run();
+	pipeline_add_camera(&cam);
+//	pipeline_add_object(&obj2);
+	obj.martial.shader.vert = shader_default_diffuse_vert;
+	obj.martial.shader.frag = shader_default_diffuse_frag;
+	pipeline_add_object(&obj);
+	pipeline_run();
 #else
 	vector4_t a, b, c, u, v, n1, n2, n3, xRy, yRz, zRx;
 	quaternion_t rx, ry, rz;

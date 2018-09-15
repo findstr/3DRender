@@ -1,13 +1,21 @@
 #ifndef _RGB_H
 #define _RGB_H
-
-#define RGB_SIZE	(3)
+/*
 #define RGBA(r,g,b,a)	((rgba_t)(r) << 24 | (rgba_t)(g) << 16 |\
 		(rgba_t)(b) << 8 | (rgba_t)(a))
 #define RGBA_R(rgba)	((int)(((rgba) >> 24) & 0xff))
 #define RGBA_G(rgba)	((int)(((rgba) >> 16) & 0xff))
 #define RGBA_B(rgba)	((int)(((rgba) >> 8) & 0xff))
 #define RGBA_A(rgba)	((int)(((rgba) >> 0) & 0xff))
+*/
+
+#define RGBA(r,g,b,a)	((rgba_t)(a) << 24 | (rgba_t)(b) << 16 |\
+		(rgba_t)(g) << 8 | (rgba_t)(r))
+#define RGBA_A(rgba)	((int)(((rgba) >> 24) & 0xff))
+#define RGBA_B(rgba)	((int)(((rgba) >> 16) & 0xff))
+#define RGBA_G(rgba)	((int)(((rgba) >> 8) & 0xff))
+#define RGBA_R(rgba)	((int)(((rgba) >> 0) & 0xff))
+
 
 
 typedef unsigned int rgba_t;
@@ -72,8 +80,16 @@ static inline rgba_t rgba_lerp(rgba_t a, rgba_t b, float t)
 	int rr = rgb_clamp((int)(RGBA_R(a) + (RGBA_R(b) - RGBA_R(a)) * t));
 	int gg = rgb_clamp((int)(RGBA_G(a) + (RGBA_G(b) - RGBA_G(a)) * t));
 	int bb = rgb_clamp((int)(RGBA_B(a) + (RGBA_B(b) - RGBA_B(a)) * t));
-	int aa = rgb_clamp((int)(RGBA_A(a) + (RGBA_A(b) - RGBA_A(a)) * t));
-	return RGBA(rr, gg, bb, aa);
+	return RGBA(rr, gg, bb, 255);
+}
+
+static inline  rgba_t rgba_blend(rgba_t n, rgba_t o)
+{
+	float src = RGBA_A(n) / 255.0f;
+	float dst = 1.0f - src;
+	rgba_t nn = rgba_mul(n, src);
+	rgba_t oo = rgba_mul(o, dst);
+	return rgba_add(nn, oo);
 }
 
 
