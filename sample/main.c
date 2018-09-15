@@ -5,6 +5,7 @@
 #include "driver.h"
 #include "light.h"
 #include "shader.h"
+#include "bitmap.h"
 #include "plg.h"
 
 #define WIDTH	(640)
@@ -96,10 +97,14 @@ int main(int argc, char **argv)
 		50.0f, 500.0f, 90.0f, WIDTH, HEIGHT);
 	l = light_create();
 	pipeline_add_camera(&cam);
-//	pipeline_add_object(&obj2);
+	bitmap_load("resource/std.bmp", &obj.martial.texture);
+	bitmap_load("resource/wall01.bmp", &obj2.martial.texture);
 	obj.martial.shader.vert = shader_default_diffuse_vert;
 	obj.martial.shader.frag = shader_default_diffuse_frag;
+	obj2.martial.shader.vert = shader_default_diffuse_vert;
+	obj2.martial.shader.frag = shader_default_diffuse_frag;
 	pipeline_add_object(&obj);
+	pipeline_add_object(&obj2);
 	pipeline_run();
 #else
 	vector4_t a, b, c, u, v, n1, n2, n3, xRy, yRz, zRx;

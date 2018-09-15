@@ -3,11 +3,11 @@
 
 #include "rgb.h"
 #include "mathlib.h"
-#include "bitmap.h"
+#include "texture.h"
 
 struct shader_global {
 	matrix_t  MVP;
-	struct bitmap *BITMAP;
+	struct texture *BITMAP;
 };
 
 struct shader_appdata {

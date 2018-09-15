@@ -66,7 +66,7 @@ keyup(unsigned char key, int x, int y)
 
 
 void
-driver_start(int width, int height, void (*render)())
+driver_start(int width, int height, void (*render)(void))
 {
 	int argc = 1;
 	char *argv[] = {"demo"};

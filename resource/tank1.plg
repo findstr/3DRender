@@ -1,7 +1,7 @@
 # begin plg/plx file
 
 # define PLX_COLOR_MODE_RGB_FLAG     0x8000   // this poly uses RGB color
-# define PLX_COLOR_MODE_INDEXED_FLAG 0x0000   // this poly uses an indexed 8-bit color 
+# define PLX_COLOR_MODE_INDEXED_FLAG 0x0000   // this poly uses an indexed 8-bit color
 # define PLX_2SIDED_FLAG              0x1000   // this poly is double sided
 # define PLX_1SIDED_FLAG              0x0000   // this poly is single sided
 # define PLX_SHADE_MODE_PURE_FLAG      0x0000  // this poly is a constant color
@@ -17,27 +17,27 @@ slider 21 19
 
 #vertex list
 
--30 50 -90
- 30 50 -90
- 20 20  40
--20 20  40
--20 20 -80
- 20 20 -80
--20 60 -50
- 20 60 -50
--25 50 -30
- 25 50 -30
--40 30 -100
--30 10 100
--70 0 -30
--70 0 -80
-40 30 -100
-70 0 -80
-70 0 -30
-30 10 100
-0 70 -70
-0 70 20
-0 90 -100
+-30 50 -90	1.0	1.0
+ 30 50 -90	0.0,	1.0
+ 20 20  40	1.0	1.0
+-20 20  40	1.0	1.0
+-20 20 -80	0.0	0.0
+ 20 20 -80	0.0	1.0
+-20 60 -50      0.0	1.0
+ 20 60 -50      0.0	1.0
+-25 50 -30      0.0	1.0
+ 25 50 -30      0.0	1.0
+-40 30 -100     0.0	1.0
+-30 10 100      0.0	1.0
+-70 0 -30       0.0	1.0
+-70 0 -80       0.0	1.0
+40 30 -100      0.0	1.0
+70 0 -80        0.0	1.0
+70 0 -30        0.0	1.0
+30 10 100       0.0	1.0
+0 70 -70        0.0	1.0
+0 70 20         0.0	1.0
+0 90 -100       0.0	1.0
 
 #end vertex list
 

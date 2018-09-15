@@ -141,8 +141,8 @@ camera_cull(struct camera *cam, struct object *obj, int cull_flag)
 {
 	vector4_t sphere_pos;
 	float r = obj->radius_max;
-	float z = sphere_pos.z;
 	vector4_mul_matrix(&obj->transform.pos, &cam->mcam, &sphere_pos);
+	float z = sphere_pos.z;
 	if (cull_flag & CULL_Z_PLANE) {
 		if ((z - r) > cam->far_clip_z || (z + r) > cam->near_clip_z) {
 			obj->state |= OBJECT4D_STATE_CULLED;

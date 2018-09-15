@@ -10,7 +10,7 @@ else
 target:win
 endif
 
-INCLUDE=-Idriver/ -Imath/ -Iengine/
+INCLUDE=-Idriver/ -Imath/ -Iengine/ -Iload/
 CFLAG=-g -m32
 LDFLAG= -lm
 
@@ -36,8 +36,8 @@ SRC=\
     engine/shader.c\
     engine/light.c\
     engine/primitive.c\
-    engine/bitmap.c\
-    engine/plg.c\
+    load/bitmap.c\
+    load/plg.c\
 
 main:$(SRC)
 	gcc $(INCLUDE) $(CFLAG) -o $@ $^ $(LDFLAG)

@@ -179,8 +179,6 @@ render_trapezoid(struct trapezoid *r, shader_frag_t *frag, struct shader_global 
 	}
 }
 
-static struct bitmap BITMAP;
-
 void
 pipeline_frag_obj(struct object *obj, struct shader_global *G)
 {
@@ -188,7 +186,7 @@ pipeline_frag_obj(struct object *obj, struct shader_global *G)
 	shader_frag_t *frag;
 	struct trapezoid r[2];
 	struct tri *p = obj->rlist;
-	G->BITMAP = &BITMAP;
+	G->BITMAP = &obj->martial.texture;
 	frag = obj->martial.shader.frag;
 	while (p) {
 		p->vlist = obj->vlist_local;
@@ -286,7 +284,6 @@ pipeline_start(int width, int height, void (*update)())
 	ENG.update = update;
 	ENG.TRANS.size = 0;
 	ENG.TRANS.buf = NULL;
-	bitmap_load("resource/std.bmp", &BITMAP);
 	device_init(width, height);
 	driver_start(width, height, pipeline_pipeline);
 	return ;

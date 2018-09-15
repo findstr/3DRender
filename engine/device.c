@@ -64,12 +64,12 @@ device_drawpixel(unsigned int x, unsigned int y, rgba_t color, float z)
 	//OpenGL use the left-bottom as (0,0)
 	y = DEV.height - y - 1;
 	zp = DEV.zbuffer + x + y * DEV.width;
-//	if (*zp < z) {
+	if (*zp < z) {
 		rgba_t *ptr;
 		ptr = DEV.frame + x + y * DEV.width;
 		*ptr = rgba_blend(color, *ptr);
 		*zp = z;
-//	}
+	}
 	return ;
 }
 
