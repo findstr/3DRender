@@ -1,4 +1,5 @@
 #include <math.h>
+#include <assert.h>
 #include "mathlib.h"
 #include "driver.h"
 #include "primitive.h"
@@ -44,6 +45,7 @@ camera_init(struct camera *cam, vector4_t *pos,
 
 	tan_fov_div2 = 1.0f / tanf(DEG_TO_RAD(fov / 2));
 	cam->view_dist = 0.5f * cam->viewplane_width * tan_fov_div2;
+	assert(FCMP(cam->view_dist, 1.0f));
 	if (fov == 90.0f) {
 		vector3_init_normalize(&vn, 1.0f, 0.0f , -1.0f);//x,z
 		plane3d_init(&cam->rt_clip_plane, &ZVECTOR3, &vn);
@@ -197,10 +199,13 @@ camera_perspective(struct camera *cam, struct object *obj)
 	int i;
 	for (i = 0; i < obj->vertices_num; i++) {
 		vector4_t *v = &obj->vlist_trans[i].v;
-		float z = v->z;
-		float scale = cam->view_dist / z;
-		v->x *= scale;
-		v->y *= scale * cam->aspect_ratio;
+		vector2_t *t = &obj->vlist_trans[i].t;
+		float z = 1 / v->z;
+		v->x *= z;
+		v->y *= z * cam->aspect_ratio;
+		v->z = z;
+		t->x *= z;
+		t->y *= z;
 	}
 }
 

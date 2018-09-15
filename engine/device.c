@@ -203,10 +203,11 @@ bottom_trapezoid(vertex_t *ver0, vertex_t *ver1, vertex_t *ver2, struct trapezoi
 }
 
 static rgba_t
-texture_sample(float u, float v)
+texture_sample(float u, float v, float z)
 {
-	int x = u * (BITMAP.info.width - 1);
-	int y = v * (BITMAP.info.height - 1);
+	z = 1 / z;
+	int x = u * z * (BITMAP.info.width - 1);
+	int y = v * z * (BITMAP.info.height - 1);
 	return BITMAP.buffer[y * BITMAP.info.width + x];
 }
 
@@ -234,11 +235,11 @@ render_trapezoid(struct trapezoid *r)
 		right = ceil(vright.v.x);
 		for (x = left; x < right; x += 1.0f) {
 			float lerp;
-			vector2_t uv;
+			vertex_t v;
 			rgba_t color;
 			lerp = (x - xstart) / xwidth;
-			vector2_lerp(&vleft.t, &vright.t, lerp, &uv);
-			color = texture_sample(uv.x, uv.y);
+			vertex_lerp(&vleft, &vright,  lerp, &v);
+			color = texture_sample(v.t.x, v.t.y, v.v.z);
 			draw_pixel((int)x, (int)y, color);
 		}
 	}
