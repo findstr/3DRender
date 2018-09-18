@@ -181,7 +181,7 @@ camera_backface(struct camera *cam, struct object *obj)
 		vector4_t view;
 		struct tri *p = &obj->plist[i];
 		v0 = p->vert[0];
-		vector4_sub(&cam->pos, &obj->vlist_local[v0].app.position, &view);
+		vector4_sub(&cam->pos, &obj->vlist[v0].app.position, &view);
 		dp = vector4_dot(&p->normal, &view);
 		if (dp > 0.0f) {
 			p->next = *rlist;
@@ -203,8 +203,8 @@ camera_perspective(struct camera *cam, struct object *obj)
 {
 	int i;
 	for (i = 0; i < obj->vertices_num; i++) {
-		vector4_t *v = &obj->vlist_local[i].v2f.sv_position;
-		vector2_t *t = &obj->vlist_local[i].v2f.texcoord0;
+		vector4_t *v = &obj->vlist[i].v2f.sv_position;
+		vector2_t *t = &obj->vlist[i].v2f.texcoord0;
 		float z = 1 / v->z;
 		v->x *= z;
 		v->y *= z * cam->aspect_ratio;
@@ -221,7 +221,7 @@ camera_viewport(struct camera *cam, struct object *obj)
 	float alpha = 0.5f * cam->viewport_width - 0.5f;
 	float beta = 0.5f * cam->viewport_height - 0.5f;
 	for (i = 0; i < obj->vertices_num; i++) {
-		vector4_t *v = &obj->vlist_local[i].v2f.sv_position;
+		vector4_t *v = &obj->vlist[i].v2f.sv_position;
 		v->x = (v->x + 1.0f) * alpha;
 		v->y = -v->y * beta + beta;
 	}

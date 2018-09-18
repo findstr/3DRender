@@ -15,8 +15,8 @@ object_init(struct object *obj)
 {
 	size_t sz;
 	sz = obj->vertices_num * sizeof(vertex_t);
-	obj->vlist_local = malloc(sz);
-	memset(obj->vlist_local, 0, sz);
+	obj->vlist = malloc(sz);
+	memset(obj->vlist, 0, sz);
 	sz = obj->tri_num * sizeof(struct tri);
 	obj->plist = malloc(sz);
 	memset(obj->plist, 0, sz);
@@ -26,7 +26,7 @@ object_init(struct object *obj)
 void
 object_finalize(struct object *obj)
 {
-	free(obj->vlist_local);
+	free(obj->vlist);
 	free(obj->plist);
 	return ;
 }
@@ -38,7 +38,7 @@ object_polynormals(struct object *obj)
 	float nl;
 	int v0, v1, v2;
 	vector4_t u,v,n,d;
-	vertex_t *vlist = obj->vlist_local;
+	vertex_t *vlist = obj->vlist;
 	for (i = 0; i < obj->tri_num; i++) {
 		struct tri *p = &obj->plist[i];
 		v0 = p->vert[0];
@@ -58,7 +58,7 @@ object_vertexnormals(struct object *obj)
 {
 	int i, v0, v1, v2 ;
 	vector4_t u,v,n;
-	vertex_t *vlist = obj->vlist_local;
+	vertex_t *vlist = obj->vlist;
 	for (i = 0; i < obj->tri_num; i++) {
 		struct tri *p = &obj->plist[i];
 		v0 = p->vert[0];

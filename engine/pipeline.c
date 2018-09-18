@@ -40,7 +40,7 @@ static void
 model2world(struct object *obj)
 {
 	int i;
-	vertex_t *src = obj->vlist_local;
+	vertex_t *src = obj->vlist;
 	transform_t *trans = &obj->transform;
 	for (i = 0; i < obj->vertices_num; i++) {
 		vertex_t *vert = &src[i];
@@ -63,7 +63,7 @@ transform_obj(struct object *obj, struct shader_global *G)
 {
 	int i;
 	shader_vert_t *vert = obj->martial.shader.vert;
-	vertex_t *list = obj->vlist_local;
+	vertex_t *list = obj->vlist;
 	for (i = 0; i < obj->vertices_num; i++)
 		vert(&list[i].app, &list[i].v2f, G);
 	return ;
@@ -189,7 +189,7 @@ pipeline_frag_obj(struct object *obj, struct shader_global *G)
 	G->BITMAP = &obj->martial.texture;
 	frag = obj->martial.shader.frag;
 	while (p) {
-		p->vlist = obj->vlist_local;
+		p->vlist = obj->vlist;
 		n = tri_to_trapezoid(p, r);
 		switch (n) {
 		case 2:

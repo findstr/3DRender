@@ -13,8 +13,8 @@ struct texture {
 static inline rgba_t
 texture_sample(struct texture *t, vector2_t *uv)
 {
-	int x = uv->x * (t->width - 1);
-	int y = uv->y * (t->height - 1);
+	int x = (int)(uv->x * (t->width - 1));
+	int y = (int)(uv->y * (t->height - 1));
 	return t->color[y * t->width + x];
 
 }

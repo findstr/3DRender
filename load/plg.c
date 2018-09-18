@@ -53,9 +53,9 @@ compute_radius(struct object *obj)
 	obj->radius_avg = 0;
 	obj->radius_max = 0;
 	for (i = 0; i < obj->vertices_num; i++) {
-		float x = obj->vlist_local[i].v.x;
-		float y = obj->vlist_local[i].v.y;
-		float z = obj->vlist_local[i].v.z;
+		float x = obj->vlist[i].v.x;
+		float y = obj->vlist[i].v.y;
+		float z = obj->vlist[i].v.z;
 		float dis = (float)sqrt(x * x + y * y + z * z);
 		obj->radius_avg += dis;
 		if (dis > obj->radius_max)
@@ -93,24 +93,24 @@ int plg_load(struct object *obj, const char *filename,
 		}
 		sscanf(str, "%s %s %s %s %s", xa, ya, za, ua, va);
 		DBG_PRINT("%s", str);
-		obj->vlist_local[i].v.x = atoi(xa);
-                obj->vlist_local[i].v.y = atoi(ya);
-		obj->vlist_local[i].v.z = atoi(za);
-		obj->vlist_local[i].v.w = 1;
-		obj->vlist_local[i].t.x = atof(ua);
-		obj->vlist_local[i].t.y = atof(va);
+		obj->vlist[i].v.x = atoi(xa);
+                obj->vlist[i].v.y = atoi(ya);
+		obj->vlist[i].v.z = atoi(za);
+		obj->vlist[i].v.w = 1;
+		obj->vlist[i].t.x = atof(ua);
+		obj->vlist[i].t.y = atof(va);
 
-		obj->vlist_local[i].v.x*=scale->x;
-		obj->vlist_local[i].v.y*=scale->y;
-		obj->vlist_local[i].v.z*=scale->z;
+		obj->vlist[i].v.x*=scale->x;
+		obj->vlist[i].v.y*=scale->y;
+		obj->vlist[i].v.z*=scale->z;
 
 		DBG_PRINT("\nVertex %d = %f, %f, %f, %f %f %f\n", i,
-                                           obj->vlist_local[i].v.x,
-                                           obj->vlist_local[i].v.y,
-                                           obj->vlist_local[i].v.z,
-                                           obj->vlist_local[i].v.w,
-                                           obj->vlist_local[i].t.x,
-                                           obj->vlist_local[i].t.y
+                                           obj->vlist[i].v.x,
+                                           obj->vlist[i].v.y,
+                                           obj->vlist[i].v.z,
+                                           obj->vlist[i].v.w,
+                                           obj->vlist[i].t.x,
+                                           obj->vlist[i].t.y
 					   );
 	}
 	compute_radius(obj);
@@ -135,7 +135,7 @@ int plg_load(struct object *obj, const char *filename,
 			sscanf(tmp_string,"%x", &poly_surface_desc);
 		else
 			poly_surface_desc = atoi(tmp_string);
-		obj->plist[i].vlist = obj->vlist_local;
+		obj->plist[i].vlist = obj->vlist;
 		DBG_PRINT("\nSurface Desc = 0x%.4x, num_verts = %d, vert_indices [%d, %d, %d]",
 				 poly_surface_desc,
 				 poly_num_verts,

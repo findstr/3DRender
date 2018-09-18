@@ -184,7 +184,7 @@ light_transform(struct camera *camera, struct object *obj)
 	struct tri *p = obj->rlist;
 
 	while (p) {
-		p->vlist = obj->vlist_local;
+		p->vlist = obj->vlist;
 		light_tri(p);
 		p = p->next;
 	}

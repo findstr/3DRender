@@ -16,16 +16,7 @@ typedef struct vertex {
 	vector2_t t;
 	struct shader_appdata  app;
 	struct shader_v2f v2f;
-} vertex_t; 
-
-struct poly1 {
-	vector3_t point[3];
-};
-
-struct poly2 {
-	vector3_t *point;
-	int vertices[3];
-};
+} vertex_t;
 
 struct tri {
 	int state;
@@ -45,20 +36,15 @@ struct object {
 	int id;
 	char name[64];
 	int state;
-	int attr;
 	float radius_avg;
 	float radius_max;
-
 	transform_t transform;
-
-	vector4_t ux,uy,uz;
-
 	int vertices_num;
-	vertex_t *vlist_local;
-	struct matrial martial;
-
 	int tri_num;
+	vertex_t *vlist;
 	struct tri *plist;
+
+	struct matrial martial;
 	struct tri *rlist;
 	struct object *next;
 };
