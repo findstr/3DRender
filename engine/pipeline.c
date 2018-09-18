@@ -18,6 +18,7 @@ struct pipeline_buffer {
 
 struct pipeline {
 	void (*update)();
+	vector2_t screen;
 	struct object *render;
 	struct camera *camera;
 	struct pipeline_buffer TRANS;
@@ -33,40 +34,6 @@ getbuf(struct pipeline_buffer *buff, size_t sz)
 		buff->size = sz;
 	}
 	return buff->buf;
-}
-
-
-static void
-model2world(struct object *obj)
-{
-	int i;
-	vertex_t *src = obj->vlist;
-	transform_t *trans = &obj->transform;
-	for (i = 0; i < obj->vertices_num; i++) {
-		vertex_t *vert = &src[i];
-		vector4_mul_quaternion(&vert->v, &trans->rot, &vert->app.position);
-		vector4_mul_quaternion(&vert->n, &trans->rot, &vert->app.normal);
-		vector4_add(&vert->app.position, &trans->pos, &vert->app.position);
-		vert->app.texcoord0 = vert->t;
-		assert(vert->t.x <= 1.0f);
-		assert(vert->t.y <= 1.0f);
-	}
-	for (i = 0; i < obj->tri_num; i++) {
-		struct tri *p = &obj->plist[i];
-		vector4_mul_quaternion(&p->normal_local, &trans->rot, &p->normal);
-	}
-	return ;
-}
-
-static void
-transform_obj(struct object *obj, struct shader_global *G)
-{
-	int i;
-	shader_vert_t *vert = obj->martial.shader.vert;
-	vertex_t *list = obj->vlist;
-	for (i = 0; i < obj->vertices_num; i++)
-		vert(&list[i].app, &list[i].v2f, G);
-	return ;
 }
 
 struct trapezoid {
@@ -190,6 +157,7 @@ pipeline_frag_obj(struct object *obj, struct shader_global *G)
 	frag = obj->martial.shader.frag;
 	while (p) {
 		p->vlist = obj->vlist;
+		device_drawframe(p);
 		n = tri_to_trapezoid(p, r);
 		switch (n) {
 		case 2:
@@ -204,20 +172,52 @@ pipeline_frag_obj(struct object *obj, struct shader_global *G)
 }
 
 static void
+transform_obj(struct object *obj, struct shader_global *G)
+{
+	int i;
+	vertex_t *list = obj->vlist;
+	transform_t *trans = &obj->transform;
+	shader_vert_t *vertfunc = obj->martial.shader.vert;
+	for (i = 0; i < obj->vertices_num; i++) {
+		vertex_t *vert = &list[i];
+		vector4_mul_quaternion(&vert->v, &trans->rot, &vert->app.position);
+		vector4_mul_quaternion(&vert->n, &trans->rot, &vert->app.normal);
+//		vector4_a5d(&vert->app.position, &trans->pos, &vert->app.position);
+		vert->app.texcoord0 = vert->t;
+		vertfunc(&list[i].app, &list[i].v2f, G);
+	}
+	for (i = 0; i < obj->tri_num; i++) {
+		struct tri *p = &obj->plist[i];
+		vector4_mul_quaternion(&p->normal_local, &trans->rot, &p->normal);
+	}
+	return ;
+}
+
+
+
+static void
 pipeline_vert()
 {
 	struct shader_global G;
 	struct camera *c = ENG.camera;
-	G.MVP = c->mcam;
+
 	while (c) {
 		struct object *obj = ENG.render;
 		while (obj) {
-			obj->rlist = NULL;
-			model2world(obj);
-			camera_backface(c, obj);
+			matrix_t tmp;
+			transform_t *trans = &obj->transform;
+			matrix_t mtrans = (matrix_t){
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				trans->pos.x, trans->pos.y, trans->pos.z, 1.0f
+			};
 			camera_transform(c);
-			//light_transform(c, obj);
+			matrix_mul(&mtrans, &c->mcam, &G.MVP);
+			obj->rlist = NULL;
+			camera_backface(c, obj);
 			transform_obj(obj, &G);
+			//light_transform(c, obj);
 			obj = obj->next;
 		}
 		c = c->next;
@@ -230,6 +230,7 @@ pipeline_frag()
 	struct shader_global G;
 	struct camera *c = ENG.camera;
 	G.MVP = c->mcam;
+	G.SCREEN = ENG.screen;
 	while (c) {
 		struct object *obj = ENG.render;
 		while (obj) {
@@ -284,6 +285,8 @@ pipeline_start(int width, int height, void (*update)())
 	ENG.update = update;
 	ENG.TRANS.size = 0;
 	ENG.TRANS.buf = NULL;
+	ENG.screen.x = width;
+	ENG.screen.y = height;
 	device_init(width, height);
 	driver_start(width, height, pipeline_pipeline);
 	return ;

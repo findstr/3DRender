@@ -38,6 +38,7 @@ SRC=\
     engine/primitive.c\
     load/bitmap.c\
     load/plg.c\
+    load/plane.c\
 
 main:$(SRC)
 	gcc $(INCLUDE) $(CFLAG) -o $@ $^ $(LDFLAG)

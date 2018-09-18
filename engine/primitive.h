@@ -34,8 +34,8 @@ struct tri {
 
 struct object {
 	int id;
-	char name[64];
 	int state;
+	char name[64];
 	float radius_avg;
 	float radius_max;
 	transform_t transform;
