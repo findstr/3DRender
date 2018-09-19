@@ -23,7 +23,7 @@ shader_default_diffuse_vert(struct shader_appdata *a2v,
 	float time = G->TIME;
 	vector4_t delta;
 	vector4_t pos = a2v->position;
-	vector4_init(&delta, 0.f, sin(pos.x / 2 + time * 3.14f) , 0.f);
+	vector4_init(&delta, 0.f, sin(pos.x / 2 + time * 3.14f) * 5.0f , 0.f);
 	vector4_add(&pos, &delta, &pos);
 	vector4_mul_matrix(&pos, &G->MVP, &pos);
 	v2f->sv_position = pos;
@@ -34,15 +34,5 @@ shader_default_diffuse_vert(struct shader_appdata *a2v,
 rgba_t
 shader_default_diffuse_frag(struct shader_v2f *v2f, const struct shader_global *g)
 {
-	/*
-	if (v2f->sv_position.x <= 0.0f)
-		return RGBA(0x0, 0x0, 0x0, 0x0);
-	if (v2f->sv_position.x >= g->SCREEN.x)
-		return RGBA(0x0, 0x0, 0x0, 0x0);
-	if (v2f->sv_position.y <= 0.0f)
-		return RGBA(0x0, 0x0, 0x0, 0x0);
-	if (v2f->sv_position.y >= g->SCREEN.y)
-		return RGBA(0x0, 0x0, 0x0, 0x0);
-		*/
 	return texture_sample(g->BITMAP, &v2f->texcoord0);
 }

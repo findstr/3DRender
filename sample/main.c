@@ -86,12 +86,12 @@ int main(int argc, char **argv)
 {
 #if 1
 	quaternion_t rot = IQUATERNION;
-	vector4_t cam_pos = { 0, 0, -20, 1 };
-	vector4_t cam_dir = { 0, 10.0f, 0, 1 };
+	vector4_t cam_pos = { 0, 0, 0, 1 };
+	vector4_t cam_dir = { 0, 1.f, 0, 1 };
 	mathlib_init();
 	pipeline_start(WIDTH, HEIGHT, update);
 	vector4_t pos;
-	vector4_init(&pos, 0, 0, 0);
+	vector4_init(&pos, 0, 0, 100);
 #if 1
 	quaternion_rotate_x(&rot, 100.f);
 	plane_load(&obj, &pos, &rot);

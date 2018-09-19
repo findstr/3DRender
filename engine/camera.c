@@ -15,6 +15,7 @@ camera_init(struct camera *cam, vector4_t *pos,
 	float tan_fov_div2;
 	cam->pos = *pos;
 	cam->dir = *dir;
+	cam->dir.z = -cam->dir.z;
 	vector4_init(&cam->u, 1.0f, 0.0f, 0.0f);
 	vector4_init(&cam->v, 0, 1, 0);
 	vector4_init(&cam->n, 0, 1, 0);
@@ -24,55 +25,11 @@ camera_init(struct camera *cam, vector4_t *pos,
 		vector4_zero(&cam->target);
 	cam->near_clip_z = near_clip_z;
 	cam->far_clip_z = far_clip_z;
-
 	cam->viewport_width = viewport_width;
 	cam->viewport_height = viewport_height;
-
-	cam->viewport_center_x = (viewport_width - 1) / 2;
-	cam->viewport_center_y = (viewport_height - 1) / 2;
-
 	cam->aspect_ratio = viewport_width / viewport_height;
-
 	cam->mcam = IMATRIX;
-	cam->mper = IMATRIX;
-	cam->mscr = IMATRIX;
-
 	cam->fov = fov;
-
-	cam->viewplane_width = 2.0f;
-	cam->viewplane_height = 2.0f / cam->aspect_ratio;
-
-	tan_fov_div2 = 1.0f / tanf(DEG_TO_RAD(fov / 2));
-	cam->view_dist = 0.5f * cam->viewplane_width * tan_fov_div2;
-	assert(FCMP(cam->view_dist, 1.0f));
-	if (fov == 90.0f) {
-		vector3_init_normalize(&vn, 1.0f, 0.0f , -1.0f);//x,z
-		plane3d_init(&cam->rt_clip_plane, &ZVECTOR3, &vn);
-
-		vector3_init_normalize(&vn, -1.0f, 0.0f , -1.0f);//-x,z
-		plane3d_init(&cam->lt_clip_plane, &ZVECTOR3, &vn);
-
-		vector3_init_normalize(&vn, 0.0f, 1.0f, -1.0f);//y,z
-		plane3d_init(&cam->tp_clip_plane, &ZVECTOR3, &vn);
-
-		vector3_init_normalize(&vn, 0.0f, -1.0f, -1.0f);//-y,z
-		plane3d_init(&cam->bt_clip_plane, &ZVECTOR3, &vn);
-	} else {
-		float z = cam->view_dist;
-		float x = cam->viewplane_width / 2.0f;
-
-		vector3_init_normalize(&vn, z, 0.0f, -x); //x,z
-		plane3d_init(&cam->rt_clip_plane, &ZVECTOR3, &vn);
-
-		vector3_init_normalize(&vn, -z, 0.0f, -x);//-x,z
-		plane3d_init(&cam->lt_clip_plane, &ZVECTOR3, &vn);
-
-		vector3_init_normalize(&vn, 0.0f, z, -x);//y,z
-		plane3d_init(&cam->tp_clip_plane, &ZVECTOR3, &vn);
-
-		vector3_init_normalize(&vn, 0.0f, -z, -x); //-y,z
-		plane3d_init(&cam->bt_clip_plane, &ZVECTOR3, &vn);
-	}
 	return ;
 }
 
@@ -139,6 +96,7 @@ camera_rot_zyx(struct camera *cam)
 void
 camera_cull(struct camera *cam, struct object *obj, int cull_flag)
 {
+	/*
 	vector4_t sphere_pos;
 	float r = obj->radius_max;
 	vector4_mul_matrix(&obj->transform.pos, &cam->mcam, &sphere_pos);
@@ -164,7 +122,7 @@ camera_cull(struct camera *cam, struct object *obj, int cull_flag)
 			obj->state |= OBJECT4D_STATE_CULLED;
 			return ;
 		}
-	}
+	}*/
 	return ;
 }
 
@@ -181,8 +139,7 @@ camera_backface(struct camera *cam, struct object *obj)
 		vector4_t view;
 		struct tri *p = &obj->plist[i];
 		v0 = p->vert[0];
-		vector4_sub(&cam->pos, &obj->vlist[v0].app.position, &view);
-		dp = vector4_dot(&p->normal, &view);
+		dp = vector4_dot(&p->normal, &cam->dir);
 		if (dp > 0.0f) {
 			p->next = *rlist;
 			*rlist = p;
@@ -196,24 +153,19 @@ camera_backface(struct camera *cam, struct object *obj)
 int
 camera_transform(struct camera *cam)
 {
+	float n = cam->near_clip_z;
+	float f = cam->far_clip_z;
+	float as = cam->aspect_ratio;
+	float theta = DEG_TO_RAD(cam->fov/2);
+	matrix_t project = {
+		1/tan(theta),	0,			0,		0,
+		0,		1/(tan(theta) * as),	0,		0,
+		0,		0,			(f+n)/(f-n),	1,
+		0,		0,			2*f*n/(n-f),	0,
+	};
 	camera_rot_zyx(cam);
+	matrix_mul(&cam->mcam, &project, &cam->mcam);
 	return 0;
-}
-
-void
-camera_perspective(struct camera *cam, struct object *obj)
-{
-	int i;
-	for (i = 0; i < obj->vertices_num; i++) {
-		vector4_t *v = &obj->vlist[i].v2f.sv_position;
-		vector2_t *t = &obj->vlist[i].v2f.texcoord0;
-		float z = 1 / v->z;
-		v->x *= z;
-		v->y *= z * cam->aspect_ratio;
-		v->z = z;
-		t->x *= z;
-		t->y *= z;
-	}
 }
 
 void
@@ -223,9 +175,14 @@ camera_viewport(struct camera *cam, struct object *obj)
 	float alpha = 0.5f * cam->viewport_width - 0.5f;
 	float beta = 0.5f * cam->viewport_height - 0.5f;
 	for (i = 0; i < obj->vertices_num; i++) {
-		vector4_t *v = &obj->vlist[i].v2f.sv_position;
-		v->x = (v->x + 1.0f) * alpha;
-		v->y = -v->y * beta + beta;
+		float w, x, y;
+		vector4_t *v;
+		v = &obj->vlist[i].v2f.sv_position;
+		w = v->w;
+		x = v->x * w;
+		y = v->y * w;
+		v->x = (x + 1.0f) * alpha;
+		v->y = -y * beta + beta;
 	}
 }
 

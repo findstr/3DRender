@@ -104,6 +104,7 @@ tri_to_trapezoid(struct tri *p, struct trapezoid r[2])
 		float h = ver2->sv_position.y - ver0->sv_position.y;
 		float newh = ver1->sv_position.y - ver0->sv_position.y;
 		shader_v2f_lerp(ver0, ver2, newh / h, &medium);
+		assert(medium.texcoord0.x * medium.texcoord0.y >= 0.0f);
 		bottom_trapezoid(ver0, &medium, ver1, &r[0]);
 		top_trapezoid(&medium, ver1, ver2, &r[1]);
 		return 2;
@@ -128,19 +129,19 @@ render_trapezoid(struct trapezoid *r, shader_frag_t *frag, struct shader_global 
 		lerp = (y - ystart) / yheight;
 		shader_v2f_lerp(&r->left[0], &r->left[1], lerp, &vleft);
 		shader_v2f_lerp(&r->right[0], &r->right[1], lerp, &vright);
-		xstart = vleft.sv_position.x; 
+		xstart = vleft.sv_position.x;
 		xwidth = vright.sv_position.x - vleft.sv_position.x;
 		left = ceil(vleft.sv_position.x);
 		right = ceil(vright.sv_position.x);
 		for (x = left; x < right; x += 1.0f) {
 			rgba_t color;
-			float lerp, z;
+			float lerp, rhw;
 			struct shader_v2f i;
 			lerp = (x - xstart) / xwidth;
 			shader_v2f_lerp(&vleft, &vright,  lerp, &i);
-			z = 1 / i.sv_position.z;
-			i.texcoord0.x *= z;
-			i.texcoord0.y *= z;
+			rhw = i.sv_position.w;
+			i.texcoord0.x *= rhw;
+			i.texcoord0.y *= rhw;
 			color = frag(&i, G);
 			device_drawpixel((int)x, (int)y, color, i.sv_position.z);
 		}
@@ -181,11 +182,12 @@ transform_obj(struct object *obj, struct shader_global *G)
 	shader_vert_t *vertfunc = obj->martial.shader.vert;
 	for (i = 0; i < obj->vertices_num; i++) {
 		vertex_t *vert = &list[i];
-		vector4_mul_quaternion(&vert->v, &trans->rot, &vert->app.position);
-		vector4_mul_quaternion(&vert->n, &trans->rot, &vert->app.normal);
-//		vector4_a5d(&vert->app.position, &trans->pos, &vert->app.position);
+		vert->app.position = vert->v;
 		vert->app.texcoord0 = vert->t;
-		vertfunc(&list[i].app, &list[i].v2f, G);
+		vertfunc(&vert->app, &vert->v2f, G);
+		vert->v2f.sv_position.w = 1.f / vert->v2f.sv_position.w; //RHW
+		vert->v2f.texcoord0.x *= vert->v2f.sv_position.w;
+		vert->v2f.texcoord0.y *= vert->v2f.sv_position.w;
 	}
 	for (i = 0; i < obj->tri_num; i++) {
 		struct tri *p = &obj->plist[i];
@@ -213,14 +215,15 @@ pipeline_vert()
 				0, 0, 1, 0,
 				trans->pos.x, trans->pos.y, trans->pos.z, 1.0f
 			};
-			camera_transform(c);
-//			quaternion_to_matrix(&trans->rot, &tmp);
-			matrix_mul(&mtrans, &c->mcam, &G.MVP);
-//			matrix_mul(&tmp,  &G.MVP, &G.MVP);
 			obj->rlist = NULL;
-			camera_backface(c, obj);
+			camera_transform(c);
+			quaternion_to_matrix(&obj->transform.rot, &tmp);
+			matrix_mul(&tmp, &mtrans, &tmp);
+			matrix_mul(&tmp, &c->mcam, &G.MVP);
 			transform_obj(obj, &G);
-			//light_transform(c, obj);
+			camera_backface(c, obj);
+			camera_viewport(c, obj);
+			pipeline_frag_obj(obj, &G);
 			obj = obj->next;
 		}
 		c = c->next;
@@ -235,16 +238,17 @@ pipeline_frag()
 	G.MVP = c->mcam;
 	G.SCREEN = ENG.screen;
 	G.TIME = ENG.time;
+#if 0
 	while (c) {
 		struct object *obj = ENG.render;
 		while (obj) {
-			camera_perspective(c, obj);
 			camera_viewport(c, obj);
 			pipeline_frag_obj(obj, &G);
 			obj = obj->next;
 		}
 		c = c->next;
 	}
+#endif
 }
 
 static void
@@ -257,7 +261,6 @@ pipeline_pipeline()
 	pipeline_frag();
 	device_flip();
 	ENG.time += 0.01f;
-	ENG.time -= floor(ENG.time);
 }
 
 void

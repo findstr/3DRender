@@ -23,21 +23,3 @@ const matrix4x4_t IMATRIX4x4 = {
 	0,0,0,1,
 };
 
-const matrix4x3_t IMATRIX4x3 = {
-	1,0,0,
-	0,1,0,
-	0,0,1,
-	0,0,0,
-};
-
-const matrix4x3_t IMATRIX3x3 = {
-	1,0,0,
-	0,1,0,
-	0,0,1,
-};
-
-const matrix2x2_t IMATRIX2x2 = {
-	1,0,
-	0,1,
-};
-

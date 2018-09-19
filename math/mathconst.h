@@ -12,9 +12,6 @@ extern const quaternion_t IQUATERNION;
 
 extern const matrix_t IMATRIX;
 extern const matrix4x4_t IMATRIX4x4;
-extern const matrix4x3_t IMATRIX4x3;
-extern const matrix4x3_t IMATRIX3x3;
-extern const matrix2x2_t IMATRIX2x2;
 
 #endif
 

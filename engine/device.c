@@ -156,7 +156,7 @@ device_clear()
 	fe = fs + sz;
 	memset(DEV.frame, 0x00, sz * sizeof(rgba_t));
 	while (fs < fe)
-		*fs++ = 0.0f;
+		*fs++ = -2.f;
 	return ;
 }
 

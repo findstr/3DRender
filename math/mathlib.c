@@ -133,9 +133,10 @@ vector2_divf(const vector2_t *a, float f, vector2_t *c)
 void
 vector2_lerp(const vector2_t *a, const vector2_t *b, float t, vector2_t *c)
 {
-	assert(1.0f - t > -0.1f);
+	assert(1.0f - t > 0.0f);
 	c->x = a->x + (b->x - a->x) * t;
 	c->y = a->y + (b->y - a->y) * t;
+	assert(c->x * c->y >= 0.f);
 	return ;
 }
 
@@ -160,6 +161,7 @@ vector4_lerp(const vector4_t *a, const vector4_t *b, float t, vector4_t *c)
 	c->x = a->x + (b->x - a->x) * t;
 	c->y = a->y + (b->y - a->y) * t;
 	c->z = a->z + (b->z - a->z) * t;
+	c->w = a->w + (b->w - a->w) * t;
 	return ;
 }
 
@@ -234,6 +236,10 @@ vector4_mul_matrix(const vector4_t *va, const matrix_t *mb, vector4_t *res)
 	res->y = x * mb->m01 +  y * mb->m11 + z * mb->m21 + w * mb->m31;
 	res->z = x * mb->m02 +  y * mb->m12 + z * mb->m22 + w * mb->m32;
 	res->w = x * mb->m03 +  y * mb->m13 + z * mb->m23 + w * mb->m33;
+	res->x /= res->w;
+	res->y /= res->w;
+	res->z /= res->w;
+	res->w /= res->w;
 	return ;
 }
 

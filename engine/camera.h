@@ -19,30 +19,31 @@ struct camera {
 	vector4_t n;
 	vector4_t target;
 
-	float view_dist;
 	float fov;
 
 	float near_clip_z;
+	float near_clip_w;
+	float near_clip_h;
 	float far_clip_z;
-
+/*
+	float view_dist;
 	plane3d_t rt_clip_plane;
 	plane3d_t lt_clip_plane;
 	plane3d_t tp_clip_plane;
 	plane3d_t bt_clip_plane;
-
 	float viewplane_width;
 	float viewplane_height;
+*/
 
 	float viewport_width;
 	float viewport_height;
+/*
 	float viewport_center_x;
 	float viewport_center_y;
-
+*/
 	float aspect_ratio;
 
 	matrix_t mcam;
-	matrix_t mper;
-	matrix_t mscr;
 	struct camera *next;
 };
 
@@ -55,7 +56,6 @@ void camera_rot_xyz(struct camera *cam);
 void camera_rot_zyx(struct camera *cam);
 void camera_backface(struct camera *cam, struct object *obj);
 int camera_transform(struct camera *cam);;
-void camera_perspective(struct camera *cam, struct object *obj);
 void camera_viewport(struct camera *cam, struct object *obj);
 /*
 void camera_cull(struct camera *cam, struct object4d *obj, int cull_flag);

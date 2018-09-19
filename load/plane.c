@@ -3,7 +3,7 @@
 #include "mathlib.h"
 #include "plane.h"
 
-#define WIDTH			(10.0f)
+#define WIDTH			(100.0f)
 #define VERTEX_LINE		(10)
 #define DELTA			(WIDTH / VERTEX_LINE)
 #define VERTEX_COUNT		((VERTEX_LINE + 1) * (VERTEX_LINE + 1))
