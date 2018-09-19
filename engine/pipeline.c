@@ -17,11 +17,12 @@ struct pipeline_buffer {
 };
 
 struct pipeline {
-	void (*update)();
+	float time;
 	vector2_t screen;
 	struct object *render;
 	struct camera *camera;
 	struct pipeline_buffer TRANS;
+	void (*update)();
 };
 
 static struct pipeline ENG;
@@ -200,7 +201,7 @@ pipeline_vert()
 {
 	struct shader_global G;
 	struct camera *c = ENG.camera;
-
+	G.TIME = ENG.time;
 	while (c) {
 		struct object *obj = ENG.render;
 		while (obj) {
@@ -213,7 +214,9 @@ pipeline_vert()
 				trans->pos.x, trans->pos.y, trans->pos.z, 1.0f
 			};
 			camera_transform(c);
+//			quaternion_to_matrix(&trans->rot, &tmp);
 			matrix_mul(&mtrans, &c->mcam, &G.MVP);
+//			matrix_mul(&tmp,  &G.MVP, &G.MVP);
 			obj->rlist = NULL;
 			camera_backface(c, obj);
 			transform_obj(obj, &G);
@@ -231,6 +234,7 @@ pipeline_frag()
 	struct camera *c = ENG.camera;
 	G.MVP = c->mcam;
 	G.SCREEN = ENG.screen;
+	G.TIME = ENG.time;
 	while (c) {
 		struct object *obj = ENG.render;
 		while (obj) {
@@ -252,6 +256,8 @@ pipeline_pipeline()
 	pipeline_vert();
 	pipeline_frag();
 	device_flip();
+	ENG.time += 0.01f;
+	ENG.time -= floor(ENG.time);
 }
 
 void
@@ -283,6 +289,7 @@ pipeline_start(int width, int height, void (*update)())
 	ENG.render = NULL;
 	ENG.camera = NULL;
 	ENG.update = update;
+	ENG.time = 0;
 	ENG.TRANS.size = 0;
 	ENG.TRANS.buf = NULL;
 	ENG.screen.x = width;

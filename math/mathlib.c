@@ -353,6 +353,30 @@ quaternion_inverse(const quaternion_t *a, quaternion_t *b)
 }
 
 void
+quaternion_to_matrix(const quaternion_t *q, matrix_t *m)
+{
+	m->m00 = 1.0f - 2.0f * (q->y * q->y + q->z * q->z);
+	m->m10 = 2.0f * (q->x * q->y + q->w * q->z);
+	m->m20 = 2.0f * (q->x * q->z - q->w * q->y);
+	m->m30 = 0.0f;
+
+	m->m01 = 2.0f * (q->x * q->y - q->w * q->z);
+	m->m11 = 1.0f - 2.0f * (q->x * q->x  + q->z * q->z);
+	m->m22 = 2.0f * (q->y * q->z + q->w * q->x);
+	m->m32 = 0.0f;
+
+	m->m02 = 2.0f * (q->x * q->z + q->w * q->y);
+	m->m12 = 2.0f * (q->y * q->z - q->w * q->x);
+	m->m22 = 1.0f - 2.0f * (q->x * q->x + q->y * q->y);
+	m->m32 = 0.0f;
+
+	m->m03 = 0.0f;
+	m->m13 = 0.0f;
+	m->m23 = 0.0f;
+	m->m33 = 1.0f;
+}
+
+void
 quaternion_print(const char *str, const quaternion_t *q)
 {
 	printf("%s,w:%f,x:%f,y:%f,z:%f\n", str,

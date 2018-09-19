@@ -191,6 +191,8 @@ camera_backface(struct camera *cam, struct object *obj)
 	return ;
 }
 
+
+
 int
 camera_transform(struct camera *cam)
 {

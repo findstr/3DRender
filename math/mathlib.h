@@ -89,6 +89,7 @@ void quaternion_cross(const quaternion_t *a, const quaternion_t *b,
 		quaternion_t *c);
 void quaternion_normalize(quaternion_t *q);
 void quaternion_inverse(const quaternion_t *a, quaternion_t *b);
+void quaternion_to_matrix(const quaternion_t *a, matrix_t *b);
 void quaternion_print(const char *str, const quaternion_t *q);
 
 void matrix_mul(const matrix_t *a, const matrix_t *b, matrix_t *c);

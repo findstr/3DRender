@@ -6,6 +6,7 @@
 #include "texture.h"
 
 struct shader_global {
+	float TIME;
 	matrix_t  MVP;
 	vector2_t SCREEN;
 	struct texture *BITMAP;

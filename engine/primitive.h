@@ -7,6 +7,7 @@
 
 typedef struct transform {
 	vector4_t pos;
+	vector3_t scale;
 	quaternion_t rot;
 } transform_t;
 
