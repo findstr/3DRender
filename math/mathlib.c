@@ -13,8 +13,8 @@ mathlib_init()
 	int ang;
 	for (ang = 0; ang <= 360; ang++) {
 		float theta = DEG_TO_RAD((float)ang);
-		sin_table[ang] = (float)sin(theta);
-		cos_table[ang] = (float)cos(theta);
+		sin_table[ang] = (float)sinf(theta);
+		cos_table[ang] = (float)cosf(theta);
 	}
 	return ;
 }
@@ -27,18 +27,18 @@ fast_do(float theta, const float *table)
 	if (theta < 0.0f)
 		theta += 360.0f;
 	i = (int)theta;
-	f = theta - i;
+	f = (int)(theta - i);
 	return table[i] + f * (table[i + 1] - table[i]);
 }
 
 float
-fast_sin(float theta)
+fast_sinf(float theta)
 {
 	return fast_do(theta, sin_table);
 }
 
 float
-fast_cos(float theta)
+fast_cosf(float theta)
 {
 	return fast_do(theta, cos_table);
 }
@@ -133,7 +133,7 @@ vector2_divf(const vector2_t *a, float f, vector2_t *c)
 void
 vector2_lerp(const vector2_t *a, const vector2_t *b, float t, vector2_t *c)
 {
-	assert(1.0f - t > 0.0f);
+	assert(1.0f - t >= 0.0f);
 	c->x = a->x + (b->x - a->x) * t;
 	c->y = a->y + (b->y - a->y) * t;
 	assert(c->x * c->y >= 0.f);
@@ -153,6 +153,46 @@ vector3_lerp(const vector3_t *a, const vector3_t *b, float t, vector3_t *c)
 	c->y = a->y + (b->y - a->y) * t;
 	c->z = a->z + (b->z - a->z) * t;
 	return ;
+}
+
+void
+vector3_add(const vector3_t *a, const vector3_t *b, vector3_t *c)
+{
+	c->x = a->x + b->x;
+	c->y = a->y + b->y;
+	c->z = a->z + b->z;
+}
+
+void
+vector3_sub(const vector3_t *a, const vector3_t *b, vector3_t *c)
+{
+	c->x = a->x - b->x;
+	c->y = a->y - b->y;
+	c->z = a->z - b->z;
+}
+
+void
+vector3_cross(const vector3_t *a, const vector3_t *b, vector3_t *c)
+{
+	vector3_t vn;
+	vn.x = a->y * b->z - a->z * b->y;
+	vn.y = a->z * b->x - a->x * b->z;
+	vn.z = a->x * b->y - a->y * b->x;
+	*c = vn;
+	return ;
+}
+
+float
+vector3_dot(const vector3_t *a, const vector3_t *b)
+{
+	return (a->x * b->x + a->y * b->y + a->z * b->z);
+}
+
+float
+vector3_magnitude(const vector3_t *a)
+{
+	float x = a->x, y = a->y, z = a->z;
+	return sqrtf(x*x + y*y + z*z);
 }
 
 void
@@ -269,8 +309,8 @@ void
 quaternion_rotate_x(quaternion_t *q, float angle)
 {
 	float theta = DEG_TO_RAD(angle * 0.5f);
-	q->w = cos(theta);
-	q->x = sin(theta);
+	q->w = cosf(theta);
+	q->x = sinf(theta);
 	q->y = 0.0f;
 	q->z = 0.0f;
 	return ;
@@ -280,9 +320,9 @@ void
 quaternion_rotate_y(quaternion_t *q, float angle)
 {
 	float theta = DEG_TO_RAD(angle * 0.5f);
-	q->w = cos(theta);
+	q->w = cosf(theta);
 	q->x = 0.0f;
-	q->y = sin(theta);
+	q->y = sinf(theta);
 	q->z = 0.0f;
 	return ;
 }
@@ -291,10 +331,10 @@ void
 quaternion_rotate_z(quaternion_t *q, float angle)
 {
 	float theta = DEG_TO_RAD(angle * 0.5f);
-	q->w = cos(theta);
+	q->w = cosf(theta);
 	q->x = 0.0f;
 	q->y = 0.0f;
-	q->z = sin(theta);
+	q->z = sinf(theta);
 	return ;
 }
 
@@ -362,17 +402,17 @@ void
 quaternion_to_matrix(const quaternion_t *q, matrix_t *m)
 {
 	m->m00 = 1.0f - 2.0f * (q->y * q->y + q->z * q->z);
-	m->m10 = 2.0f * (q->x * q->y + q->w * q->z);
-	m->m20 = 2.0f * (q->x * q->z - q->w * q->y);
+	m->m10 = 2.0f * (q->x * q->y - q->w * q->z);
+	m->m20 = 2.0f * (q->x * q->z + q->w * q->y);
 	m->m30 = 0.0f;
 
-	m->m01 = 2.0f * (q->x * q->y - q->w * q->z);
+	m->m01 = 2.0f * (q->x * q->y + q->w * q->z);
 	m->m11 = 1.0f - 2.0f * (q->x * q->x  + q->z * q->z);
-	m->m22 = 2.0f * (q->y * q->z + q->w * q->x);
-	m->m32 = 0.0f;
+	m->m21 = 2.0f * (q->y * q->z - q->w * q->x);
+	m->m31 = 0.0f;
 
-	m->m02 = 2.0f * (q->x * q->z + q->w * q->y);
-	m->m12 = 2.0f * (q->y * q->z - q->w * q->x);
+	m->m02 = 2.0f * (q->x * q->z - q->w * q->y);
+	m->m12 = 2.0f * (q->y * q->z + q->w * q->x);
 	m->m22 = 1.0f - 2.0f * (q->x * q->x + q->y * q->y);
 	m->m32 = 0.0f;
 
@@ -419,8 +459,8 @@ void
 matrix_rotate_x(matrix_t *m, float angle)
 {
 	float s, c;
-	s = fast_sin(angle);
-	c = fast_cos(angle);
+	s = fast_sinf(angle);
+	c = fast_cosf(angle);
 	matrix_t val = {
 		1.0f,	0.0f,	0.0f,	0.0f,
 		0.0f,	c,	s,	0.0f,
@@ -435,8 +475,8 @@ void
 matrix_rotate_y(matrix_t *m, float angle)
 {
 	float s, c;
-	s = fast_sin(angle);
-	c = fast_cos(angle);
+	s = fast_sinf(angle);
+	c = fast_cosf(angle);
 	matrix_t val = {
 		c,	0.0f,	-s,	0.0f,
 		0.0f,	1.0f,	0.0f,	0.0f,
@@ -451,8 +491,8 @@ void
 matrix_rotate_z(matrix_t *m, float angle)
 {
 	float s, c;
-	s = fast_sin(angle);
-	c = fast_cos(angle);
+	s = fast_sinf(angle);
+	c = fast_cosf(angle);
 	matrix_t val = {
 		c,	s,	0.0f,	0.0f,
 		-s,	c,	0.0f,	0.0f,

@@ -35,6 +35,10 @@ void shader_v2f_lerp(const struct shader_v2f *from, const struct shader_v2f *to,
 void shader_default_diffuse_vert(struct shader_appdata *a2v, struct shader_v2f *v2f, const struct shader_global *g);
 rgba_t shader_default_diffuse_frag(struct shader_v2f *a2v, const struct shader_global *g);
 
+void shader_anim_vert(struct shader_appdata *a2v, struct shader_v2f *v2f, const struct shader_global *g);
+rgba_t shader_anim_frag(struct shader_v2f *a2v, const struct shader_global *g);
+
+
 
 
 

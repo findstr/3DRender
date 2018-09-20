@@ -11,14 +11,13 @@
 
 struct camera {
 	int state;
-	vector4_t pos;
-	vector4_t dir;
-
+	vector3_t pos;
+	vector3_t dir;
+/*
 	vector4_t u;
 	vector4_t v;
 	vector4_t n;
-	vector4_t target;
-
+	*/
 	float fov;
 
 	float near_clip_z;
@@ -47,11 +46,11 @@ struct camera {
 	struct camera *next;
 };
 
-void camera_init(struct camera *cam, vector4_t *pos,
-		vector4_t *dir, vector4_t *target,
+void camera_init(struct camera *cam, vector3_t *pos,
+		vector3_t *dir, vector3_t *target,
 		float near_clip_z, float far_clip_z, float fov,
 		float viewport_width, float viewport_height);
-void camera_move(struct camera *cam, const vector4_t *add);
+void camera_move(struct camera *cam, const vector3_t *add);
 void camera_rot_xyz(struct camera *cam);
 void camera_rot_zyx(struct camera *cam);
 void camera_backface(struct camera *cam, struct object *obj);

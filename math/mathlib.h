@@ -61,20 +61,26 @@ void vector2_mul(const vector2_t *a, const vector2_t *b, vector2_t *c);
 void vector2_div(const vector2_t *a, const vector2_t *b, vector2_t *c);
 void vector2_mulf(const vector2_t *a, float f, vector2_t *c);
 void vector2_divf(const vector2_t *a, float f, vector2_t *c);
+void vector2_lerp(const vector2_t *a, const vector2_t *b, float t, vector2_t *c);
 void vector2_print(const char *str, const vector2_t *v);
 
-void vector2_lerp(const vector2_t *a, const vector2_t *b, float t, vector2_t *c);
 void vector3_lerp(const vector3_t *a, const vector3_t *b, float t, vector3_t *c);
+void vector3_normalize(const vector3_t *v, vector3_t *res);
+void vector3_add(const vector3_t *a, const vector3_t *b, vector3_t *c);
+void vector3_sub(const vector3_t *a, const vector3_t *b, vector3_t *c);
+void vector3_cross(const vector3_t *a, const vector3_t *b, vector3_t *c);
+float vector3_dot(const vector3_t *a, const vector3_t *b);
+float vector3_magnitude(const vector3_t *a);
+
 void vector4_lerp(const vector4_t *a, const vector4_t *b, float t, vector4_t *c);
 
-void vector3_normalize(const vector3_t *v, vector3_t *res);
-void vector4_add(const vector4_t *a, const vector4_t *b, vector4_t *c);
+/*
 void vector4_sub(const vector4_t *a, const vector4_t *b, vector4_t *c);
 void vector4_divf(const vector4_t *a, float t, vector4_t *b);
 void vector4_cross(const vector4_t *a, const vector4_t *b, vector4_t *c);
-float vector4_dot(const vector4_t *a, const vector4_t *b);
-float vector4_magnitude(const vector4_t *a);
 float vector4_magnitude_fast(const vector4_t *a);
+float vector4_magnitude(const vector4_t *a);
+*/
 
 void vector4_mul_matrix(const vector4_t *v, const matrix_t *m, vector4_t *res);
 void vector4_mul_quaternion(const vector4_t *v, const quaternion_t *q,

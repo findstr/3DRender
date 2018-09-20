@@ -71,7 +71,6 @@ readdigit(struct lex *l, char *buff, size_t sz)
 	if (buff == end)	//over flow
 		return -1;
 	*buff = '0';
-	printf("read digit:%s\n", buff);
 	return 0;
 }
 
@@ -88,14 +87,6 @@ readstring(struct lex *l, char *buff, size_t sz)
 	return 0;
 }
 
-int
-lex_nexttoken(struct lex *l, int type, char *buff, int sz)
-{
-	if (lex_lookhead(l) != type)
-		return -1;
-	switch (type) {
-	case ':':
-	case '=':
 		++l->data;
 		return 0;
 	case LEX_DIGIT:
@@ -107,6 +98,7 @@ lex_nexttoken(struct lex *l, int type, char *buff, int sz)
 		assert(0);
 		break;
 	}
+	return 0;
 }
 
 

@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 #include "file.h"
 #include "lex.h"
 #include "primitive.h"
@@ -8,8 +10,6 @@
 int
 asc_load(const char *path, struct object *obj)
 {
-	int type;
-	int light[3];
 	const char *cname[] = {"Red", "Green"};
 	char token[TOKENLEN];
 	char *buff = file_load(path);

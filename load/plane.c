@@ -11,7 +11,7 @@
 #define TRI_COUNT		(VERTEX_LINE * VERTEX_LINE * 2)
 
 int
-plane_load(struct object *obj, const vector4_t *pos, const quaternion_t *rot)
+plane_load(struct object *obj, const vector3_t *pos, const quaternion_t *rot)
 {
 	float u, v;
 	vertex_t *vertex;
@@ -30,8 +30,8 @@ plane_load(struct object *obj, const vector4_t *pos, const quaternion_t *rot)
 		for (x = 0; x <= VERTEX_LINE; x++) {
 			vertex_t *ver;
 			ver = &vertex[idx + x];
-			vector4_init(&ver->v, xx, 0.0, zz);
-			vector4_init(&ver->n, 0.f, 1.f, 0.f);
+			vector3_init(&ver->v, xx, 0.0, zz);
+			vector3_init(&ver->n, 0.f, 1.f, 0.f);
 			vector2_init(&ver->t, u, v);
 			assert(u < 1.0f);
 			assert(v < 1.0f);

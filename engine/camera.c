@@ -6,23 +6,14 @@
 #include "camera.h"
 
 void
-camera_init(struct camera *cam, vector4_t *pos,
-		vector4_t *dir, vector4_t *target,
+camera_init(struct camera *cam, vector3_t *pos,
+		vector3_t *dir, vector3_t *target,
 		float near_clip_z, float far_clip_z, float fov,
 		float viewport_width, float viewport_height)
 {
-	vector3_t vn;
-	float tan_fov_div2;
 	cam->pos = *pos;
 	cam->dir = *dir;
 	cam->dir.z = -cam->dir.z;
-	vector4_init(&cam->u, 1.0f, 0.0f, 0.0f);
-	vector4_init(&cam->v, 0, 1, 0);
-	vector4_init(&cam->n, 0, 1, 0);
-	if (target)
-		cam->target = *target;
-	else
-		vector4_zero(&cam->target);
 	cam->near_clip_z = near_clip_z;
 	cam->far_clip_z = far_clip_z;
 	cam->viewport_width = viewport_width;
@@ -34,9 +25,9 @@ camera_init(struct camera *cam, vector4_t *pos,
 }
 
 void
-camera_move(struct camera *cam, const vector4_t *add)
+camera_move(struct camera *cam, const vector3_t *add)
 {
-	vector4_add(&cam->pos, add, &cam->pos);
+	vector3_add(&cam->pos, add, &cam->pos);
 	return ;
 }
 
@@ -94,39 +85,6 @@ camera_rot_zyx(struct camera *cam)
 }
 
 void
-camera_cull(struct camera *cam, struct object *obj, int cull_flag)
-{
-	/*
-	vector4_t sphere_pos;
-	float r = obj->radius_max;
-	vector4_mul_matrix(&obj->transform.pos, &cam->mcam, &sphere_pos);
-	float z = sphere_pos.z;
-	if (cull_flag & CULL_Z_PLANE) {
-		if ((z - r) > cam->far_clip_z || (z + r) > cam->near_clip_z) {
-			obj->state |= OBJECT4D_STATE_CULLED;
-			return ;
-		}
-	}
-	if (cull_flag & CULL_X_PLANE) {
-		float x = sphere_pos.x;
-		float z_test = 0.5f * cam->viewplane_width * z / cam->view_dist;
-		if ((x - r) > z_test || (x + r) < -z_test) {
-			obj->state |= OBJECT4D_STATE_CULLED;
-			return ;
-		}
-	}
-	if (cull_flag & CULL_Y_PLANE) {
-		float y = sphere_pos.y;
-		float z_test = 0.5f * cam->viewplane_height * z / cam->view_dist;
-		if ((y - r) > z_test || (y + r) < -z_test) {
-			obj->state |= OBJECT4D_STATE_CULLED;
-			return ;
-		}
-	}*/
-	return ;
-}
-
-void
 camera_backface(struct camera *cam, struct object *obj)
 {
 	int i;
@@ -136,10 +94,13 @@ camera_backface(struct camera *cam, struct object *obj)
 	for (i = 0; i < obj->tri_num; i++) {
 		int v0;
 		float dp;
-		vector4_t view;
+		vector3_t n;
 		struct tri *p = &obj->plist[i];
 		v0 = p->vert[0];
-		dp = vector4_dot(&p->normal, &cam->dir);
+		n.x = p->normal.x;
+		n.y = p->normal.y;
+		n.z = p->normal.z;
+		dp = vector3_dot(&n, &cam->dir);
 		if (dp > 0.0f) {
 			p->next = *rlist;
 			*rlist = p;
@@ -158,8 +119,8 @@ camera_transform(struct camera *cam)
 	float as = cam->aspect_ratio;
 	float theta = DEG_TO_RAD(cam->fov/2);
 	matrix_t project = {
-		1/tan(theta),	0,			0,		0,
-		0,		1/(tan(theta) * as),	0,		0,
+		1/tanf(theta),	0,			0,		0,
+		0,		1/(tanf(theta) * as),	0,		0,
 		0,		0,			(f+n)/(f-n),	1,
 		0,		0,			2*f*n/(n-f),	0,
 	};

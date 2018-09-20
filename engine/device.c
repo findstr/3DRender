@@ -9,8 +9,8 @@
 #include "device.h"
 
 struct device {
-	int width;
-	int height;
+	unsigned int width;
+	unsigned int height;
 	rgba_t *frame;
 	float *zbuffer;
 
@@ -72,7 +72,6 @@ device_drawpixel(unsigned int x, unsigned int y, rgba_t color, float z)
 	}
 	return ;
 }
-
 
 
 void
@@ -177,9 +176,9 @@ device_drawframe(struct tri *p)
 	vec0 = &p->vlist[v0].v2f.sv_position;
 	vec1 = &p->vlist[v1].v2f.sv_position;
 	vec2 = &p->vlist[v2].v2f.sv_position;
-	draw_line(vec0->x, vec0->y, vec1->x, vec1->y, 0x333333);
-	draw_line(vec0->x, vec0->y, vec2->x, vec2->y, 0x333333);
-	draw_line(vec1->x, vec1->y, vec2->x, vec2->y, 0x333333);
+	draw_line((int)vec0->x, (int)vec0->y, (int)vec1->x, (int)vec1->y, RGBA(0xff, 0xff, 0xff, 0xff));
+	draw_line((int)vec0->x, (int)vec0->y, (int)vec2->x, (int)vec2->y, RGBA(0xff, 0xff, 0xff, 0xff));
+	draw_line((int)vec1->x, (int)vec1->y, (int)vec2->x, (int)vec2->y, RGBA(0xff, 0xff, 0xff, 0xff));
 	return ;
 }
 

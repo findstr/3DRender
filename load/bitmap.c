@@ -56,9 +56,7 @@ bitmap_load(const char *name, struct texture *tex)
 {
 	struct bitmap_header header;
 	struct bitmap_info info;
-	struct bitmap_palette palette[256];
-
-	int i, bitcount, pixel, x, y;
+	int bitcount, pixel, x, y;
 	rgba_t *buff;
 	uint8_t *ptr, *rgb, *end;
 	FILE *fp = fopen(name, "rb");
@@ -84,8 +82,8 @@ bitmap_load(const char *name, struct texture *tex)
 	tex->width = info.width;
 	fread((char *)rgb, info.sizeimage, 1, fp);
 	buff = &buff[pixel] - info.width;
-	for (y = 0; y < info.height; y++) {
-		for (x = 0; x < info.width; x++) {
+	for (y = 0; y < (int)info.height; y++) {
+		for (x = 0; x < (int)info.width; x++) {
 			*buff++ = RGBA(ptr[2], ptr[1], ptr[0], 255);
 			ptr += 3;
 		}

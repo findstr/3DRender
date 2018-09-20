@@ -114,14 +114,14 @@ tri_to_trapezoid(struct tri *p, struct trapezoid r[2])
 static inline void
 render_trapezoid(struct trapezoid *r, shader_frag_t *frag, struct shader_global *G)
 {
-	float x, y, top, bottom;
+	float y, top, bottom;
 	float ystart, yheight;
 	assert(FCMP(r->left[0].sv_position.y, r->right[0].sv_position.y));
 	assert(FCMP(r->left[1].sv_position.y, r->right[1].sv_position.y));
 	ystart = r->left[0].sv_position.y;
 	yheight =  r->left[1].sv_position.y - ystart;
-	top = ceil(ystart);
-	bottom = ceil(r->left[1].sv_position.y);
+	top = ceilf(ystart);
+	bottom = ceilf(r->left[1].sv_position.y);
 	for (y = top; y < bottom; y += 1.0f) {
 		struct shader_v2f vleft, vright;
 		float lerp, left, right;
@@ -131,8 +131,8 @@ render_trapezoid(struct trapezoid *r, shader_frag_t *frag, struct shader_global 
 		shader_v2f_lerp(&r->right[0], &r->right[1], lerp, &vright);
 		xstart = vleft.sv_position.x;
 		xwidth = vright.sv_position.x - vleft.sv_position.x;
-		left = ceil(vleft.sv_position.x);
-		right = ceil(vright.sv_position.x);
+		left = ceilf(vleft.sv_position.x);
+		right = ceilf(vright.sv_position.x);
 		for (x = left; x < right; x += 1.0f) {
 			rgba_t color;
 			float lerp, rhw;
@@ -182,7 +182,8 @@ transform_obj(struct object *obj, struct shader_global *G)
 	shader_vert_t *vertfunc = obj->martial.shader.vert;
 	for (i = 0; i < obj->vertices_num; i++) {
 		vertex_t *vert = &list[i];
-		vert->app.position = vert->v;
+		vector3_t *v = &vert->v;
+		vector4_init(&vert->app.position, v->x, v->y, v->z);
 		vert->app.texcoord0 = vert->t;
 		vertfunc(&vert->app, &vert->v2f, G);
 		vert->v2f.sv_position.w = 1.f / vert->v2f.sv_position.w; //RHW
@@ -191,7 +192,7 @@ transform_obj(struct object *obj, struct shader_global *G)
 	}
 	for (i = 0; i < obj->tri_num; i++) {
 		struct tri *p = &obj->plist[i];
-		vector4_mul_quaternion(&p->normal_local, &trans->rot, &p->normal);
+		vector4_mul_matrix(&p->normal_local, &G->MVP, &p->normal);
 	}
 	return ;
 }
@@ -209,10 +210,11 @@ pipeline_vert()
 		while (obj) {
 			matrix_t tmp;
 			transform_t *trans = &obj->transform;
+			vector3_t *scale = &obj->transform.scale;
 			matrix_t mtrans = (matrix_t){
-				1, 0, 0, 0,
-				0, 1, 0, 0,
-				0, 0, 1, 0,
+				scale->x, 0, 0, 0,
+				0, scale->y, 0, 0,
+				0, 0, scale->z, 0,
 				trans->pos.x, trans->pos.y, trans->pos.z, 1.0f
 			};
 			obj->rlist = NULL;
@@ -252,7 +254,7 @@ pipeline_frag()
 }
 
 static void
-pipeline_pipeline()
+pipeline_update(void)
 {
 	if (ENG.update)
 		ENG.update();
@@ -295,10 +297,10 @@ pipeline_start(int width, int height, void (*update)())
 	ENG.time = 0;
 	ENG.TRANS.size = 0;
 	ENG.TRANS.buf = NULL;
-	ENG.screen.x = width;
-	ENG.screen.y = height;
+	ENG.screen.x = (float)width;
+	ENG.screen.y = (float)height;
 	device_init(width, height);
-	driver_start(width, height, pipeline_pipeline);
+	driver_start(width, height, pipeline_update);
 	return ;
 }
 

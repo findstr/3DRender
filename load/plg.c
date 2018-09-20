@@ -66,8 +66,8 @@ compute_radius(struct object *obj)
 }
 
 int plg_load(struct object *obj, const char *filename,
-		const vector4_t *scale, const vector4_t *pos,
-		const vector4_t *rot)
+		const vector3_t *scale, const vector3_t *pos,
+		const quaternion_t *rot)
 {
 	int i;
 	FILE *fp;
@@ -93,22 +93,17 @@ int plg_load(struct object *obj, const char *filename,
 		}
 		sscanf(str, "%s %s %s %s %s", xa, ya, za, ua, va);
 		DBG_PRINT("%s", str);
-		obj->vlist[i].v.x = atoi(xa);
-                obj->vlist[i].v.y = atoi(ya);
-		obj->vlist[i].v.z = atoi(za);
-		obj->vlist[i].v.w = 1;
-		obj->vlist[i].t.x = atof(ua);
-		obj->vlist[i].t.y = atof(va);
-
-		obj->vlist[i].v.x*=scale->x;
-		obj->vlist[i].v.y*=scale->y;
-		obj->vlist[i].v.z*=scale->z;
+		obj->vlist[i].v.x = (float)atoi(xa);
+		obj->vlist[i].v.y = (float)atoi(ya);
+		obj->vlist[i].v.z = (float)atoi(za);
+		obj->vlist[i].t.x = (float)atof(ua);
+		obj->vlist[i].t.y = (float)atof(va);
 
 		DBG_PRINT("\nVertex %d = %f, %f, %f, %f %f %f\n", i,
                                            obj->vlist[i].v.x,
                                            obj->vlist[i].v.y,
                                            obj->vlist[i].v.z,
-                                           obj->vlist[i].v.w,
+					   1.0f,
                                            obj->vlist[i].t.x,
                                            obj->vlist[i].t.y
 					   );
@@ -180,7 +175,8 @@ int plg_load(struct object *obj, const char *filename,
 	}
 	obj->state = OBJECT4D_STATE_ACTIVE | OBJECT4D_STATE_VISIBLE;
 	obj->transform.pos = *pos;
-	obj->transform.rot = IQUATERNION;
+	obj->transform.rot = *rot;
+	obj->transform.scale = *scale;
 	object_polynormals(obj);
 	object_vertexnormals(obj);
 	fclose(fp);

@@ -43,7 +43,7 @@ update()
 	int rb = driver_keydown('s', DRIVER_KEY_NORMAL);
 	int zl = driver_keydown('e', DRIVER_KEY_NORMAL);
 	int zr = driver_keydown('r', DRIVER_KEY_NORMAL);
-	vector4_t add = ZVECTOR4;
+	vector3_t add = ZVECTOR3;
 	if (zi != 0) {
 		l->ambient = rgba_add(l->ambient, RGBA(10, 10, 10, 0));
 	}
@@ -85,20 +85,24 @@ update()
 int main(int argc, char **argv)
 {
 #if 1
-	quaternion_t rot = IQUATERNION;
-	vector4_t cam_pos = { 0, 0, 0, 1 };
-	vector4_t cam_dir = { 0, 1.f, 0, 1 };
+//	quaternion_t rot = IQUATERNION;
+	vector3_t cam_pos = { 0, 0, 0};
+	vector3_t cam_dir = { 0, 1.f, 0};
 	mathlib_init();
 	pipeline_start(WIDTH, HEIGHT, update);
-	vector4_t pos;
-	vector4_init(&pos, 0, 0, 100);
+	vector3_t pos, scale;
+	vector3_init(&pos, 0, 0, 100);
 #if 1
-	quaternion_rotate_x(&rot, 100.f);
-	plane_load(&obj, &pos, &rot);
+//	quaternion_rotate_x(&rot, 150.f);
+//	plane_load(&obj, &pos, &rot);
+
+	vector3_init(&pos, 0, 0, 100.f);
+	vector3_init(&scale, 5, 5, 5);
+	plg_load(&obj, "resource/cube1.plg", &scale, &pos, &IQUATERNION);
 #else
-	plg_load(&obj, "resource/cube1.plg", &IVECTOR4, &ZVECTOR4, &pos);
-	vector4_init(&pos, 0, 0, -1.0f);
-	plg_load(&obj2, "resource/cube1.plg", &IVECTOR4, &ZVECTOR4, &pos);
+	plg_load(&obj, "resource/cube1.plg", &IVECTOR3, &ZVECTOR3, &pos);
+	vector3_init(&pos, 0, 0, -1.0f);
+	plg_load(&obj2, "resource/cube1.plg", &IVECTOR3, &ZVECTOR3, &pos);
 #endif
 	camera_init(&cam, &cam_pos, &cam_dir, NULL,
 		50.0f, 500.0f, 90.0f, WIDTH, HEIGHT);
@@ -111,7 +115,7 @@ int main(int argc, char **argv)
 	obj2.martial.shader.vert = shader_default_diffuse_vert;
 	obj2.martial.shader.frag = shader_default_diffuse_frag;
 	pipeline_add_object(&obj);
-//	pipeline_add_object(&obj2);
+	pipeline_add_object(&obj2);
 	pipeline_run();
 #else
 	vector4_t a, b, c, u, v, n1, n2, n3, xRy, yRz, zRx;

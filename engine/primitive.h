@@ -6,14 +6,14 @@
 #include "rgb.h"
 
 typedef struct transform {
-	vector4_t pos;
+	vector3_t pos;
 	vector3_t scale;
 	quaternion_t rot;
 } transform_t;
 
 typedef struct vertex {
-	vector4_t v;	//vertex
-	vector4_t n;	//normal
+	vector3_t v;	//vertex
+	vector3_t n;	//normal
 	vector2_t t;
 	struct shader_appdata  app;
 	struct shader_v2f v2f;
@@ -71,7 +71,6 @@ struct object {
 #define OBJECT4D_STATE_CULLED		0x0004
 
 
-void vertex_lerp(const vertex_t *a, const vertex_t *b, float t, vertex_t *c);
 void object_init(struct object *obj);
 void object_finalize(struct object *obj);
 void object_polynormals(struct object *obj);
