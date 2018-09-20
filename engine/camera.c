@@ -101,10 +101,10 @@ camera_backface(struct camera *cam, struct object *obj)
 		n.y = p->normal.y;
 		n.z = p->normal.z;
 		dp = vector3_dot(&n, &cam->dir);
-		if (dp > 0.0f) {
+	//	if (dp >= 0.0f) {
 			p->next = *rlist;
 			*rlist = p;
-		}
+	//	}
 	}
 	return ;
 }
@@ -118,11 +118,12 @@ camera_transform(struct camera *cam)
 	float f = cam->far_clip_z;
 	float as = cam->aspect_ratio;
 	float theta = DEG_TO_RAD(cam->fov/2);
+	float scale = 1 / tanf(theta);
 	matrix_t project = {
-		1/tanf(theta),	0,			0,		0,
-		0,		1/(tanf(theta) * as),	0,		0,
-		0,		0,			(f+n)/(f-n),	1,
-		0,		0,			2*f*n/(n-f),	0,
+		scale/as,	0,		0,		0,
+		0,		scale,		0,		0,
+		0,		0,		(f+n)/(f-n),	1,
+		0,		0,		2*f*n/(n-f),	0,
 	};
 	camera_rot_zyx(cam);
 	matrix_mul(&cam->mcam, &project, &cam->mcam);

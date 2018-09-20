@@ -10,7 +10,7 @@
 #include "plg.h"
 
 #define WIDTH	(640)
-#define HEIGHT	(480)
+#define HEIGHT	(640)
 #define BITDEPTH (24)
 
 vector4_t vscale = { 0.5f, 0.5f, 1.0f }, vpos = { 0, 0, 0, 1}, vrot = {0, 0, 0, 1};
@@ -84,17 +84,16 @@ update()
 
 int main(int argc, char **argv)
 {
-#if 1
-//	quaternion_t rot = IQUATERNION;
+	quaternion_t rot = IQUATERNION;
 	vector3_t cam_pos = { 0, 0, 0};
 	vector3_t cam_dir = { 0, 1.f, 0};
 	mathlib_init();
 	pipeline_start(WIDTH, HEIGHT, update);
 	vector3_t pos, scale;
-	vector3_init(&pos, 0, 0, 100);
 #if 1
-//	quaternion_rotate_x(&rot, 150.f);
-//	plane_load(&obj, &pos, &rot);
+	vector3_init(&pos, 0, 0, 98.f);
+	quaternion_rotate_x(&rot, 150.f);
+	plane_load(&obj, &pos, &rot);
 
 	vector3_init(&pos, 0, 0, 100.f);
 	vector3_init(&scale, 5, 5, 5);
@@ -117,64 +116,6 @@ int main(int argc, char **argv)
 	pipeline_add_object(&obj);
 	pipeline_add_object(&obj2);
 	pipeline_run();
-#else
-	vector4_t a, b, c, u, v, n1, n2, n3, xRy, yRz, zRx;
-	quaternion_t rx, ry, rz;
-	vector4_init(&a, 0, 1, 0);
-	vector4_init(&b, 1, 1, 0);
-	vector4_init(&c, 1, 0, 0);
-
-	vector4_sub(&b, &a, &u);
-	vector4_sub(&c, &a, &v);
-	vector4_cross(&u, &v, &n1);
-	vector4_print("normal1", &n1);
-
-
-	quaternion_rotate_x(&rx, 90.0f);
-	vector4_mul_quaternion(&a, &rx, &a);
-	vector4_mul_quaternion(&b, &rx, &b);
-	vector4_mul_quaternion(&c, &rx, &c);
-
-	vector4_sub(&b, &a, &u);
-	vector4_sub(&c, &a, &v);
-	vector4_cross(&u, &v, &n2);
-	vector4_print("normal2", &n2);
-
-
-	vector4_mul_quaternion(&n1, &rx, &n3);
-	vector4_print("normal3", &n3);
-
-	quaternion_print("rx", &rx);
-	quaternion_print("ry", &ry);
-	quaternion_print("rz", &rz);
-
-
-#endif
-	/*
-	quaternion_t c1, c2, c3, c4;
-	quaternion_t res;
-	quaternion_rotate_x(&c1, 90.0f);
-	quaternion_rotate_z(&c2, 90.0f);
-	quaternion_inverse(&c1, &c3);
-	quaternion_inverse(&c2, &c4);
-	quaternion_t v = {0.0f, 0.0f, 0.0f, 1.0f};
-
-
-	quaternion_cross(&c3, &v, &v);
-	quaternion_cross(&v, &c1, &v);
-
-	quaternion_print("res:", &v);
-	v.y = -1;
-	quaternion_cross(&c4, &v, &v);
-	quaternion_cross(&v, &c2, &v);
-
-	quaternion_print("res:", &v);
-
-	quaternion_print("res:", &v);
-	quaternion_print("c4:", &c4);
-	quaternion_print("c4':", &c4);
-	*/
-
 	return 0;
 }
 

@@ -40,7 +40,6 @@ object_polynormals(struct object *obj)
 		vector3_sub(&vlist[v2].v, &vlist[v0].v, &v);
 		vector3_cross(&u, &v, &n);
 		vector4_init(&p->normal_local, n.x, n.y, n.z);
-		p->nlength = vector3_magnitude(&n);
 	}
 	return ;
 }

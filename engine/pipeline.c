@@ -140,10 +140,10 @@ render_trapezoid(struct trapezoid *r, shader_frag_t *frag, struct shader_global 
 			lerp = (x - xstart) / xwidth;
 			shader_v2f_lerp(&vleft, &vright,  lerp, &i);
 			rhw = i.sv_position.w;
-			i.texcoord0.x *= rhw;
-			i.texcoord0.y *= rhw;
+			i.texcoord0.x /= rhw;
+			i.texcoord0.y /= rhw;
 			color = frag(&i, G);
-			device_drawpixel((int)x, (int)y, color, i.sv_position.z);
+			device_drawpixel((int)x, (int)y, color, rhw);
 		}
 	}
 }
@@ -159,7 +159,7 @@ pipeline_frag_obj(struct object *obj, struct shader_global *G)
 	frag = obj->martial.shader.frag;
 	while (p) {
 		p->vlist = obj->vlist;
-		device_drawframe(p);
+		//device_drawframe(p);
 		n = tri_to_trapezoid(p, r);
 		switch (n) {
 		case 2:

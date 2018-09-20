@@ -27,7 +27,6 @@ struct tri {
 	rgba_t light[3];	//顶点颜色
 	vector4_t normal_local;
 	vector4_t normal;	//
-	float nlength;
 	float avg_z;
 	vertex_t *vlist;
 	struct tri *next;

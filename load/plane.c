@@ -64,6 +64,7 @@ plane_load(struct object *obj, const vector3_t *pos, const quaternion_t *rot)
 	obj->state = OBJECT4D_STATE_ACTIVE | OBJECT4D_STATE_VISIBLE;
 	obj->transform.pos = *pos;
 	obj->transform.rot = *rot;
+	obj->transform.scale = IVECTOR3;
 	object_polynormals(obj);
 	object_vertexnormals(obj);
 	return 0;

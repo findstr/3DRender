@@ -276,10 +276,6 @@ vector4_mul_matrix(const vector4_t *va, const matrix_t *mb, vector4_t *res)
 	res->y = x * mb->m01 +  y * mb->m11 + z * mb->m21 + w * mb->m31;
 	res->z = x * mb->m02 +  y * mb->m12 + z * mb->m22 + w * mb->m32;
 	res->w = x * mb->m03 +  y * mb->m13 + z * mb->m23 + w * mb->m33;
-	res->x /= res->w;
-	res->y /= res->w;
-	res->z /= res->w;
-	res->w /= res->w;
 	return ;
 }
 
