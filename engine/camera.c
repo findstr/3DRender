@@ -19,7 +19,7 @@ camera_init(struct camera *cam, vector3_t *pos,
 	cam->viewport_width = viewport_width;
 	cam->viewport_height = viewport_height;
 	cam->aspect_ratio = viewport_width / viewport_height;
-	cam->mcam = IMATRIX;
+	cam->V = IMATRIX;
 	cam->fov = fov;
 	return ;
 }
@@ -71,7 +71,7 @@ camera_rot_xyz(struct camera *cam)
 	camera_matrix(cam, &mt_inv, &mx_inv, &my_inv, &mz_inv);
 	matrix_mul(&mx_inv, &my_inv, &mtmp);
 	matrix_mul(&mtmp, &mz_inv, &mrot);
-	matrix_mul(&mt_inv, &mrot, &cam->mcam);
+	matrix_mul(&mt_inv, &mrot, &cam->V);
 }
 
 void
@@ -81,7 +81,7 @@ camera_rot_zyx(struct camera *cam)
 	camera_matrix(cam, &mt_inv, &mx_inv, &my_inv, &mz_inv);
 	matrix_mul(&mz_inv, &my_inv, &mtmp);
 	matrix_mul(&mtmp, &mx_inv, &mrot);
-	matrix_mul(&mt_inv, &mrot, &cam->mcam);
+	matrix_mul(&mt_inv, &mrot, &cam->V);
 }
 
 void
@@ -101,10 +101,10 @@ camera_backface(struct camera *cam, struct object *obj)
 		n.y = p->normal.y;
 		n.z = p->normal.z;
 		dp = vector3_dot(&n, &cam->dir);
-	//	if (dp >= 0.0f) {
+		if (dp >= 0.0f) {
 			p->next = *rlist;
 			*rlist = p;
-	//	}
+		}
 	}
 	return ;
 }
@@ -119,14 +119,13 @@ camera_transform(struct camera *cam)
 	float as = cam->aspect_ratio;
 	float theta = DEG_TO_RAD(cam->fov/2);
 	float scale = 1 / tanf(theta);
-	matrix_t project = {
+	cam->P = (matrix_t) {
 		scale/as,	0,		0,		0,
 		0,		scale,		0,		0,
 		0,		0,		(f+n)/(f-n),	1,
 		0,		0,		2*f*n/(n-f),	0,
 	};
 	camera_rot_zyx(cam);
-	matrix_mul(&cam->mcam, &project, &cam->mcam);
 	return 0;
 }
 

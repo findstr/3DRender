@@ -12,6 +12,7 @@ typedef struct transform {
 } transform_t;
 
 typedef struct vertex {
+	int id;
 	vector3_t v;	//vertex
 	vector3_t n;	//normal
 	vector2_t t;
@@ -73,6 +74,7 @@ struct object {
 void object_init(struct object *obj);
 void object_finalize(struct object *obj);
 void object_polynormals(struct object *obj);
+void object_polynormals2(struct object *obj);
 void object_vertexnormals(struct object *obj);
 
 

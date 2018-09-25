@@ -42,7 +42,8 @@ struct camera {
 */
 	float aspect_ratio;
 
-	matrix_t mcam;
+	matrix_t V;
+	matrix_t P;
 	struct camera *next;
 };
 

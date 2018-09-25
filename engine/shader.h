@@ -7,7 +7,9 @@
 
 struct shader_global {
 	float TIME;
-	matrix_t  MVP;
+	matrix_t M;
+	matrix_t MV;
+	matrix_t MVP;
 	vector2_t SCREEN;
 	struct texture *BITMAP;
 };

@@ -190,9 +190,11 @@ transform_obj(struct object *obj, struct shader_global *G)
 		vert->v2f.texcoord0.x *= vert->v2f.sv_position.w;
 		vert->v2f.texcoord0.y *= vert->v2f.sv_position.w;
 	}
+	object_polynormals2(obj);
 	for (i = 0; i < obj->tri_num; i++) {
 		struct tri *p = &obj->plist[i];
-		vector4_mul_matrix(&p->normal_local, &G->MVP, &p->normal);
+		p->normal = p->normal_local;
+//		vector4_mul_matrix(&p->normal_local, &G->MV, &p->normal);
 	}
 	return ;
 }
@@ -208,10 +210,10 @@ pipeline_vert()
 	while (c) {
 		struct object *obj = ENG.render;
 		while (obj) {
-			matrix_t tmp;
+			matrix_t rot;
 			transform_t *trans = &obj->transform;
 			vector3_t *scale = &obj->transform.scale;
-			matrix_t mtrans = (matrix_t){
+			matrix_t M = (matrix_t){
 				scale->x, 0, 0, 0,
 				0, scale->y, 0, 0,
 				0, 0, scale->z, 0,
@@ -219,9 +221,10 @@ pipeline_vert()
 			};
 			obj->rlist = NULL;
 			camera_transform(c);
-			quaternion_to_matrix(&obj->transform.rot, &tmp);
-			matrix_mul(&tmp, &mtrans, &tmp);
-			matrix_mul(&tmp, &c->mcam, &G.MVP);
+			quaternion_to_matrix(&obj->transform.rot, &rot);
+			matrix_mul(&rot, &M, &G.M);
+			matrix_mul(&G.M, &c->V, &G.MV);
+			matrix_mul(&G.MV, &c->P, &G.MVP);
 			transform_obj(obj, &G);
 			camera_backface(c, obj);
 			camera_viewport(c, obj);
@@ -237,7 +240,6 @@ pipeline_frag()
 {
 	struct shader_global G;
 	struct camera *c = ENG.camera;
-	G.MVP = c->mcam;
 	G.SCREEN = ENG.screen;
 	G.TIME = ENG.time;
 #if 0

@@ -9,8 +9,8 @@
 #include "plane.h"
 #include "plg.h"
 
-#define WIDTH	(640)
-#define HEIGHT	(640)
+#define WIDTH	(1024)
+#define HEIGHT	(768)
 #define BITDEPTH (24)
 
 vector4_t vscale = { 0.5f, 0.5f, 1.0f }, vpos = { 0, 0, 0, 1}, vrot = {0, 0, 0, 1};
@@ -86,16 +86,16 @@ int main(int argc, char **argv)
 {
 	quaternion_t rot = IQUATERNION;
 	vector3_t cam_pos = { 0, 0, 0};
-	vector3_t cam_dir = { 0, 1.f, 0};
+	vector3_t cam_dir = { 0, 0, 1.f};
 	mathlib_init();
 	pipeline_start(WIDTH, HEIGHT, update);
 	vector3_t pos, scale;
 #if 1
-	vector3_init(&pos, 0, 0, 98.f);
+	vector3_init(&pos, 0, 0, 200.f);
 	quaternion_rotate_x(&rot, 150.f);
 	plane_load(&obj, &pos, &rot);
 
-	vector3_init(&pos, 0, 0, 100.f);
+	vector3_init(&pos, 0, 0, 200.f);
 	vector3_init(&scale, 5, 5, 5);
 	plg_load(&obj, "resource/cube1.plg", &scale, &pos, &IQUATERNION);
 #else
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 	plg_load(&obj2, "resource/cube1.plg", &IVECTOR3, &ZVECTOR3, &pos);
 #endif
 	camera_init(&cam, &cam_pos, &cam_dir, NULL,
-		50.0f, 500.0f, 90.0f, WIDTH, HEIGHT);
+		0.3f, 1000.0f, 60.0f, WIDTH, HEIGHT);
 	l = light_create();
 	pipeline_add_camera(&cam);
 	bitmap_load("resource/std.bmp", &obj.martial.texture);

@@ -93,6 +93,7 @@ int plg_load(struct object *obj, const char *filename,
 		}
 		sscanf(str, "%s %s %s %s %s", xa, ya, za, ua, va);
 		DBG_PRINT("%s", str);
+		obj->vlist[i].id = i;
 		obj->vlist[i].v.x = (float)atoi(xa);
 		obj->vlist[i].v.y = (float)atoi(ya);
 		obj->vlist[i].v.z = (float)atoi(za);
