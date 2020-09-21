@@ -1,5 +1,7 @@
 #pragma once
 #include "type.h"
+#include "ray.h"
+#include "AABB.h"
 #include "auxiliary.h"
 #include "material.h"
 #include "texture.h"
@@ -15,21 +17,24 @@ struct triangle {
 	vector2f uv[3];
 	vector3f n[3];
 	vector4f ver[3];
-	vector3f normal;
 };
 
 class mesh {
 public:
 	mesh(const std::string &name, material *mt = nullptr);
-	matrix4f model() const;
+	bool intersect(const ray &r, hit &h);
 	void fetch(std::vector<triangle> &tri) const;
 	void rot(float angle);
+	matrix4f model() const;
 	material *getmaterial() const;
 private:
+	bool intersect_tri(const ray &r, hit &h, int idx);
+private:
+	AABB3f bounds;
 	material *mat;
 	matrix4f model_matrix;
 	std::vector<vector3f> normals;
-	std::vector<int> indices;
+	std::vector<int> triangles;
 	std::vector<vertex> vertices;
 };
 

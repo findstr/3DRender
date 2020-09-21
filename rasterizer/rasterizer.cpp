@@ -1,6 +1,6 @@
 #include "primitive.h"
 #include "screen.h"
-#include "bounds.h"
+#include "AABB.h"
 #include "auxiliary.h"
 #include "rasterizer.h"
 
@@ -110,7 +110,7 @@ float f2 = (50 + 0.1) / 2.0;
 void
 rasterizer::render_triangle(const triangle &tri, const material *m, vector3f viewpos[3])
 {
-	bounds2f b;
+	AABB2f b;
 	for (int i = 0; i < 3; i++)
 		b.extend(tri.ver[i]);
 	auto &v = tri.ver;
