@@ -10,15 +10,23 @@ int main()
 {
 	scene sce;
 	screen scn(800, 800);
-	texture_shader shader;
+	//texture_shader shader;
+	normal_shader shader;
 	texture tex("models/spot/spot_texture.png");
 	material m(&shader, &tex);
-	mesh obj("models/spot/spot_triangulated_good.obj", &m);
+
+	std::vector<vector3f> verts = {{-5,-3,-6}, {5,-3,-6}, {5,-3,-16}, {-5,-3,-16}};
+	std::vector<vector2f> uv = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+	std::vector<int> vertIndex = {0, 1, 3, 1, 2, 3};
+
+	//mesh obj("models/spot/spot_triangulated_good.obj", &m);
+	mesh obj(verts, uv, vertIndex, &m);
+	obj.scale(vector3f(0.5, 0.5, 0.5));
 	vector3f eye(0,0,10);
-	camera cam(eye, 45.f, 1.f, 0.1f, 50);
+	camera cam(eye, 90.f, 1.f, 0.1f, 50);
 	rasterizer r(&cam, &scn);
 	sce.add(&obj);
-	Eigen::Vector3f eye_pos = {0,0,10};
+	Eigen::Vector3f eye_pos = {0,0,50};
 	while (true) {
 		obj.rot(angle);
 		scn.clear();

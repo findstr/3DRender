@@ -19,11 +19,19 @@ public:
 		std::fill(depthbuf.begin(), depthbuf.end(), INF);
 	}
 	bool ztest(int x, int y, float z) {
+		if (x < 0 || y < 0)
+			return false;
 		int idx = x + size.x() * (size.y() - y - 1);
+		if (idx >= depthbuf.size())
+			return false;
 		return depthbuf[idx] > z;
 	}
 	void set(int x, int y, const vector3f &color, float depth = 0.f) {
+		if (x < 0 || y < 0)
+			return ;
 		int idx = x + size.x() * (size.y() - y - 1);
+		if (idx >= depthbuf.size())
+			return ;
 		if (depthbuf[idx] > depth) {
 			depthbuf[idx] = depth;
 			framebuf[idx] = color;

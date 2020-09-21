@@ -5,6 +5,11 @@ mesh::mesh(const std::string &name, material *mt):mat(mt)
 {
 	bounds = AABB3f();
 	model_matrix = matrix4f::Identity();
+	scale_matrix <<
+		1.f, 0, 0, 0,
+		0, 1.f, 0, 0,
+		0, 0, 1.f, 0,
+		0, 0, 0, 1;
 	objl::Loader loader;
 	loader.LoadFile(name);
 	auto &mesh = loader.LoadedMeshes[0];
@@ -25,6 +30,21 @@ mesh::mesh(const std::string &name, material *mt):mat(mt)
 		}
 	}
 }
+
+mesh::mesh(const std::vector<vector3f> &verts,
+	const std::vector<vector2f> &uv,
+	const std::vector<int> &tri,
+	material *mt):mat(mt)
+{
+	vertices.resize(verts.size());
+	for (int i = 0; i < verts.size(); i++) {
+		vertices[i].position = verts[i];
+		vertices[i].texcoord = uv[i];
+		bounds.extend(verts[i]);
+	}
+	triangles = tri;
+}
+
 
 bool
 mesh::intersect_tri(const ray &r, hit &h, int idx)
@@ -78,6 +98,17 @@ mesh::intersect(const ray &r, hit &h)
 	return false;
 }
 
+
+void
+mesh::scale(const vector3f &s)
+{
+	scale_matrix <<
+		s.x(), 0, 0, 0,
+		0, s.y(), 0, 0,
+		0, 0, s.z(), 0,
+		0, 0, 0, 1;
+}
+
 void
 mesh::rot(float angle)
 {
@@ -88,20 +119,13 @@ mesh::rot(float angle)
 		0, 1, 0, 0,
 		-sin(angle), 0, cos(angle), 0,
 		0, 0, 0, 1;
-
-	Eigen::Matrix4f scale;
-	scale << 2.5, 0, 0, 0,
-			  0, 2.5, 0, 0,
-			  0, 0, 2.5, 0,
-			  0, 0, 0, 1;
-
 	Eigen::Matrix4f translate;
 	translate << 1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1;
 
-	model_matrix = translate * rotation * scale;
+	model_matrix = translate * rotation * scale_matrix;
 }
 
 material *
@@ -119,13 +143,14 @@ mesh::model() const
 void
 mesh::fetch(std::vector<triangle> &tri) const
 {
-	tri.resize(vertices.size()/3);
-	for (int i = 0; i < vertices.size(); i += 3) {
+	tri.resize(triangles.size()/3);
+	for (int i = 0; i < triangles.size(); i += 3) {
 		auto &t = tri[i/3];
 		for (int j = 0; j < 3; j++) {
-			t.uv[j] = vertices[i+j].texcoord;
-			t.n[j] = vertices[i+j].normal;
-			t.ver[j] = tovector4f(vertices[i+j].position, 1.f);
+			auto &vert = vertices[triangles[i+j]];
+			t.uv[j] = vert.texcoord;
+			t.n[j] = vert.normal;
+			t.ver[j] = tovector4f(vert.position, 1.f);
 		}
 	}
 }

@@ -133,7 +133,7 @@ rasterizer::render_triangle(const triangle &tri, const material *m, vector3f vie
 			for (int i = 0; i < 3; i++)
 				zp += v[i].z() * bc[i];
 			//transform zp to view space
-			zp *= -Z;
+			zp *= Z;
 			if (!scn->ztest(x, y, zp))
 				continue;
 			for (int i = 0; i < 3; i++) {
@@ -215,7 +215,6 @@ rasterizer::render_mesh(const mesh &m)
 			auto &v = t.ver[i];
 			v.x() = 0.5*width*(v.x()+1.0);
 			v.y() = 0.5*height*(v.y()+1.0);
-			v.z() = -v.z() * f1 + f2;
 		}
 
 		render_triangle(t, m.getmaterial(), view_pos);
