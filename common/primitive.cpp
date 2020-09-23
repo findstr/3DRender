@@ -1,7 +1,7 @@
 #include "OBJ_Loader.hpp"
 #include "primitive.h"
 
-mesh::mesh(const std::string &name, material *mt):mat(mt)
+mesh::mesh(const std::string &name, std::shared_ptr<material> &mt):mat(mt)
 {
 	bounds = AABB3f();
 	model_matrix = matrix4f::Identity();
@@ -34,7 +34,7 @@ mesh::mesh(const std::string &name, material *mt):mat(mt)
 mesh::mesh(const std::vector<vector3f> &verts,
 	const std::vector<vector2f> &uv,
 	const std::vector<int> &tri,
-	material *mt):mat(mt)
+	std::shared_ptr<material> &mt):mat(mt)
 {
 	vertices.resize(verts.size());
 	for (int i = 0; i < verts.size(); i++) {
@@ -47,7 +47,7 @@ mesh::mesh(const std::vector<vector3f> &verts,
 
 
 bool
-mesh::intersect_tri(const ray &r, hit &h, int idx)
+mesh::intersect_tri(const ray &r, hit &h, int idx) const
 {
 	vector3f v[3];
 	vector2f uv[3];
@@ -76,7 +76,7 @@ mesh::intersect_tri(const ray &r, hit &h, int idx)
 	h.triangleidx = idx;
 	h.distance = t;
 	h.point = r.point(t);
-	h.normal = normal;
+	h.normal = normal.normalized();
 	h.color = vector3f(0.8f, 0.8f, 0.8f);
 	h.barycentric = vector3f(b0, b1, b2);
 	h.texcoord = b0 * uv[0] + b1 * uv[1] + b2 * uv[2];
@@ -84,13 +84,15 @@ mesh::intersect_tri(const ray &r, hit &h, int idx)
 }
 
 bool
-mesh::intersect(const ray &r, hit &h)
+mesh::intersect(const ray &r, hit &h) const
 {
 	if (!bounds.intersect(r))
 		return false;
+//	printf("intersect ok\n");
 	int size = triangles.size() / 3;
 	for (int i = 0; i < size; i++) {
 		if (intersect_tri(r, h, i)) {
+			bounds.intersect(r);
 			h.obj = this;
 			return true;
 		}
@@ -131,7 +133,7 @@ mesh::rot(float angle)
 material *
 mesh::getmaterial() const
 {
-	return mat;
+	return this->mat.get();
 }
 
 matrix4f
@@ -153,5 +155,43 @@ mesh::fetch(std::vector<triangle> &tri) const
 			t.ver[j] = tovector4f(vert.position, 1.f);
 		}
 	}
+}
+
+
+sphere::sphere(const vector3f &c, float r, std::shared_ptr<material> &m)
+	: center(c)
+	, radius(r)
+	, mat(m)
+	, radius2(r * r)
+{}
+
+bool
+sphere::intersect(const ray &r, hit &h) const
+{
+        // analytic solution
+        vector3f L = r.origin - center;
+	auto &dir = r.direction;
+        float a = dir.dot(dir);
+        float b = 2 * dir.dot(L);
+        float c = L.dot(L) - radius2;
+        float t0, t1;
+        if (!solve_quadratic(a, b, c, t0, t1))
+            return false;
+        if (t0 < 0)
+            t0 = t1;
+        if (t0 < 0)
+            return false;
+	h.obj = this;
+	h.distance = t0;
+	h.point = r.point(t0);
+	h.normal = (h.point - center).normalized();
+	h.color = vector3f(0.8f, 0.8f, 0.8f);
+        return true;
+}
+
+material *
+sphere::getmaterial() const
+{
+	return mat.get();
 }
 

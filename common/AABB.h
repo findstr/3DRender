@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include "type.h"
 #include "ray.h"
 
@@ -26,7 +27,13 @@ struct AABB3f {
 		min = vector3f(inf, inf, inf);
 		max = vector3f(-inf, -inf, -inf);
 	}
-	bool intersect(const ray &r) {
+	template<typename T> void extend(const T &v) {
+		for (int i = 0; i < 3; i++) {
+			min[i] = std::min(min[i], v[i]);
+			max[i] = std::max(max[i], v[i]);
+		}
+	}
+	bool intersect(const ray &r) const {
 		float t_min, t_max;
 		vector3f rmin, rmax;
 		float inf = std::numeric_limits<float>::infinity();
@@ -43,15 +50,9 @@ struct AABB3f {
 					std::swap(rmin[i], rmax[i]);
 			}
 		}
-		t_min = std::max(std::max(min[0], min[1]), min[2]);
-		t_max = std::min(std::min(max[0], max[1]), max[2]);
-		return t_min < t_max && t_max >= 0;
-	}
-	template<typename T> void extend(const T &v) {
-		for (int i = 0; i < 3; i++) {
-			min[i] = std::min(min[i], v[i]);
-			max[i] = std::max(max[i], v[i]);
-		}
+		t_min = std::max(std::max(rmin[0], rmin[1]), rmin[2]);
+		t_max = std::min(std::min(rmax[0], rmax[1]), rmax[2]);
+		return t_min <= t_max && t_max >= 0;
 	}
 };
 

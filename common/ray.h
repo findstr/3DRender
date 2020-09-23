@@ -1,12 +1,16 @@
 #pragma once
 #include "type.h"
 
-class mesh;
+class primitive;
 
 struct ray {
-	ray(vector3f &o, vector3f &d) :
-		origin(o), direction(d) {}
+	ray(const vector3f &o, const vector3f &d):origin(o) {
+		direction = d;
+	}
 	vector3f point(float t) const {
+		return origin + t * direction;
+	}
+	vector3f move(float t) const {
 		return origin + t * direction;
 	}
 	vector3f origin;
@@ -24,7 +28,7 @@ struct hit {
 		texcoord = vector2f();
 		barycentric = vector3f();
 	}
-	const mesh *obj;
+	const primitive *obj;
 	int triangleidx;
 	double distance;
 	vector3f point;

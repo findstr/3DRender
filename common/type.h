@@ -3,6 +3,9 @@
 #ifndef PI
 #define PI	(3.1415926)
 #endif
+#ifndef EPSILON
+#define EPSILON	(0.00001)
+#endif
 using vector2i = Eigen::Vector2i;
 using vector2f = Eigen::Vector2f;
 using vector3f = Eigen::Vector3f;
