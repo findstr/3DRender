@@ -29,19 +29,21 @@ pathtracer::light(const ray &r, const hit &h, int depth)
 	return depth == 0 ? h.obj->material()->emission : vector3f(0,0,0);
 }
 
-float
-pathtracer::brdf(const material *m, const vector3f &wi,
-	const vector3f &wo, const vector3f &N)
+vector3f
+pathtracer::brdf(const hit &h, const vector3f &wi, const vector3f &wo, float a)
 {
+	auto &N = h.normal;
+	auto m = h.obj->material();
 	switch(m->type) {
 	case material::DIFFUSE:
 		// calculate the contribution of diffuse   model
 		if (wo.dot(N) > 0.f) {
-			return m->Kd / PI;
+			auto color = m->texture->sample(h.texcoord);
+			return m->Kd / PI * color;
 		}
 		break;
 	}
-	return 0.f;
+	return vector3f(0,0,0);
 }
 
 float
@@ -111,9 +113,8 @@ pathtracer::diffuse(const ray &r, const hit &h, int depth)
 		sc->intersect(r, hit_middle);
 	//	if (hit_middle.obj == hit_l.obj) { //has no middle
 		if (hit_middle.distance - dir.norm() > -0.001f) { //has no middle
-			auto color = m->texture->sample(h.texcoord);
 			auto L_i = hit_l.obj->material()->emission;
-			auto f_r = brdf(m, wi, wo, N) * color;
+			auto f_r = brdf(h, wi, wo);
 			auto cos = std::max(N.dot(wi), 0.f);
 			auto cos_prime = std::max(hit_l.normal.dot(-wi), 0.f);
 			auto r_square = dir.squaredNorm();
@@ -124,10 +125,9 @@ pathtracer::diffuse(const ray &r, const hit &h, int depth)
 	{
 		float ksi = randomf();
 		if (ksi < 0.8) {
-			auto color = m->texture->sample(h.texcoord);
 			auto wi = sample_uniform(m, wo, N);
 			float pdf_ = pdf(m, wi, wo, N) + EPSILON;
-			auto f_r = brdf(m, wi, wo, N) * color;
+			auto f_r = brdf(h, wi, wo);
 			ray rr(h.point + EPSILON * wi, wi);
 			auto L_i = trace(rr, depth + 1);
 			auto cos = std::max(N.dot(wi), 0.f);

@@ -18,8 +18,7 @@ private: //material
 private:
 	float pdf(const material *m, const vector3f &wi,
 		const vector3f &wo, const vector3f &N);
-	float brdf(const material *m, const vector3f &wi,
-		const vector3f &wo, const vector3f &N);
+	vector3f brdf(const hit &h, const vector3f &wi, const vector3f &wo, float a = 1.f);
 	vector3f sample_uniform(const material *m,
 		const vector3f &wo, const vector3f &N);
 private:
