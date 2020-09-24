@@ -1,5 +1,8 @@
 #pragma once
+#include <cmath>
+#include <random>
 #include "type.h"
+
 
 static inline float
 clamp(float lo, float hi, float v)
@@ -63,5 +66,8 @@ solve_quadratic(float a, float b, float c, float &x0, float &x1)
         std::swap(x0, x1);
     return true;
 }
+
+
+float randomf();
 
 

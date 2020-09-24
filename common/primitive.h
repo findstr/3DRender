@@ -30,29 +30,36 @@ struct light {
 class primitive {
 public:
 	virtual ~primitive() = default;
+	virtual float area() const = 0;
+	virtual float sample(hit &h) const = 0;
+	virtual vector3f position() const = 0;
 	virtual bool intersect(const ray &r, hit &h) const = 0;
-	virtual material *getmaterial() const = 0;
+	virtual const struct material *material() const = 0;
 };
 
 class mesh : public primitive {
 public:
 	bool intersect(const ray &r, hit &h) const override;
 public:
-	mesh(const std::string &name, std::shared_ptr<material> &mt);
+	mesh(const std::string &name, std::shared_ptr<struct material> &mt);
 	mesh(const std::vector<vector3f> &verts,
 		const std::vector<vector2f> &uv,
 		const std::vector<int> &tri,
-		std::shared_ptr<material> &mt);
+		std::shared_ptr<struct material> &mt);
 	void fetch(std::vector<triangle> &tri) const;
 	void rot(float angle);
 	void scale(const vector3f &s);
-	matrix4f model() const;
-	material *getmaterial() const override;
+	float sample(hit &h) const override;
+	float area() const override {return areatotal;};
+	matrix4f model() const {return model_matrix;};
+	vector3f position() const override {return vector3f(0,0,0);};
+	const struct material *material() const override { return mat.get();};
 private:
 	bool intersect_tri(const ray &r, hit &h, int idx) const;
 private:
 	AABB3f bounds;
-	std::shared_ptr<material> mat;
+	float areatotal;
+	std::shared_ptr<struct material> mat;
 	matrix4f model_matrix;
 	matrix4f scale_matrix;
 	std::vector<vector3f> normals;
@@ -62,11 +69,14 @@ private:
 
 class sphere : public primitive {
 public:
-	sphere(const vector3f &c, float r, std::shared_ptr<material> &m);
+	sphere(const vector3f &c, float r, std::shared_ptr<struct material> &m);
 	bool intersect(const ray &r, hit &h) const override;
-	material *getmaterial() const override;
+	float sample(hit &h) const override { assert(0); return 0.f; }
+	float area() const override {return 4.f*PI*radius2;}
+	const struct material *material() const override {return mat.get(); };
+	vector3f position() const override {return center;};
 private:
-	std::shared_ptr<material> mat;
+	std::shared_ptr<struct material> mat;
 	vector3f center;
 	float radius, radius2;
 };

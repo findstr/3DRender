@@ -8,7 +8,7 @@ raytracer::specular(const ray &r, const hit &h, int depth)
 	vector3f color1, color2;
 	auto &dir = r.direction;
 	auto &N = h.normal;
-	auto m = h.obj->getmaterial();
+	auto m = h.obj->material();
 	auto hit_point = r.move(h.distance);
 	vector3f reflect_dir = optics::reflect(dir, N).normalized();
 	float reflect_offset = reflect_dir.dot(N) < 0 ? -EPSILON : EPSILON;
@@ -23,7 +23,7 @@ raytracer::glass(const ray &r, const hit &h, int depth)
 {
 	auto &dir = r.direction;
 	auto &N = h.normal;
-	auto m = h.obj->getmaterial();
+	auto m = h.obj->material();
 	auto hit_point = r.move(h.distance);
 	vector3f reflect_dir = optics::reflect(dir, N).normalized();
 	vector3f refract_dir = optics::refract(dir, N, m->ior).normalized();
@@ -41,7 +41,7 @@ raytracer::glass(const ray &r, const hit &h, int depth)
 vector3f
 raytracer::glossy(const ray &r, const hit &h, int depth)
 {
-	auto m = h.obj->getmaterial();
+	auto m = h.obj->material();
 	auto &N = h.normal;
 	auto &dir = r.direction;
 	auto hit_point = r.move(h.distance);
@@ -50,10 +50,10 @@ raytracer::glossy(const ray &r, const hit &h, int depth)
 	vector3f shadow_pos = hit_point + sign * N * EPSILON;
 	for (auto li:sc->getlights()) {
 		hit hs;
-		float r = (li->position - hit_point).norm();
-		vector3f l = (li->position - hit_point).normalized();
+		float r = (li->position() - hit_point).norm();
+		vector3f l = (li->position() - hit_point).normalized();
 		vector3f v = -dir;
-		vector3f I = li->intensity;
+		vector3f I = li->material()->emission;
 		vector3f h = (v+l).normalized();
 		//compute light
 		ray shadowray(shadow_pos, l);
@@ -62,7 +62,7 @@ raytracer::glossy(const ray &r, const hit &h, int depth)
 		float p = m->specularexponent;
 		specular += I * std::pow(std::max(0.f, h.dot(N)), p);
 	}
-	vector3f diffuse = m->tex->sample(h.texcoord);
+	vector3f diffuse = m->texture->sample(h.texcoord);
 	return ambient.cwiseProduct(diffuse) * m->Kd + specular * m->Ks;
 }
 
@@ -78,7 +78,7 @@ raytracer::trace(ray r, int depth)
 	if (!sc->intersect(r, h)) {
 		return background;
 	}
-	switch (h.obj->getmaterial()->type) {
+	switch (h.obj->material()->type) {
 	case material::SPECULAR:
 		return specular(r, h, depth);
 	case material::GLASS:
@@ -123,9 +123,9 @@ raytracer::render(const scene &sc, screen &scrn)
 	vector3f v(0.f, 1.f, 0.f);
 	vector3f w(0.f, 0.f, -1.f);
 	// Use this variable as the eye position to start your rays.
+	vector3f color;
 	vector3f eye_pos(0, 0, 0);
 	int m = 0;
-	vector3f color;
 	for (int j = 0; j < size.y(); ++j) {
 		for (int i = 0; i < size.x(); ++i) {
 			float x = l + (r - l)*(i + 0.5f) / size.x();

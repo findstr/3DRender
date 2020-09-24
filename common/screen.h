@@ -26,26 +26,42 @@ public:
 			return false;
 		return depthbuf[idx] > z;
 	}
-	void set(int x, int y, const vector3f &color, float depth = 0.f) {
+	void zset(int x, int y, float depth) {
 		if (x < 0 || y < 0)
 			return ;
 		int idx = x + size.x() * (size.y() - y - 1);
-		if (idx >= depthbuf.size())
-			return ;
-		if (depthbuf[idx] > depth) {
-			depthbuf[idx] = depth;
-			framebuf[idx] = color;
-		}
+		depthbuf[idx] = depth;
 	}
+	void set(int x, int y, const vector3f &color) {
+		if (x < 0 || y < 0)
+			return ;
+		int idx = x + size.x() * (size.y() - y - 1);
+		framebuf[idx] = color;
+	}
+
+	void add(int x, int y, const vector3f &color) {
+		if (x < 0 || y < 0)
+			return ;
+		int idx = x + size.x() * (size.y() - y - 1);
+		framebuf[idx] += color;
+	}
+
+	void mul(int x, int y, float frac) {
+		if (x < 0 || y < 0)
+			return ;
+		int idx = x + size.x() * (size.y() - y - 1);
+		framebuf[idx] *= frac;
+	}
+
 	void dump(const char *name) {
 		FILE* fp = fopen(name, "wb");
 		fprintf(fp, "P6\n%d %d\n255\n", size.x(), size.y());
 		for (int i = 0; i < size.x() * size.y(); i++) {
 			unsigned char color[3];
 			vector3f &c = framebuf[i];
-			color[0] = c.x() * 255;//(unsigned char)255 * std::pow(clamp(c.x()), 0.6f);
-			color[1] = c.y() * 255;//(unsigned char)255 * std::pow(clamp(c.y()), 0.6f);
-			color[2] = c.z() * 255;//(unsigned char)255 * std::pow(clamp(c.z()), 0.6f);
+			color[0] = (unsigned char)(255.f * std::pow(clamp(c.x()), 0.6f));
+			color[1] = (unsigned char)(255.f * std::pow(clamp(c.y()), 0.6f));
+			color[2] = (unsigned char)(255.f * std::pow(clamp(c.z()), 0.6f));
 			fwrite(color, 1, 3, fp);
 		}
 		fclose(fp);

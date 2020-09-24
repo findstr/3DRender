@@ -3,7 +3,6 @@
 #include "texture.h"
 #include "material.h"
 #include "primitive.h"
-#include "raytracer.h"
 
 class tex_program : public itexture {
 public:
@@ -28,6 +27,8 @@ private:
 	vector3f diffuse;
 };
 
+#if 0
+#include "raytracer.h"
 static std::unique_ptr<primitive>
 build_plan()
 {
@@ -93,4 +94,51 @@ int main()
 	scn.dump("a.ppm");
 	return 0;
 }
+#else
+
+#include "pathtracer.h"
+int main()
+{
+	srand(1000);
+	scene scene1;
+	screen scrn(800, 800);
+	vector3f emission =
+		 8.0f * vector3f(0.747f+0.058f,0.747f+0.258f,0.747f) +
+		15.6f * vector3f(0.740f+0.287f,0.740f+0.160f,0.740f) +
+		18.4f * vector3f(0.737f+0.642f,0.737f+0.159f,0.737f);
+	std::shared_ptr<itexture> tex_red(new tex_program2(vector3f(0.63f, 0.065f, 0.05f)));
+	std::shared_ptr<itexture> tex_green(new tex_program2(vector3f(0.14f, 0.45f, 0.091f)));
+	std::shared_ptr<itexture> tex_white(new tex_program2(vector3f(0.725f, 0.71f, 0.68f)));
+	std::shared_ptr<material> mat_red(new material(tex_red));
+	std::shared_ptr<material> mat_green(new material(tex_green));
+	std::shared_ptr<material> mat_white(new material(tex_white));
+	std::shared_ptr<material> mat_light(new material(emission, material::LIGHT));
+
+	struct object {
+		std::string name;
+		std::shared_ptr<material> mat;
+	} objs[] = {
+		{"models/cornellbox/floor.obj", mat_white},
+		{"models/cornellbox/shortbox.obj", mat_white},
+		{"models/cornellbox/tallbox.obj", mat_white},
+		{"models/cornellbox/left.obj", mat_red},
+		{"models/cornellbox/right.obj", mat_green},
+		{"models/cornellbox/light.obj", mat_light},
+	};
+	for (auto &iter:objs) {
+		std::unique_ptr<primitive> obj(new mesh(iter.name, iter.mat));
+		scene1.add(obj);
+	}
+
+	pathtracer r;
+
+	scrn.clear();
+	r.render(scene1, scrn);
+	scrn.dump("out.ppm");
+
+	return 0;
+}
+
+#endif
+
 

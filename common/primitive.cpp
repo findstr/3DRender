@@ -1,8 +1,11 @@
 #include "OBJ_Loader.hpp"
+#include "auxiliary.h"
 #include "primitive.h"
 
-mesh::mesh(const std::string &name, std::shared_ptr<material> &mt):mat(mt)
+mesh::mesh(const std::string &name, std::shared_ptr<struct material> &mt)
+	:mat(mt)
 {
+	areatotal = 0.f;
 	bounds = AABB3f();
 	model_matrix = matrix4f::Identity();
 	scale_matrix <<
@@ -28,13 +31,16 @@ mesh::mesh(const std::string &name, std::shared_ptr<material> &mt):mat(mt)
 			bounds.extend(v[j].position);
 			t[j] = i+j;
 		}
+		auto e1 = v[1].position - v[0].position;
+		auto e2 = v[2].position - v[0].position;
+		areatotal += e1.cross(e2).norm() * 0.5f;
 	}
 }
 
 mesh::mesh(const std::vector<vector3f> &verts,
 	const std::vector<vector2f> &uv,
 	const std::vector<int> &tri,
-	std::shared_ptr<material> &mt):mat(mt)
+	std::shared_ptr<struct material> &mt):mat(mt)
 {
 	vertices.resize(verts.size());
 	for (int i = 0; i < verts.size(); i++) {
@@ -101,6 +107,32 @@ mesh::intersect(const ray &r, hit &h) const
 }
 
 
+float
+mesh::sample(hit &h) const
+{
+	float sum = 0.f;
+	float p = randomf() * areatotal;
+	for (int i = 0; i < triangles.size(); i += 3) {
+		auto &v0 = vertices[triangles[i+0]].position;
+		auto &v1 = vertices[triangles[i+1]].position;
+		auto &v2 = vertices[triangles[i+2]].position;
+		auto e1 = v1 - v0;
+		auto e2 = v2 - v0;
+		float a = e1.cross(e2).norm() * 0.5f;
+		sum += a;
+		if (sum >= p) {
+			float x = std::sqrt(randomf());
+			float y = randomf();
+			h.obj = this;
+			h.normal = e1.cross(e2).normalized();
+			h.point = v0 * (1.f - x) + v1 * (x * (1.f - y)) + v2 *  (x * y);
+			return 1.f / areatotal;
+		}
+	}
+	assert(!"never come here");
+	return 0.f;
+}
+
 void
 mesh::scale(const vector3f &s)
 {
@@ -130,18 +162,6 @@ mesh::rot(float angle)
 	model_matrix = translate * rotation * scale_matrix;
 }
 
-material *
-mesh::getmaterial() const
-{
-	return this->mat.get();
-}
-
-matrix4f
-mesh::model() const
-{
-	return model_matrix;
-}
-
 void
 mesh::fetch(std::vector<triangle> &tri) const
 {
@@ -158,7 +178,7 @@ mesh::fetch(std::vector<triangle> &tri) const
 }
 
 
-sphere::sphere(const vector3f &c, float r, std::shared_ptr<material> &m)
+sphere::sphere(const vector3f &c, float r, std::shared_ptr<struct material> &m)
 	: center(c)
 	, radius(r)
 	, mat(m)
@@ -187,11 +207,5 @@ sphere::intersect(const ray &r, hit &h) const
 	h.normal = (h.point - center).normalized();
 	h.color = vector3f(0.8f, 0.8f, 0.8f);
         return true;
-}
-
-material *
-sphere::getmaterial() const
-{
-	return mat.get();
 }
 

@@ -4,7 +4,7 @@
 class primitive;
 
 struct ray {
-	ray(const vector3f &o, const vector3f &d):origin(o) {
+	ray(vector3f o, const vector3f &d):origin(o) {
 		direction = d;
 	}
 	vector3f point(float t) const {
