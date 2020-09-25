@@ -45,6 +45,41 @@ fresnel(const vector3f &I, const vector3f &N, float ior)
 	// kt = 1 - kr;
 }
 
+static inline float
+d_ggx_tr(const vector3f &n, const vector3f &h, float roughness)
+{
+	float a2 = roughness*roughness;
+	float n_dot_h = std::max(n.dot(h), 0.f);
+	float n_dot_h2 = n_dot_h * n_dot_h;
+
+	float nom = a2;
+	float denom = n_dot_h2 * (a2 - 1.f) + 1.f;
+
+	return nom / (PI * denom * denom);
+}
+
+static inline float
+g_schlick_ggx(const vector3f &n, const vector3f &v,
+	const vector3f &l, float roughness)
+{
+	float r = roughness + 1.f;
+	float k = (r*r) / 8.f;
+	float n_dot_v = std::max(n.dot(v), 0.f);
+	float n_dot_l = std::max(n.dot(l), 0.f);
+	float g1 = n_dot_v / (n_dot_v * (1.f - k) + k);
+	float g2 = n_dot_l / (n_dot_l * (1.f - k) + k);
+	return g1*g2;
+}
+
+static inline vector3f
+f_schlick(const vector3f &v, const vector3f &l, const vector3f &f0)
+{
+	vector3f h = (v+l).normalized();
+	float h_dot_v = 1.f - h.dot(v);
+	return f0 + (vector3f(1.f, 1.f, 1.f) - f0) * std::pow(h_dot_v, 5);
+}
+
+
 
 }
 

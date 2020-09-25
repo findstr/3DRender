@@ -39,7 +39,34 @@ pathtracer::brdf(const hit &h, const vector3f &wi, const vector3f &wo, float a)
 		// calculate the contribution of diffuse   model
 		if (wo.dot(N) > 0.f) {
 			auto color = m->texture->sample(h.texcoord);
-			return m->Kd / PI * color;
+			return 1.f / PI * color;
+		}
+		break;
+	case material::SPECULAR:
+		if (wo.dot(N) > 0.f) {
+			float roughness = 0.025f;
+			float metallic = 0.9f;
+			vector3f x0(0.04, 0.04, 0.04);
+			vector3f f0(0.17, 0.17, 0.17);
+			f0 = lerp(0.9, x0, f0);
+			auto H = (wi + wo).normalized();
+			float D = optics::d_ggx_tr(N, H, 0.025f);
+			float G = optics::g_schlick_ggx(N, wo, wi, 0.025f);
+			vector3f F = optics::f_schlick(wo, wi, f0);
+			vector3f specular = (D*G*F) / (4*wo.dot(N)*std::max(wi.dot(N),0.f) + EPSILON);
+			vector3f albedo = m->texture->sample(h.texcoord) / PI;
+			vector3f Ks = F;
+			vector3f Kd = vector3f(1.f, 1.f, 1.f) - Ks;
+			Kd *= 1.f - metallic;
+			/*
+			std::cout << "Ks:" << F << std::endl;
+			std::cout << "D:" << D << "G:" << G << "F:" << F << std::endl;
+			std::cout << "spe:" << specular << std::endl;
+			std::cout << "albedo:" << albedo << std::endl;
+			std::cout << "ax:" << Kd.cwiseProduct(albedo) << std::endl;
+			std::cout << "sx:" << Ks.cwiseProduct(specular) << std::endl;
+			*/
+			return Kd.cwiseProduct(albedo) + specular;
 		}
 		break;
 	}
@@ -51,6 +78,7 @@ pathtracer::pdf(const material *m, const vector3f &wi,
 	const vector3f &wo, const vector3f &N)
 {
 	switch (m->type) {
+	case material::SPECULAR:
 	case material::DIFFUSE:
 		// uniform sample probability 1 / (2 * PI)
 		if (wi.dot(N) > 0.f)
@@ -80,6 +108,7 @@ pathtracer::sample_uniform(const material *m,
 	const vector3f &wo, const vector3f &N)
 {
 	switch(m->type) {
+	case material::SPECULAR:
 	case material::DIFFUSE:{
 		// uniform sample on the hemisphere
 		float x_1 = randomf(), x_2 = randomf();
@@ -119,10 +148,18 @@ pathtracer::diffuse(const ray &r, const hit &h, int depth)
 			auto cos_prime = std::max(hit_l.normal.dot(-wi), 0.f);
 			auto r_square = dir.squaredNorm();
 			light_pdf += EPSILON;
+			/*
+			std::cout << "f_r:" << f_r << std::endl;
+			std::cout << "L_i:" << L_i << std::endl;
+			std::cout << "cos_prim:" << cos_prime << std::endl;
+			std::cout << "cos:" << cos << std::endl;
+			std::cout << " demo:" << (r_square * light_pdf) << std::endl;
+			*/
 			L_dir = L_i.cwiseProduct(f_r) * cos_prime * cos / (r_square * light_pdf);
+			//std::cout << " Ldir:" << L_dir << std::endl;
 		}
 	}
-	{
+	if (1){
 		float ksi = randomf();
 		if (ksi < 0.8) {
 			auto wi = sample_uniform(m, wo, N);
@@ -148,18 +185,22 @@ pathtracer::trace(ray r, int depth)
 		return hitcolor;
 	switch (h.obj->material()->type) {
 	case material::LIGHT:
-		return light(r, h, depth);
-	case material::DIFFUSE:
-		return diffuse(r, h, depth);
+		hitcolor = light(r, h, depth);
+		break;
 	case material::SPECULAR:
-		return specular(r, h, depth);
+	case material::DIFFUSE:
+		hitcolor = diffuse(r, h, depth);
+		break;
 	case material::GLASS:
-		return glass(r, h, depth);
+		hitcolor = glass(r, h, depth);
+		break;
 	case material::GLOSSY:
-		return glossy(r, h, depth);
+		hitcolor = glossy(r, h, depth);
+		break;
 	default:
 		return vector3f(0,0,0);
 	}
+	return hitcolor;
 }
 
 static inline void UpdateProgress(float progress)
@@ -208,7 +249,7 @@ pathtracer::render(const scene &sc, screen &scrn)
 	vector3f w(0.f, 0.f, -1.f);
 	// Use this variable as the eye position to start your rays.
 #endif
-	int spp = 256;
+	int spp = 32;
 	progress = 0;
 	std::cout << "spp:" << spp << std::endl;
 	total = size.x() * size.y() * spp;
@@ -225,6 +266,8 @@ pathtracer::render(const scene &sc, screen &scrn)
 		float y = (2 * (j + randomf()) / (float)height - 1) * scale;
 		vector3f dir = vector3f(-x, y, 1).normalized();
 		auto c = trace(ray(eye_pos, dir), 0);
+		for (int i = 0; i < 3; i++)
+			c[i] = clamp(c[i]);
 		scrn.add(i, j, c);
 		#pragma omp atomic
 		++progress;

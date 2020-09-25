@@ -99,9 +99,8 @@ int main()
 #include "pathtracer.h"
 int main()
 {
-	srand(1000);
 	scene scene1;
-	screen scrn(800, 800);
+	screen scrn(400, 400);
 	vector3f emission =
 		 8.0f * vector3f(0.747f+0.058f,0.747f+0.258f,0.747f) +
 		15.6f * vector3f(0.740f+0.287f,0.740f+0.160f,0.740f) +
@@ -109,6 +108,7 @@ int main()
 	std::shared_ptr<itexture> tex_red(new tex_program2(vector3f(0.63f, 0.065f, 0.05f)));
 	std::shared_ptr<itexture> tex_green(new tex_program2(vector3f(0.14f, 0.45f, 0.091f)));
 	std::shared_ptr<itexture> tex_white(new tex_program2(vector3f(0.725f, 0.71f, 0.68f)));
+	std::shared_ptr<material> mat_micro(new material(tex_white, material::SPECULAR));
 	std::shared_ptr<material> mat_red(new material(tex_red));
 	std::shared_ptr<material> mat_green(new material(tex_green));
 	std::shared_ptr<material> mat_white(new material(tex_white));
@@ -120,7 +120,7 @@ int main()
 	} objs[] = {
 		{"models/cornellbox/floor.obj", mat_white},
 		{"models/cornellbox/shortbox.obj", mat_white},
-		{"models/cornellbox/tallbox.obj", mat_white},
+		{"models/cornellbox/tallbox.obj", mat_micro},
 		{"models/cornellbox/left.obj", mat_red},
 		{"models/cornellbox/right.obj", mat_green},
 		{"models/cornellbox/light.obj", mat_light},

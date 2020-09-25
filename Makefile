@@ -2,7 +2,7 @@
 
 #CC=g++10 -O0 -g3 -std=c++17 -fsanitize=address -fno-omit-frame-pointer
 CC=g++10 -O3 -g3 -std=c++17
-INCLUDE=-Icommon/ -I/usr/local/Cellar/opencv/4.4.0_1/include/opencv4 -D_GLIBCXX_USE_CXX11_ABI=0
+INCLUDE=-Icommon/ -I/usr/local/Cellar/opencv/4.4.0_1/include/opencv4 -D_GLIBCXX_USE_CXX11_ABI=0 -fopenmp
 LIB=-L/usr/local/gcc10/lib64 -lpthread \
 	-lopencv_calib3d -lopencv_contrib \
 	-lopencv_core -lopencv_features2d \

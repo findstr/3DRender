@@ -14,8 +14,8 @@ struct material {
 	material(std::shared_ptr<itexture> &t, type typ = DIFFUSE)
 		:type(typ),
 		ior(1.3),
-		Kd(1.0),
-		Ks(0.2),
+		Kd(0.1),
+		Ks(0.9),
 		emission(0,0,0),
 		specularexponent(25.f),
 		texture(t) {}
