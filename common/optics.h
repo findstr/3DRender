@@ -75,7 +75,7 @@ static inline vector3f
 f_schlick(const vector3f &v, const vector3f &l, const vector3f &f0)
 {
 	vector3f h = (v+l).normalized();
-	float h_dot_v = 1.f - h.dot(v);
+	float h_dot_v = 1.f - std::max(h.dot(v), 0.f);
 	return f0 + (vector3f(1.f, 1.f, 1.f) - f0) * std::pow(h_dot_v, 5);
 }
 
