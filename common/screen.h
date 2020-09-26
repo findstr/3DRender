@@ -59,9 +59,9 @@ public:
 		for (int i = 0; i < size.x() * size.y(); i++) {
 			unsigned char color[3];
 			vector3f &c = framebuf[i];
-			color[0] = (unsigned char)(255.f * std::pow(clamp(c.x()), 0.6f));
-			color[1] = (unsigned char)(255.f * std::pow(clamp(c.y()), 0.6f));
-			color[2] = (unsigned char)(255.f * std::pow(clamp(c.z()), 0.6f));
+			color[0] = (unsigned char)(255.f * std::pow(clamp(c.x()), 1.f/2.2f));
+			color[1] = (unsigned char)(255.f * std::pow(clamp(c.y()), 1.f/2.2f));
+			color[2] = (unsigned char)(255.f * std::pow(clamp(c.z()), 1.f/2.2f));
 			fwrite(color, 1, 3, fp);
 		}
 		fclose(fp);

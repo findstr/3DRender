@@ -21,9 +21,9 @@ public:
 		auto u_img = uv.x() * (width-1);
 		auto v_img = (1-uv.y()) * (height-1);
 		auto color = image_data.at<cv::Vec3b>(v_img, u_img);
-		float b = std::pow(color[0] / 255.f, 1/0.6f);
-		float g = std::pow(color[1] / 255.f, 1/0.6f);
-		float r = std::pow(color[2] / 255.f, 1/0.6f);
+		float b = std::pow(color[0] / 255.f, 2.2f);
+		float g = std::pow(color[1] / 255.f, 2.2f);
+		float r = std::pow(color[2] / 255.f, 2.2f);
 		return vector3f(b, g, r);
 	}
 private:
