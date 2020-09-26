@@ -25,14 +25,14 @@ CCFLAG := -O3 -g3 -std=c++17 -D_GLIBCXX_USE_CXX11_ABI=0
 
 LDFLAG :=-lpthread -lopencv_core -lopencv_highgui \
 	-lopencv_imgproc -lopencv_imgcodecs\
-	-lomp
 
 INCLUDE+=-Icommon/ -Iraytracer/
 
 
 linux:CCFLAG += -fopenmp
-linux:LDFLAG += -L/usr/local/gcc10/lib64
+linux:LDFLAG += -L/usr/local/gcc10/lib64 -lgomp
 macosx:CCFLAG += -Xpreprocessor -fopenmp
+macosx:LDFLAG += -lomp
 
 SRC= common/primitive.cpp common/auxiliary.cpp common/scene.cpp
 

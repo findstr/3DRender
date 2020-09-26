@@ -18,7 +18,7 @@ struct material {
 		metallic_or_ks(0.9),
 		albedo_(0,0,0),
 		specularexponent(25.f),
-		texture(t) {}
+		texture_(t) {}
 	material(const vector3f &e, type typ = LIGHT)
 		:type(typ),
 		ior(1.3),
@@ -26,17 +26,17 @@ struct material {
 		metallic_or_ks(0.2),
 		albedo_(e),
 		specularexponent(25.f),
-		texture(nullptr) {}
+		texture_(nullptr) {}
 
 	material(type typ, std::shared_ptr<texture> &tex,
 		const vector3f &albedo,
 		float roughness, float metallic) :
-		type(typ), texture(tex), albedo_(albedo),
+		type(typ), texture_(tex), albedo_(albedo),
 		roughness_or_kd(roughness),
 		metallic_or_ks(metallic) {}
 
 	vector3f albedo(const vector2f &texcoord) const {
-		auto *tex = texture.get();
+		auto *tex = texture_.get();
 		if (tex != nullptr)
 			return albedo_ + tex->sample(texcoord);
 		else
@@ -61,6 +61,6 @@ struct material {
 	float roughness_or_kd;
 	float metallic_or_ks;
 	vector3f albedo_;
-	std::shared_ptr<texture> texture;
+	std::shared_ptr<texture> texture_;
 };
 
