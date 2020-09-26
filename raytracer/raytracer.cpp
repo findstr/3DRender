@@ -62,7 +62,7 @@ raytracer::glossy(const ray &r, const hit &h, int depth)
 		float p = m->specularexponent;
 		specular += I * std::pow(std::max(0.f, h.dot(N)), p);
 	}
-	vector3f diffuse = m->texture->sample(h.texcoord);
+	vector3f diffuse = m->albedo(h.texcoord);
 	return ambient.cwiseProduct(diffuse) * m->Kd + specular * m->Ks;
 }
 

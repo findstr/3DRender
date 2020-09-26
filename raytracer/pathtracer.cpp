@@ -23,7 +23,7 @@ pathtracer::glossy(const ray &r, const hit &h, int depth)
 vector3f
 pathtracer::light(const ray &r, const hit &h, int depth)
 {
-	return depth == 0 ? h.obj->material()->emission : vector3f(0,0,0);
+	return depth == 0 ? h.obj->material()->albedo(h.texcoord): vector3f(0,0,0);
 }
 
 vector3f
@@ -35,15 +35,15 @@ pathtracer::brdf(const hit &h, const vector3f &wi, const vector3f &wo, float a)
 	case material::DIFFUSE:
 		// calculate the contribution of diffuse   model
 		if (wo.dot(N) > 0.f) {
-			auto color = m->texture->sample(h.texcoord);
+			auto color = m->albedo(h.texcoord);
 			return 1.f / PI * color;
 		}
 		break;
-	case material::SPECULAR: {
+	case material::MICROFACET: {
 		if (wo.dot(N) > 0.f) {
 #if 1
 			vector3f x0(0.04, 0.04, 0.04);
-			vector3f albedo = m->texture->sample(h.texcoord);
+			vector3f albedo = m->albedo(h.texcoord);
 			auto f0 = lerp(x0, albedo, metallic);
 			auto H = (wi + wo).normalized();
 			float D = optics::d_ggx_tr(N, H, 0.025f);
@@ -71,7 +71,7 @@ pathtracer::pdf(const material *m, const vector3f &wi,
 		if (wi.dot(N) > 0.f)
 			return 0.5f / PI;
 		break;
-	case material::SPECULAR: {
+	case material::MICROFACET: {
 		vector3f H = (wi+wo).normalized();
 		float a2 = roughness * roughness;
 		float costheta = N.dot(H);
@@ -110,7 +110,7 @@ pathtracer::sample(const material *m,
 		float r = std::sqrt(1.0f - z * z), phi = 2 * PI * x_2;
 		vector3f localRay(r*std::cos(phi), r*std::sin(phi), z);
 		return toWorld(localRay, N).normalized();}
-	case material::SPECULAR: {//sample GGX
+	case material::MICROFACET: {//sample GGX
 		float r0 = randomf();
 		float r1 = randomf();
 		float a2 = roughness * roughness;
@@ -152,7 +152,7 @@ pathtracer::diffuse(const ray &r, const hit &h, int depth)
 		sc->intersect(r, hit_middle);
 	//	if (hit_middle.obj == hit_l.obj) { //has no middle
 		if (hit_middle.distance - dir.norm() > -0.001f) { //has no middle
-			auto L_i = hit_l.obj->material()->emission;
+			auto L_i = hit_l.obj->material()->albedo(hit_l.texcoord);
 			auto f_r = brdf(h, wi, wo);
 			auto cos = std::max(N.dot(wi), 0.f);
 			auto cos_prime = std::max(hit_l.normal.dot(-wi), 0.f);
@@ -197,7 +197,7 @@ pathtracer::trace(ray r, int depth)
 	case material::LIGHT:
 		hitcolor = light(r, h, depth);
 		break;
-	case material::SPECULAR:
+	case material::MICROFACET:
 	case material::DIFFUSE:
 		hitcolor = diffuse(r, h, depth);
 		break;
@@ -243,7 +243,7 @@ void thread_progress()
 
 
 void
-pathtracer::render(const scene &sc, screen &scrn)
+pathtracer::render(const scene &sc, screen &scrn, int spp)
 {
 	this->sc = &sc;
 	this->scrn = &scrn;
@@ -261,7 +261,6 @@ pathtracer::render(const scene &sc, screen &scrn)
 	vector3f w(0.f, 0.f, -1.f);
 	// Use this variable as the eye position to start your rays.
 #endif
-	int spp = 1024;
 	progress = 0;
 	std::cout << "spp:" << spp << std::endl;
 	total = size.x() * size.y() * spp;

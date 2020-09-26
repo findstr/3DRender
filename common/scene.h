@@ -9,6 +9,7 @@ public:
 	float samplelight(hit &h) const;
 	bool intersect(const ray &r, hit &h) const;
 	const std::vector<const primitive *>getlights() const {return lights;}
+	void dump();
 private:
 	std::vector<std::unique_ptr<primitive>> primitives;
 	std::vector<const primitive *> lights;

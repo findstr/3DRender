@@ -9,31 +9,58 @@ struct material {
 		LIGHT,
 		GLOSSY,
 		DIFFUSE,
-		SPECULAR,
+		MICROFACET,
 	};
-	material(std::shared_ptr<itexture> &t, type typ = DIFFUSE)
+	material(std::shared_ptr<texture> &t, type typ = DIFFUSE)
 		:type(typ),
 		ior(1.3),
-		Kd(0.1),
-		Ks(0.9),
-		emission(0,0,0),
+		roughness_or_kd(0.1),
+		metallic_or_ks(0.9),
+		albedo_(0,0,0),
 		specularexponent(25.f),
 		texture(t) {}
 	material(const vector3f &e, type typ = LIGHT)
 		:type(typ),
 		ior(1.3),
-		Kd(1.0),
-		Ks(0.2),
-		emission(e),
+		roughness_or_kd(1.0),
+		metallic_or_ks(0.2),
+		albedo_(e),
 		specularexponent(25.f),
 		texture(nullptr) {}
 
-	enum type type;
+	material(type typ, std::shared_ptr<texture> &tex,
+		const vector3f &albedo,
+		float roughness, float metallic) :
+		type(typ), texture(tex), albedo_(albedo),
+		roughness_or_kd(roughness),
+		metallic_or_ks(metallic) {}
+
+	vector3f albedo(const vector2f &texcoord) const {
+		auto *tex = texture.get();
+		if (tex != nullptr)
+			return albedo_ + tex->sample(texcoord);
+		else
+			return albedo_;
+	}
+	float Kd() const {
+		return roughness_or_kd;
+	}
+	float Ks() const {
+		return metallic_or_ks;
+	}
+	void dump() const {
+		std::cout << "ior:" << ior <<
+			"type:" << type <<
+			"roughness:" << roughness_or_kd <<
+			"metallic:" << metallic_or_ks <<
+			"albedo:" << albedo_.transpose() << std::endl;
+	}
 	float ior;
-	float Kd;
-	float Ks;
-	vector3f emission;
 	float specularexponent;
-	std::shared_ptr<itexture> texture;
+	enum type type;
+	float roughness_or_kd;
+	float metallic_or_ks;
+	vector3f albedo_;
+	std::shared_ptr<texture> texture;
 };
 

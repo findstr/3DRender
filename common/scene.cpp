@@ -39,3 +39,11 @@ scene::samplelight(hit &h) const
 	return 0.f;
 }
 
+void
+scene::dump()
+{
+	for (auto &p:primitives) {
+		p->material()->dump();
+	}
+}
+
