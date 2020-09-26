@@ -5,11 +5,8 @@
 #include "auxiliary.h"
 #include "pathtracer.h"
 
-vector3f
-pathtracer::specular(const ray &r, const hit &h, int depth)
-{
-	return vector3f(0,0,0);
-}
+float roughness =  0.01f;
+float metallic = 1.0f;
 
 vector3f
 pathtracer::glass(const ray &r, const hit &h, int depth)
@@ -42,33 +39,24 @@ pathtracer::brdf(const hit &h, const vector3f &wi, const vector3f &wo, float a)
 			return 1.f / PI * color;
 		}
 		break;
-	case material::SPECULAR:
+	case material::SPECULAR: {
 		if (wo.dot(N) > 0.f) {
-			float roughness = 0.025f;
-			float metallic = 0.9f;
+#if 1
 			vector3f x0(0.04, 0.04, 0.04);
-			vector3f f0(0.17, 0.17, 0.17);
-			f0 = lerp(0.9, x0, f0);
+			vector3f albedo = m->texture->sample(h.texcoord);
+			auto f0 = lerp(x0, albedo, metallic);
 			auto H = (wi + wo).normalized();
 			float D = optics::d_ggx_tr(N, H, 0.025f);
 			float G = optics::g_schlick_ggx(N, wo, wi, 0.025f);
 			vector3f F = optics::f_schlick(wo, wi, f0);
-			vector3f specular = (D*G*F) / (4*wo.dot(N)*std::max(wi.dot(N),0.f) + EPSILON);
-			vector3f albedo = m->texture->sample(h.texcoord) / PI;
+			vector3f specular = (D*G*F) / (4*std::max(wo.dot(N), 0.f)*std::max(wi.dot(N),0.f) + EPSILON);
 			vector3f Ks = F;
 			vector3f Kd = vector3f(1.f, 1.f, 1.f) - Ks;
 			Kd *= 1.f - metallic;
-			/*
-			std::cout << "Ks:" << F << std::endl;
-			std::cout << "D:" << D << "G:" << G << "F:" << F << std::endl;
-			std::cout << "spe:" << specular << std::endl;
-			std::cout << "albedo:" << albedo << std::endl;
-			std::cout << "ax:" << Kd.cwiseProduct(albedo) << std::endl;
-			std::cout << "sx:" << Ks.cwiseProduct(specular) << std::endl;
-			*/
-			return Kd.cwiseProduct(albedo) + specular;
+			return Kd.cwiseProduct(albedo)/PI + specular;
+#endif
 		}
-		break;
+		break;}
 	}
 	return vector3f(0,0,0);
 }
@@ -78,12 +66,19 @@ pathtracer::pdf(const material *m, const vector3f &wi,
 	const vector3f &wo, const vector3f &N)
 {
 	switch (m->type) {
-	case material::SPECULAR:
 	case material::DIFFUSE:
 		// uniform sample probability 1 / (2 * PI)
 		if (wi.dot(N) > 0.f)
 			return 0.5f / PI;
 		break;
+	case material::SPECULAR: {
+		vector3f H = (wi+wo).normalized();
+		float a2 = roughness * roughness;
+		float costheta = N.dot(H);
+		float exp = (a2 - 1) * costheta * costheta + 1.f;
+		float D = a2 / (PI * exp * exp);
+		return (D * costheta) / (4 * wo.dot(H));
+		break;}
 	}
 	return 0.f;
 }
@@ -104,11 +99,10 @@ static vector3f toWorld(const vector3f &a, const vector3f &N)
 }
 
 vector3f
-pathtracer::sample_uniform(const material *m,
+pathtracer::sample(const material *m,
 	const vector3f &wo, const vector3f &N)
 {
 	switch(m->type) {
-	case material::SPECULAR:
 	case material::DIFFUSE:{
 		// uniform sample on the hemisphere
 		float x_1 = randomf(), x_2 = randomf();
@@ -116,6 +110,17 @@ pathtracer::sample_uniform(const material *m,
 		float r = std::sqrt(1.0f - z * z), phi = 2 * PI * x_2;
 		vector3f localRay(r*std::cos(phi), r*std::sin(phi), z);
 		return toWorld(localRay, N).normalized();}
+	case material::SPECULAR: {//sample GGX
+		float r0 = randomf();
+		float r1 = randomf();
+		float a2 = roughness * roughness;
+		float theta = acosf(sqrtf((1.f - r0) / ((a2 - 1.f) * r0 + 1)));
+		float phi = 2 * PI * r1;
+		vector3f wm = spherical2cartesian(theta, phi);
+		vector3f wm_w = toWorld(wm, N);
+		vector3f wi = 2 * wm_w * wm_w.dot(wo) - wo;
+		return wi.normalized();
+	}
 	default:
 		assert(0);
 		break;
@@ -123,6 +128,11 @@ pathtracer::sample_uniform(const material *m,
 	return vector3f(0,0,0);
 }
 
+vector3f
+pathtracer::specular(const ray &r, const hit &h, int depth)
+{
+	return vector3f(0,0,0);
+}
 
 vector3f
 pathtracer::diffuse(const ray &r, const hit &h, int depth)
@@ -162,7 +172,7 @@ pathtracer::diffuse(const ray &r, const hit &h, int depth)
 	if (1){
 		float ksi = randomf();
 		if (ksi < 0.8) {
-			auto wi = sample_uniform(m, wo, N);
+			auto wi = sample(m, wo, N);
 			float pdf_ = pdf(m, wi, wo, N) + EPSILON;
 			auto f_r = brdf(h, wi, wo);
 			ray rr(h.point + EPSILON * wi, wi);
@@ -251,7 +261,7 @@ pathtracer::render(const scene &sc, screen &scrn)
 	vector3f w(0.f, 0.f, -1.f);
 	// Use this variable as the eye position to start your rays.
 #endif
-	int spp = 32;
+	int spp = 1024;
 	progress = 0;
 	std::cout << "spp:" << spp << std::endl;
 	total = size.x() * size.y() * spp;
