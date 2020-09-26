@@ -22,6 +22,12 @@ lerp(float frac, vector3f &a, vector3f &b)
 	return a + frac * (b - a);
 }
 
+static inline vector3f
+lerp(vector3f &a, vector3f &b, float frac)
+{
+	return a + frac * (b - a);
+}
+
 static inline float
 deg2rad(float deg)
 {
@@ -70,4 +76,21 @@ solve_quadratic(float a, float b, float c, float &x0, float &x1)
 
 float randomf();
 
+static inline vector3f
+tone_mapping(const vector3f &c, float exposure = 1.f)
+{
+	vector3f one;
+	for (int i = 0; i < 3; i++)
+		one[i] = 1.f - std::exp(-c[i] * exposure);
+	return one;
+}
+
+static inline vector3f
+spherical2cartesian(float theta, float phi)
+{
+	float x = sinf(theta) * cosf(phi);
+	float y = sinf(theta) * sinf(phi);
+	float z = cosf(theta);
+	return vector3f(x, y, z);
+}
 

@@ -200,6 +200,8 @@ pathtracer::trace(ray r, int depth)
 	default:
 		return vector3f(0,0,0);
 	}
+	for (int i = 0; i < 3; i++)
+		hitcolor[i] = std::max(hitcolor[i], 0.f);
 	return hitcolor;
 }
 
@@ -266,9 +268,7 @@ pathtracer::render(const scene &sc, screen &scrn)
 		float y = (2 * (j + randomf()) / (float)height - 1) * scale;
 		vector3f dir = vector3f(-x, y, 1).normalized();
 		auto c = trace(ray(eye_pos, dir), 0);
-		for (int i = 0; i < 3; i++)
-			c[i] = clamp(c[i]);
-		scrn.add(i, j, c);
+		scrn.add(i, j, tone_mapping(c));
 		#pragma omp atomic
 		++progress;
 	}
