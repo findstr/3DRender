@@ -53,17 +53,16 @@ raytracer::glossy(const ray &r, const hit &h, int depth)
 		float r = (li->position() - hit_point).norm();
 		vector3f l = (li->position() - hit_point).normalized();
 		vector3f v = -dir;
-		vector3f I = li->material()->emission;
+		vector3f I = li->material()->albedo(h.texcoord);
 		vector3f h = (v+l).normalized();
 		//compute light
 		ray shadowray(shadow_pos, l);
-		if (!sc->intersect(shadowray, hs) || hs.distance >= r)
+		if (!sc->intersect(shadowray, hs) || hs.distance >= r || hs.obj == li)
 			ambient += I * std::max(0.f, l.dot(N));
-		float p = m->specularexponent;
-		specular += I * std::pow(std::max(0.f, h.dot(N)), p);
+		specular += I * std::pow(std::max(0.f, h.dot(N)), 25.f);
 	}
 	vector3f diffuse = m->albedo(h.texcoord);
-	return ambient.cwiseProduct(diffuse) * m->Kd + specular * m->Ks;
+	return ambient.cwiseProduct(diffuse) * m->Kd() + specular * m->Ks();
 }
 
 vector3f
@@ -79,10 +78,11 @@ raytracer::trace(ray r, int depth)
 		return background;
 	}
 	switch (h.obj->material()->type) {
-	case material::SPECULAR:
+	case material::MICROFACET:
 		return specular(r, h, depth);
 	case material::GLASS:
 		return glass(r, h, depth);
+	case material::DIFFUSE:
 	case material::GLOSSY:
 		return glossy(r, h, depth);
 	default:

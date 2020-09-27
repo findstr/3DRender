@@ -24,9 +24,10 @@ scene_load(scene &s, const char *name)
 	while (!feof(fp)) {
 		char type[1024];
 		++line;
+		type[0] = 0;
 		fgets(buff, sizeof(buff), fp);
 		sscanf(buff, "%s", type);
-		if (type[0] == '#')
+		if (type[0] == '#' || !isalpha(type[0]))
 			continue ;
 		if (strcmp(type, "texture") == 0) {
 			char path[PATH_MAX];
@@ -39,11 +40,12 @@ scene_load(scene &s, const char *name)
 			vector3f albedo;
 			float roughness_or_kd;
 			float metallic_or_ks;
+			float ior = 1.f;
 			std::shared_ptr<texture> tex(nullptr);
-			sscanf(buff, "%s %s %d %f,%f,%f %f %f",
+			sscanf(buff, "%s %s %d %f,%f,%f %f %f %f",
 				type, subtype, &textureid,
 				&albedo.x(), &albedo.y(), &albedo.z(),
-				&roughness_or_kd, &metallic_or_ks);
+				&roughness_or_kd, &metallic_or_ks, &ior);
 			if (textureid >= 0) {
 				if (textures.size() <= textureid) {
 					fprintf(stderr, "line:%d incorrect textureid\n", line);
@@ -57,12 +59,15 @@ scene_load(scene &s, const char *name)
 				typ = material::DIFFUSE;
 			} else if (strcmp(subtype, "light") == 0) {
 				typ = material::LIGHT;
+			} else if (strcmp(subtype, "glass") == 0) {
+				typ = material::GLASS;
 			} else {
 				fprintf(stderr, "line:%d incorrect material type:%s\n", line, subtype);
 				exit(0);
 			}
 			materials.emplace_back(new material(
-				typ, tex, albedo, roughness_or_kd, metallic_or_ks));
+				typ, tex, albedo,
+				roughness_or_kd, metallic_or_ks, ior));
 		} else if (strcmp(type, "mesh") == 0) {
 			char path[PATH_MAX];
 			unsigned int materialid;
@@ -85,6 +90,7 @@ scene_load(scene &s, const char *name)
 				exit(0);
 			}
 			std::unique_ptr<primitive> obj(new sphere(center, radius, materials[materialid]));
+			s.add(obj);
 		}
 	}
 	return ;

@@ -2,15 +2,15 @@ texture models/spot/spot_texture.png
 texture models/rock/rock.png
 #material microfacet texture color roughness/Kd metallic/Ks
 #light 0
-material light -1 47.8348,38.5664,31.0808  0 0
+material light -1 47.8348,38.5664,31.0808  0 0 1
 #microfacet 1
-material microfacet -1 0.95,0.93,0.88 0.01 1.0
+material microfacet -1 0.95,0.93,0.88 0.01 1.0 1
 #red 2
-material diffuse -1 0.63,0.065,0.05  0.8 0.2
+material diffuse -1 0.63,0.065,0.05  0.8 0.2 1
 #green 3
-material diffuse -1 0.14,0.45,0.091  0.8 0.2
+material diffuse -1 0.14,0.45,0.091  0.8 0.2 1
 #white 4
-material diffuse -1 0.725,0.71,0.68  0.8 0.2
+material diffuse -1 0.725,0.71,0.68  0.8 0.2 1
 mesh models/cornellbox/light.obj 0
 mesh models/cornellbox/floor.obj 4
 mesh models/cornellbox/shortbox.obj 4

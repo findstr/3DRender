@@ -11,29 +11,19 @@ struct material {
 		DIFFUSE,
 		MICROFACET,
 	};
-	material(std::shared_ptr<texture> &t, type typ = DIFFUSE)
+	material(std::shared_ptr<texture> t, type typ = DIFFUSE)
 		:type(typ),
 		ior(1.3),
-		roughness_or_kd(0.1),
-		metallic_or_ks(0.9),
-		albedo_(0,0,0),
-		specularexponent(25.f),
-		texture_(t) {}
-	material(const vector3f &e, type typ = LIGHT)
-		:type(typ),
-		ior(1.3),
-		roughness_or_kd(1.0),
+		roughness_or_kd(0.8),
 		metallic_or_ks(0.2),
-		albedo_(e),
-		specularexponent(25.f),
-		texture_(nullptr) {}
-
+		albedo_(0,0,0),
+		texture_(t) {}
 	material(type typ, std::shared_ptr<texture> &tex,
 		const vector3f &albedo,
-		float roughness, float metallic) :
+		float roughness, float metallic, float ior_) :
 		type(typ), texture_(tex), albedo_(albedo),
 		roughness_or_kd(roughness),
-		metallic_or_ks(metallic) {}
+		metallic_or_ks(metallic), ior(ior_) {}
 
 	vector3f albedo(const vector2f &texcoord) const {
 		auto *tex = texture_.get();
@@ -53,10 +43,10 @@ struct material {
 			"type:" << type <<
 			"roughness:" << roughness_or_kd <<
 			"metallic:" << metallic_or_ks <<
-			"albedo:" << albedo_.transpose() << std::endl;
+			"albedo:" << albedo_.transpose() <<
+			" tex:" << texture_.get() << std::endl;
 	}
 	float ior;
-	float specularexponent;
 	enum type type;
 	float roughness_or_kd;
 	float metallic_or_ks;

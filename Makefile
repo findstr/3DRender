@@ -34,26 +34,25 @@ linux:LDFLAG += -L/usr/local/gcc10/lib64 -lgomp
 macosx:CCFLAG += -Xpreprocessor -fopenmp
 macosx:LDFLAG += -lomp
 
-SRC= common/primitive.cpp common/auxiliary.cpp common/scene.cpp
+SRC= 	common/primitive.cpp \
+     	common/auxiliary.cpp \
+     	common/scene.cpp \
+	common/pathtracer.cpp \
+	common/raytracer.cpp \
+
 
 RST=	rasterizer/main.cpp \
 	rasterizer/rasterizer.cpp \
     	rasterizer/camera.cpp
 
-RT=	raytracer/main.cpp \
-	raytracer/scene.cpp \
-	raytracer/raytracer.cpp
+EXAMPLE=examples/main.cpp
 
-PT=	raytracer/main.cpp \
-	raytracer/pathtracer.cpp
-
-OBJS = $(patsubst %.cpp,%.o,$(SRC) $(PT))
-
+OBJS = $(patsubst %.cpp,%.o,$(SRC))
+OBJS += $(patsubst %.cpp,%.o,$(EXAMPLE))
 
 .depend:
-	@$(CC) $(CCFLAG) $(INCLUDE) -MM $(PT) 2>/dev/null |\
-		sed 's/\([^.]*\).o[: ]/raytracer\/\1.o $@: /g' > $@ || true
-
+	@$(CC) $(CCFLAG) $(INCLUDE) -MM $(SRC) 2>/dev/null |\
+		sed 's/\([^.]*\).o[: ]/common\/\1.o $@: /g' > $@ || true
 %.o:%.cpp
 	$(CC) $(CCFLAG) $(INCLUDE) -c -o $@ $<
 
