@@ -51,8 +51,10 @@ OBJS = $(patsubst %.cpp,%.o,$(SRC))
 OBJS += $(patsubst %.cpp,%.o,$(EXAMPLE))
 
 .depend:
+	@$(CC) $(CCFLAG) $(INCLUDE) -MM $(EXAMPLE) 2>/dev/null |\
+		sed 's/\([^.]*\).o[: ]/examples\/\1.o $@: /g' > $@ || true
 	@$(CC) $(CCFLAG) $(INCLUDE) -MM $(SRC) 2>/dev/null |\
-		sed 's/\([^.]*\).o[: ]/common\/\1.o $@: /g' > $@ || true
+		sed 's/\([^.]*\).o[: ]/common\/\1.o $@: /g' >> $@ || true
 %.o:%.cpp
 	$(CC) $(CCFLAG) $(INCLUDE) -c -o $@ $<
 
