@@ -13,7 +13,8 @@ int main()
 	screen scrn(800, 800);
 	pathtracer pr;
 	raytracer rr;
-	scene_load(scene1, "scene/whitted.scene");
+	scene_loader sl;
+	sl.load(scene1, "scene/whitted.scene");
 	scrn.clear();
 	rr.render(scene1, scrn);
 	scrn.dump("out.ppm");
