@@ -6,6 +6,8 @@
 
 class pathtracer {
 public:
+	void set_eye(vector3f &pos);
+	void set_fov(float degree);
 	void render(const scene &sc, screen &scrn, int spp = 1024);
 private:
 	vector3f trace(ray r, int depth);

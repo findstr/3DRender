@@ -18,7 +18,7 @@ mesh::mesh(const std::string &name, std::shared_ptr<struct material> &mt)
 	auto &mesh = loader.LoadedMeshes[0];
 	vertices.resize(mesh.Vertices.size());
 	triangles.resize(mesh.Vertices.size());
-	for (int i = 0; i < mesh.Vertices.size(); i += 3) {
+	for (size_t i = 0; i < mesh.Vertices.size(); i += 3) {
 		auto *v = &vertices[i];
 		auto *t = &triangles[i];
 		for (int j = 0; j < 3; j++) {
@@ -43,7 +43,7 @@ mesh::mesh(const std::vector<vector3f> &verts,
 	std::shared_ptr<struct material> &mt):mat(mt)
 {
 	vertices.resize(verts.size());
-	for (int i = 0; i < verts.size(); i++) {
+	for (size_t i = 0; i < verts.size(); i++) {
 		vertices[i].position = verts[i];
 		vertices[i].texcoord = uv[i];
 		bounds.extend(verts[i]);
@@ -112,7 +112,7 @@ mesh::sample(hit &h) const
 {
 	float sum = 0.f;
 	float p = randomf() * areatotal;
-	for (int i = 0; i < triangles.size(); i += 3) {
+	for (size_t i = 0; i < triangles.size(); i += 3) {
 		auto &v0 = vertices[triangles[i+0]].position;
 		auto &v1 = vertices[triangles[i+1]].position;
 		auto &v2 = vertices[triangles[i+2]].position;
@@ -166,7 +166,7 @@ void
 mesh::fetch(std::vector<triangle> &tri) const
 {
 	tri.resize(triangles.size()/3);
-	for (int i = 0; i < triangles.size(); i += 3) {
+	for (size_t i = 0; i < triangles.size(); i += 3) {
 		auto &t = tri[i/3];
 		for (int j = 0; j < 3; j++) {
 			auto &vert = vertices[triangles[i+j]];
@@ -178,11 +178,11 @@ mesh::fetch(std::vector<triangle> &tri) const
 }
 
 
-sphere::sphere(const vector3f &c, float r, std::shared_ptr<struct material> &m)
-	: center(c)
-	, radius(r)
-	, mat(m)
-	, radius2(r * r)
+sphere::sphere(const vector3f &c, float r, std::shared_ptr<struct material> &m):
+	center(c),
+	radius(r),
+	radius2(r * r),
+	mat(m)
 {}
 
 bool

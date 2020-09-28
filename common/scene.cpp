@@ -24,7 +24,6 @@ scene::intersect(const ray &r, hit &h) const
 float
 scene::samplelight(hit &h) const
 {
-	float pdf = 0.f;
 	float emit_area_sum = 0.f;
 	for (auto l:lights)
 		emit_area_sum += l->area();

@@ -291,3 +291,15 @@ pathtracer::render(const scene &sc, screen &scrn, int spp)
 	UpdateProgress(1.f);
 }
 
+void
+pathtracer::set_eye(vector3f &pos)
+{
+	eye_pos = pos;
+}
+
+void
+pathtracer::set_fov(float degree)
+{
+	fov = degree;
+}
+

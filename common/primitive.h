@@ -76,8 +76,8 @@ public:
 	const struct material *material() const override {return mat.get(); };
 	vector3f position() const override {return center;};
 private:
-	std::shared_ptr<struct material> mat;
 	vector3f center;
 	float radius, radius2;
+	std::shared_ptr<struct material> mat;
 };
 

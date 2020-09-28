@@ -21,7 +21,7 @@ public:
 	bool ztest(int x, int y, float z) {
 		if (x < 0 || y < 0)
 			return false;
-		int idx = x + size.x() * (size.y() - y - 1);
+		unsigned idx = x + size.x() * (size.y() - y - 1);
 		if (idx >= depthbuf.size())
 			return false;
 		return depthbuf[idx] > z;

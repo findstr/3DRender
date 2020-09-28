@@ -22,16 +22,16 @@ private:
 		sscanf(line, "%s %s", type, path);
 		textures.emplace_back(new texture(path));
 	}
-	void load_material(const char *line) {
+	void load_material(const char *buff) {
 		char subtype[64];
 		enum material::type typ;
-		int textureid;
+		unsigned int textureid;
 		vector3f albedo;
 		float roughness_or_kd;
 		float metallic_or_ks;
 		float ior = 1.f;
 		std::shared_ptr<texture> tex(nullptr);
-		sscanf(line, "%s %s %d %f,%f,%f %f %f %f",
+		sscanf(buff, "%s %s %d %f,%f,%f %f %f %f",
 			type, subtype, &textureid,
 			&albedo.x(), &albedo.y(), &albedo.z(),
 			&roughness_or_kd, &metallic_or_ks, &ior);
@@ -57,10 +57,10 @@ private:
 		materials.emplace_back(new material(typ, tex,
 			albedo, roughness_or_kd, metallic_or_ks, ior));
 	}
-	void load_mesh(const char *line) {
+	void load_mesh(const char *buff) {
 		char path[PATH_MAX];
 		unsigned int materialid;
-		sscanf(line, "%s %s %d", type, path, &materialid);
+		sscanf(buff, "%s %s %d", type, path, &materialid);
 		if (materialid >= materials.size()) {
 			fprintf(stderr, "line:%d incorrect material id:%d\n", line, materialid);
 			exit(0);
@@ -68,11 +68,11 @@ private:
 		std::unique_ptr<primitive> obj(new mesh(path, materials[materialid]));
 		s->add(obj);
 	}
-	void load_sphere(const char *line) {
+	void load_sphere(const char *buff) {
 		vector3f center;
 		float radius;
 		unsigned int materialid;
-		sscanf(line, "%s %f,%f,%f %f %d", type,
+		sscanf(buff, "%s %f,%f,%f %f %d", type,
 			&center.x(), &center.y(), &center.z(),
 			&radius, &materialid);
 		if (materialid >= materials.size()) {
