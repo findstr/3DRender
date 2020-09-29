@@ -1,3 +1,19 @@
+#screen width,height
+#camera eye(x,y,z) fov znear zfar yaw 
+#render rasterize/raytracing/pathtracing
+#background r,g,b
+
+#texture texture_path
+#material diffuse/microfacet textureid albedo_color(x,y,z) roughness/Kd metallic/Ks ior
+#mesh model_path materialid
+#sphere center(x,y,z) radius materialid
+
+render pathtracing
+screen 800,800
+camera 278,273,-800 40 1 10 180
+background 0,0,0
+
+
 texture models/spot/spot_texture.png
 texture models/rock/rock.png
 #material microfacet texture color roughness/Kd metallic/Ks

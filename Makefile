@@ -39,6 +39,7 @@ SRC=\
 	common/auxiliary.cpp \
 	common/scene.cpp \
 	common/camera.cpp \
+	common/material.cpp \
 	common/pathtracer.cpp \
 	common/raytracer.cpp \
 

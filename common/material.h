@@ -1,13 +1,13 @@
 #pragma once
 #include <memory>
 #include "type.h"
+#include "ray.h"
 #include "texture.h"
 
 struct material {
 	enum type {
-		GLASS,
 		LIGHT,
-		GLOSSY,
+		GLASS,
 		DIFFUSE,
 		MICROFACET,
 	};
@@ -28,27 +28,14 @@ struct material {
 		albedo_(albedo),
 		texture_(tex) {}
 
-	vector3f albedo(const vector2f &texcoord) const {
-		auto *tex = texture_.get();
-		if (tex != nullptr)
-			return albedo_ + tex->sample(texcoord);
-		else
-			return albedo_;
-	}
-	float Kd() const {
-		return roughness_or_kd;
-	}
-	float Ks() const {
-		return metallic_or_ks;
-	}
-	void dump() const {
-		std::cout << "ior:" << ior <<
-			"type:" << type <<
-			"roughness:" << roughness_or_kd <<
-			"metallic:" << metallic_or_ks <<
-			"albedo:" << albedo_.transpose() <<
-			" tex:" << texture_.get() << std::endl;
-	}
+	float Kd() const;
+	float Ks() const;
+	void dump() const;
+	vector3f albedo(const vector2f &texcoord) const;
+	vector3f sample(const vector3f &wo, const vector3f &N) const;
+	float pdf(const vector3f &wi, const vector3f &wo, const vector3f &N) const;
+	vector3f brdf(const hit &h, const vector3f &wi, const vector3f &wo) const;
+
 	enum type type;
 	float ior;
 	float roughness_or_kd;

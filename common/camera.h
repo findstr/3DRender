@@ -5,6 +5,7 @@
 class camera {
 public:
 	camera(vector3f eye, float fov, float znear, float zfar);
+	void jmp(vector3f eye);
 	void move(float step);
 	void pitch(float angle);
 	void yaw(float angle);

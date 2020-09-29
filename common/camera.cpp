@@ -64,11 +64,18 @@ camera::lookat(float aspect, float x, float y) const
 	float scale = std::tan(deg2rad(fov * 0.5f));
 	float t = znear * scale;
 	float r = t * aspect;
+	x = clamp(x); y = clamp(y);
 	float xxx = -r + 2.f * r * x; //l + (r-l) * x
 	float yyy = -t + 2.f * t * y; //b + (t-b) * y;
 	float zzz = -znear;
 	vector3f dir = (mrotation * vector3f(xxx, yyy, zzz)).normalized();
 	return ray(eye, dir);
+}
+
+void
+camera::jmp(vector3f eye)
+{
+	this->eye = eye;
 }
 
 void

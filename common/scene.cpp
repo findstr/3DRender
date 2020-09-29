@@ -2,6 +2,13 @@
 #include "scene.h"
 
 void
+scene::add(std::vector<std::unique_ptr<primitive>> &p)
+{
+	for (auto &pp:p)
+		add(pp);
+}
+
+void
 scene::add(std::unique_ptr<primitive> &p)
 {
 	auto *ptr = p.get();

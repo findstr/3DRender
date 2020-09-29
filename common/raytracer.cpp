@@ -6,22 +6,6 @@
 #include "raytracer.h"
 
 vector3f
-raytracer::specular(const ray &r, const hit &h, int depth)
-{
-	vector3f color1, color2;
-	auto &dir = r.direction;
-	auto &N = h.normal;
-	auto m = h.obj->material();
-	auto hit_point = r.move(h.distance);
-	vector3f reflect_dir = optics::reflect(dir, N).normalized();
-	float reflect_offset = reflect_dir.dot(N) < 0 ? -EPSILON : EPSILON;
-	ray reflect_ray(hit_point + reflect_offset * N, reflect_dir);
-	color1 = trace(reflect_ray, depth + 1);
-	color2 = glossy(r, h, depth);
-	return color1 * 0.3 + color2 * 0.7;
-}
-
-vector3f
 raytracer::glass(const ray &r, const hit &h, int depth)
 {
 	auto &dir = r.direction;
@@ -42,7 +26,7 @@ raytracer::glass(const ray &r, const hit &h, int depth)
 }
 
 vector3f
-raytracer::glossy(const ray &r, const hit &h, int depth)
+raytracer::diffuse(const ray &r, const hit &h, int depth)
 {
 	auto m = h.obj->material();
 	auto &N = h.normal;
@@ -69,56 +53,106 @@ raytracer::glossy(const ray &r, const hit &h, int depth)
 }
 
 vector3f
-raytracer::trace(ray r, int depth)
+raytracer::light(const ray &r, const hit &h, int depth)
 {
-	int i;
-	hit h;
+	return depth == 0 ? h.obj->material()->albedo(h.texcoord): vector3f(0,0,0);
+}
+
+vector3f
+raytracer::pathtracing(const ray &r, const hit &h, int depth)
+{
+	float light_pdf;
+	vector3f L_dir(0,0,0), L_indir(0,0,0);
+	auto &N = h.normal;
+	auto wo = -r.direction;
+	auto m = h.obj->material();
+	if (m->type == material::LIGHT)
+		return light(r, h, depth);
+	{
+		hit hit_l, hit_middle;
+		light_pdf = sc->samplelight(hit_l);
+		auto dir = hit_l.point - h.point;
+		auto wi = dir.normalized();
+		auto eye = h.point + wi * EPSILON;
+		ray r(eye, wi);
+		sc->intersect(r, hit_middle);
+	//	if (hit_middle.obj == hit_l.obj) { //has no middle
+		if (hit_middle.distance - dir.norm() > -0.001f) { //has no middle
+			auto L_i = hit_l.obj->material()->albedo(hit_l.texcoord);
+			auto f_r = m->brdf(h, wi, wo);
+			auto cos = std::max(N.dot(wi), 0.f);
+			auto cos_prime = std::max(hit_l.normal.dot(-wi), 0.f);
+			auto r_square = dir.squaredNorm();
+			light_pdf += EPSILON;
+			/*
+			std::cout << "f_r:" << f_r << std::endl;
+			std::cout << "L_i:" << L_i << std::endl;
+			std::cout << "cos_prim:" << cos_prime << std::endl;
+			std::cout << "cos:" << cos << std::endl;
+			std::cout << " demo:" << (r_square * light_pdf) << std::endl;
+			*/
+			L_dir = L_i.cwiseProduct(f_r) * cos_prime * cos / (r_square * light_pdf);
+			//std::cout << " Ldir:" << L_dir << std::endl;
+		}
+	}
+	if (1) {
+		float ksi = randomf();
+		if (ksi < 0.8) {
+			auto wi = m->sample(wo, N);
+			float pdf_ = m->pdf(wi, wo, N) + EPSILON;
+			auto f_r = m->brdf(h, wi, wo);
+			ray rr(h.point + EPSILON * wi, wi);
+			auto L_i = trace(rr, depth + 1);
+			auto cos = std::max(N.dot(wi), 0.f);
+			L_indir = L_i.cwiseProduct(f_r) * cos / (pdf_ * 0.8);
+		}
+	}
+	return L_dir + L_indir;
+}
+
+vector3f
+raytracer::raytracing(const ray &r, const hit &h, int depth)
+{
 	vector3f hitcolor(0,0,0);
-	if (depth > 6) {
-		return vector3f(0,0,0);
-	}
-	if (!sc->intersect(r, h)) {
-		return background;
-	}
+	if (depth > 6)
+		return hitcolor;
 	switch (h.obj->material()->type) {
-	case material::MICROFACET:
-		return specular(r, h, depth);
+	case material::LIGHT:
+		return light(r, h, depth);
 	case material::GLASS:
 		return glass(r, h, depth);
 	case material::DIFFUSE:
-	case material::GLOSSY:
-		return glossy(r, h, depth);
+		return diffuse(r, h, depth);
 	default:
 		return vector3f(0,0,0);
 	}
 }
 
-static inline void UpdateProgress(float progress)
-{
-    int barWidth = 70;
-
-    std::cout << "[";
-    int pos = barWidth * progress;
-    for (int i = 0; i < barWidth; ++i) {
-        if (i < pos) std::cout << "=";
-        else if (i == pos) std::cout << ">";
-        else std::cout << " ";
-    }
-    std::cout << "] " << int(progress * 100.0) << " %\r";
-    std::cout.flush();
-};
-
-static int progress = 0;
-static int total = 1;
-
+static uint32_t total = 1;
+static uint32_t progress = 0;
 static void thread_progress()
 {
 	while (progress < total) {
-       		UpdateProgress((float)progress / (float)total);
-                usleep(1000);
-        }
+		float f = (float)progress / (float)total;
+		std::cout << int(f * 100.0) << " %\r";
+		std::cout.flush();
+		usleep(1000);
+	}
+	std::cout << int(100.0) << " %\r";
 }
 
+
+vector3f
+raytracer::trace(ray r, int depth)
+{
+	hit h;
+	if (!sc->intersect(r, h))
+		return background;
+	if (mode_ == RAYTRACING)
+		return raytracing(r, h, depth);
+	else
+		return pathtracing(r, h, depth);
+}
 
 void
 raytracer::render(const scene &sc, screen &scrn, int spp)
@@ -145,8 +179,22 @@ raytracer::render(const scene &sc, screen &scrn, int spp)
 		++progress;
 	}
 	thread.join();
-	UpdateProgress(1.f);
 }
 
-raytracer::raytracer(const camera &c):camera_(c) {}
+void
+raytracer::setmode(enum mode m)
+{
+	mode_ = m;
+}
+
+void
+raytracer::setbackground(vector3f c)
+{
+	background = c;
+}
+
+raytracer::raytracer(const camera &c, raytracer::mode m, vector3f bg):
+	mode_(m),camera_(c), background(bg)
+{
+}
 

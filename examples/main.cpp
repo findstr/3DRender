@@ -7,22 +7,46 @@
 #include "pathtracer.h"
 #include "raytracer.h"
 
-int main()
+int main(int argc, const char *argv[])
 {
 	int key = 0;
-	scene scene1;
-	screen scrn(800, 800);
-	pathtracer pr;
-
-	vector3f eye_pos = vector3f(0,0,10);
-	camera cam(vector3f(0,0,10), 90.f, 1.f, 100.f);
-	raytracer rr(cam);;
+	if (argc < 2) {
+		fprintf(stderr, "USAGE:%s scene\n", argv[0]);
+		exit(0);
+	}
+	std::unique_ptr<irender> R;
 	scene_loader sl;
-	sl.load(scene1, "scene/whitted.scene");
+	sl.load(argv[1]);
+
+	auto &conf_screen = sl.getscreen();
+	screen scrn(conf_screen.width, conf_screen.height);
+
+	scene scene1;
+	scene1.add(sl.getprimitives());
+
+	auto &conf_cam= sl.getcamera();
+	camera cam(conf_cam.eye, conf_cam.fov, conf_cam.znear, conf_cam.zfar);
+	cam.yaw(conf_cam.yaw);
+
+	auto &bg = sl.getbackground();
+
+	switch (sl.getrender()) {
+	case scene_loader::RASTERIZE:
+		assert(0);
+		break;
+	case scene_loader::RAYTRACING:
+		R.reset(new raytracer(cam, raytracer::RAYTRACING, bg));
+		break;
+	case scene_loader::PATHTRACING:
+		R.reset(new raytracer(cam, raytracer::PATHTRACING, bg));
+		break;
+	default:
+		assert(0);
+	}
 	while(key != 27)
 	{
 		scrn.clear();
-		rr.render(scene1, scrn);
+		R->render(scene1, scrn, 64);
 		scrn.show();
 		key = cv::waitKey(10);
 		std::cout << "key:" << key << std::endl;

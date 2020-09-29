@@ -6,9 +6,10 @@
 class scene {
 public:
 	void add(std::unique_ptr<primitive> &p);
+	void add(std::vector<std::unique_ptr<primitive>> &p);
 	float samplelight(hit &h) const;
 	bool intersect(const ray &r, hit &h) const;
-	const std::vector<const primitive *>getlights() const {return lights;}
+	const std::vector<const primitive *> &getlights() const {return lights;}
 	void dump();
 private:
 	std::vector<std::unique_ptr<primitive>> primitives;
