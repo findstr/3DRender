@@ -1,3 +1,4 @@
+#spp number
 #screen width,height
 #background r,g,b
 #camera eye(x,y,z) fov znear zfar rotation
@@ -7,6 +8,7 @@
 #mesh model_path materialid
 #sphere center(x,y,z) radius materialid
 
+spp 16
 render raytracing
 screen 800,800
 camera 0,0,0 90 1 10 0

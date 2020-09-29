@@ -4,7 +4,6 @@
 #include "material.h"
 #include "primitive.h"
 #include "scene_loader.h"
-#include "pathtracer.h"
 #include "raytracer.h"
 
 int main(int argc, const char *argv[])
@@ -43,31 +42,39 @@ int main(int argc, const char *argv[])
 	default:
 		assert(0);
 	}
-	while(key != 27)
-	{
-		scrn.clear();
-		R->render(scene1, scrn, 64);
-		scrn.show();
-		key = cv::waitKey(10);
-		std::cout << "key:" << key << std::endl;
-		switch (key) {
-		case 'w':
-			std::cout << "w" << std::endl;
-			cam.move(1.f);
-			break;
-		case 's':
-			std::cout << "s" << std::endl;
-			cam.move(-1.f);
-			break;
-		case 'a':
-			std::cout << "a" << std::endl;
-			cam.yaw(1.f);
-			break;
-		case 'd':
-			std::cout << "d" << std::endl;
-			cam.yaw(-1.f);
-			break;
+
+	int spp = sl.getspp();
+	if (argc == 2) {
+		while(key != 27)
+		{
+			scrn.clear();
+			R->render(scene1, scrn, spp);
+			scrn.show();
+			key = cv::waitKey(10);
+			std::cout << "key:" << key << std::endl;
+			switch (key) {
+			case 'w':
+				std::cout << "w" << std::endl;
+				cam.move(1.f);
+				break;
+			case 's':
+				std::cout << "s" << std::endl;
+				cam.move(-1.f);
+				break;
+			case 'a':
+				std::cout << "a" << std::endl;
+				cam.yaw(1.f);
+				break;
+			case 'd':
+				std::cout << "d" << std::endl;
+				cam.yaw(-1.f);
+				break;
+			}
 		}
+	} else {
+			scrn.clear();
+			R->render(scene1, scrn, spp);
+			scrn.dump("out.ppm");
 	}
 	return 0;
 }

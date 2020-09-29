@@ -52,6 +52,9 @@ material::brdf(const hit &h, const vector3f &wi, const vector3f &wo) const
 			return Kd.cwiseProduct(albedo)/PI + specular;
 		}
 		break;}
+	default:
+		assert(0);
+		break;
 	}
 	return vector3f(0,0,0);
 }
@@ -73,6 +76,9 @@ material::pdf(const vector3f &wi, const vector3f &wo, const vector3f &N) const
 		float D = a2 / (PI * exp * exp);
 		return (D * costheta) / (4 * wo.dot(H));
 		break;}
+	default:
+		assert(0);
+		break;
 	}
 	return 0.f;
 }

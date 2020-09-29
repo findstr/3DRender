@@ -162,6 +162,7 @@ raytracer::render(const scene &sc, screen &scrn, int spp)
 	float aspect = scrn.aspect();
 	int width = size.x();
 	int height = size.y();
+	std::cout << "spp:" << spp << std::endl;
 	std::thread thread(thread_progress);
 	float frac = 1.f / (float)spp;
 	total = size.x() * size.y() * spp;

@@ -26,6 +26,7 @@ public:
 		float yaw;
 	};
 private:
+	int spp = 16;
 	int line = 0;
 	char type[64];
 	enum render rmode;
@@ -74,6 +75,10 @@ private:
 		}
 		fprintf(stderr, "line:%d incorrect render mode:%s\n", line, buff);
 		exit(0);
+	}
+	void load_spp(const char *buff) {
+		int n = sscanf(buff, "%*s %d", &spp);
+		assert(n == 1);
 	}
 	void load_background(const char *buff) {
 		int n = sscanf(buff, "%*s %f,%f,%f",
@@ -155,6 +160,9 @@ public:
 	enum render getrender() {
 		return rmode;
 	}
+	int getspp() {
+		return spp;
+	}
 	const screenst &getscreen() {
 		return screen;
 	}
@@ -172,6 +180,7 @@ public:
 			const char *name;
 			void (scene_loader::*func)(const char *l);
 		} router[] = {
+			{"spp", &scene_loader::load_spp},
 			{"render", &scene_loader::load_render},
 			{"background", &scene_loader::load_background},
 			{"screen", &scene_loader::load_screen},
