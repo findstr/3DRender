@@ -12,6 +12,9 @@ public:
 		depthbuf.resize(w*h);
 		clear();
 	}
+	float aspect() {
+		return (float)size.x() / (float)size.y();
+	}
 	void clear() {
 		Eigen::Vector3f ZERO(0, 0, 0);
 		auto INF = std::numeric_limits<float>::infinity();
@@ -59,6 +62,7 @@ public:
 		for (int i = 0; i < size.x() * size.y(); i++) {
 			unsigned char color[3];
 			vector3f &c = framebuf[i];
+			c = tone_mapping(c);
 			color[0] = (unsigned char)(255.f * std::pow(clamp(c.x()), 1.f/2.2f));
 			color[1] = (unsigned char)(255.f * std::pow(clamp(c.y()), 1.f/2.2f));
 			color[2] = (unsigned char)(255.f * std::pow(clamp(c.z()), 1.f/2.2f));
@@ -67,9 +71,16 @@ public:
 		fclose(fp);
 	}
 	void show() {
+		for (int i = 0; i < size.x() * size.y(); i++) {
+			vector3f &c = framebuf[i];
+			c = tone_mapping(c);
+			c.x() = (unsigned char)(255.f * std::pow(clamp(c.x()), 1.f/2.2f));
+			c.y() = (unsigned char)(255.f * std::pow(clamp(c.y()), 1.f/2.2f));
+			c.z() = (unsigned char)(255.f * std::pow(clamp(c.z()), 1.f/2.2f));
+		}
 		std::string filename = "output.png";
 		cv::Mat image(size.x(), size.y(), CV_32FC3, framebuf.data());
-		image.convertTo(image, CV_8UC3, 1.0f);
+		image.convertTo(image, CV_8UC3, 1.f);
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 		cv::imshow("image", image);
 	}

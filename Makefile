@@ -34,9 +34,11 @@ linux:LDFLAG += -L/usr/local/gcc10/lib64 -lgomp
 macosx:CCFLAG += -Xpreprocessor -fopenmp
 macosx:LDFLAG += -lomp
 
-SRC= 	common/primitive.cpp \
-     	common/auxiliary.cpp \
-     	common/scene.cpp \
+SRC=\
+	common/primitive.cpp \
+	common/auxiliary.cpp \
+	common/scene.cpp \
+	common/camera.cpp \
 	common/pathtracer.cpp \
 	common/raytracer.cpp \
 

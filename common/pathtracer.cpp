@@ -267,6 +267,7 @@ pathtracer::render(const scene &sc, screen &scrn, int spp)
 	int width = size.x();
 	int height = size.y();
 	std::thread thread(thread_progress);
+	float frac = 1.f / (float)spp;
 	#pragma omp parallel for
 	for (uint64_t n = 0; n < total; n++) {
 		int w = n/spp;
@@ -276,18 +277,12 @@ pathtracer::render(const scene &sc, screen &scrn, int spp)
 		float x = (2 * (i + randomf()) / (float)width - 1) * aspect * scale;
 		float y = (2 * (j + randomf()) / (float)height - 1) * scale;
 		vector3f dir = vector3f(-x, y, 1).normalized();
-		auto c = trace(ray(eye_pos, dir), 0);
-		scrn.add(i, j, tone_mapping(c));
+		auto c = trace(ray(eye_pos, dir), 0) * frac;
+		scrn.add(i, j, c);
 		#pragma omp atomic
 		++progress;
 	}
 	thread.join();
-	float frac = 1.f / (float)spp;
-	for (int j = 0; j < size.y(); ++j) {
-		for (int i = 0; i < size.x(); ++i) {
-			scrn.mul(i, j, frac);
-		}
-	}
 	UpdateProgress(1.f);
 }
 

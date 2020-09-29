@@ -25,7 +25,7 @@ private:
 	void load_material(const char *buff) {
 		char subtype[64];
 		enum material::type typ;
-		unsigned int textureid;
+		int textureid;
 		vector3f albedo;
 		float roughness_or_kd;
 		float metallic_or_ks;
@@ -36,7 +36,7 @@ private:
 			&albedo.x(), &albedo.y(), &albedo.z(),
 			&roughness_or_kd, &metallic_or_ks, &ior);
 		if (textureid >= 0) {
-			if (textures.size() <= textureid) {
+			if ((int)textures.size() <= textureid) {
 				fprintf(stderr, "line:%d incorrect textureid\n", line);
 				exit(-1);
 			}

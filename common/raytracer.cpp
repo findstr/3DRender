@@ -1,3 +1,6 @@
+#include <omp.h>
+#include <thread>
+#include <unistd.h>
 #include "optics.h"
 #include "auxiliary.h"
 #include "raytracer.h"
@@ -105,36 +108,45 @@ static inline void UpdateProgress(float progress)
     std::cout.flush();
 };
 
+static int progress = 0;
+static int total = 1;
+
+static void thread_progress()
+{
+	while (progress < total) {
+       		UpdateProgress((float)progress / (float)total);
+                usleep(1000);
+        }
+}
+
+
 void
-raytracer::render(const scene &sc, screen &scrn)
+raytracer::render(const scene &sc, screen &scrn, int spp)
 {
 	this->sc = &sc;
-	this->scrn = &scrn;
 	auto &size = scrn.getsize();
-	float scale = std::tan(deg2rad(fov * 0.5f));
-	float aspect = (float)size.x() / (float)size.y();
-
-	float d = 1.0f;
-	float t = d * scale;
-	float b = -t;
-	float r = t * aspect;
-	float l = -r;
-	vector3f u(1.f, 0.f, 0.f);
-	vector3f v(0.f, 1.f, 0.f);
-	vector3f w(0.f, 0.f, -1.f);
-	// Use this variable as the eye position to start your rays.
-	vector3f color;
-	vector3f eye_pos(0, 0, 0);
-	int m = 0;
-	for (int j = 0; j < size.y(); ++j) {
-		for (int i = 0; i < size.x(); ++i) {
-			float x = l + (r - l)*(i + 0.5f) / size.x();
-			float y = b + (t - b)*(j + 0.5f) / size.y();
-			vector3f dir = (x * u + y * v + w).normalized();
-			color = trace(ray(eye_pos, dir), 0);
-			scrn.set(i, j, color);
-		}
-		UpdateProgress((float)j  / size.y());
+	float aspect = scrn.aspect();
+	int width = size.x();
+	int height = size.y();
+	std::thread thread(thread_progress);
+	float frac = 1.f / (float)spp;
+	total = size.x() * size.y() * spp;
+	#pragma omp parallel for
+	for (uint64_t n = 0; n < total; n++) {
+		int w = n/spp;
+		uint32_t i = w % width;
+		uint32_t j = w / width;
+		float x = (i + 0.5f) / (float)width;
+		float y = (j + 0.5f) / (float)height;
+		ray r = camera_.lookat(aspect, x, y);
+		auto c = trace(r, 0) * frac;
+		scrn.add(i, j, c);
+		#pragma omp atomic
+		++progress;
 	}
+	thread.join();
+	UpdateProgress(1.f);
 }
+
+raytracer::raytracer(const camera &c):camera_(c) {}
 
