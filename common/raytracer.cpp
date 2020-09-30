@@ -128,8 +128,8 @@ raytracer::raytracing(const ray &r, const hit &h, int depth)
 	}
 }
 
-static uint32_t total = 1;
-static uint32_t progress = 0;
+static uint64_t total = 1;
+static uint64_t progress = 0;
 static void thread_progress()
 {
 	while (progress < total) {
