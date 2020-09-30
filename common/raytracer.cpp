@@ -165,7 +165,7 @@ raytracer::render(const scene &sc, screen &scrn, int spp)
 	std::cout << "spp:" << spp << std::endl;
 	std::thread thread(thread_progress);
 	float frac = 1.f / (float)spp;
-	total = size.x() * size.y() * spp;
+	total = (uint64_t)size.x() * size.y() * spp;
 	#pragma omp parallel for
 	for (uint64_t n = 0; n < total; n++) {
 		int w = n/spp;
