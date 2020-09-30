@@ -21,10 +21,12 @@ platform:
 
 DEBUG := -fsanitize=address -fno-omit-frame-pointer
 
-CCFLAG := -O3 -g3 -std=c++17 -D_GLIBCXX_USE_CXX11_ABI=0 -Wall
+CCFLAG := -O3 -g3 -std=c++17 -Wall \
+	-march=native \
+	-D_GLIBCXX_USE_CXX11_ABI=0\
 
 LDFLAG :=-lpthread -lopencv_core -lopencv_highgui \
-	-lopencv_imgproc -lopencv_imgcodecs\
+	-lopencv_imgproc -lopencv_imgcodecs -march=native
 
 INCLUDE+=-Icommon/ -Iraytracer/
 
