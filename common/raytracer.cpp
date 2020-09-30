@@ -174,7 +174,7 @@ raytracer::render(const scene &sc, screen &scrn, int spp)
 		float x = (i + 0.5f) / (float)width;
 		float y = (j + 0.5f) / (float)height;
 		ray r = camera_.lookat(aspect, x, y);
-		auto c = trace(r, 0) * frac;
+		auto c = tone_mapping(trace(r, 0)) * frac;
 		scrn.add(i, j, c);
 		#pragma omp atomic
 		++progress;

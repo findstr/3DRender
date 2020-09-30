@@ -62,7 +62,6 @@ public:
 		for (int i = 0; i < size.x() * size.y(); i++) {
 			unsigned char color[3];
 			vector3f &c = framebuf[i];
-			c = tone_mapping(c);
 			color[0] = (unsigned char)(255.f * std::pow(clamp(c.x()), 1.f/2.2f));
 			color[1] = (unsigned char)(255.f * std::pow(clamp(c.y()), 1.f/2.2f));
 			color[2] = (unsigned char)(255.f * std::pow(clamp(c.z()), 1.f/2.2f));
@@ -73,7 +72,6 @@ public:
 	void show() {
 		for (int i = 0; i < size.x() * size.y(); i++) {
 			vector3f &c = framebuf[i];
-			c = tone_mapping(c);
 			c.x() = (unsigned char)(255.f * std::pow(clamp(c.x()), 1.f/2.2f));
 			c.y() = (unsigned char)(255.f * std::pow(clamp(c.y()), 1.f/2.2f));
 			c.z() = (unsigned char)(255.f * std::pow(clamp(c.z()), 1.f/2.2f));
