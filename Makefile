@@ -19,7 +19,8 @@ platform:
 	@echo "'make PLATFORM' where PLATFORM is one of these:"
 	@echo "$(PLATS)"
 
-DEBUG := -fsanitize=address -fno-omit-frame-pointer
+#DEBUG := -fsanitize=address -fno-omit-frame-pointer
+DEBUG :=
 
 CCFLAG := -O3 -g3 -std=c++17 -Wall \
 	-march=native \
