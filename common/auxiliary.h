@@ -11,7 +11,7 @@ clamp(float lo, float hi, float v)
 }
 
 static inline float
-clamp(float &v)
+clamp(float v)
 {
 	return clamp(0.f, 1.f, v);
 }
