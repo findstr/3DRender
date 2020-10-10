@@ -59,18 +59,22 @@ raytracer::light(const ray &r, const hit &h, int depth)
 }
 
 vector3f
-raytracer::pathtracing(const ray &r, const hit &h, int depth)
+raytracer::pathtracing(const ray &rr, const hit &hh, int depth)
 {
-	float light_pdf;
-	vector3f L_dir(0,0,0), L_indir(0,0,0);
-	auto &N = h.normal;
-	auto wo = -r.direction;
-	auto m = h.obj->material();
-	if (m->type == material::LIGHT)
-		return light(r, h, depth);
-	{
+	vector3f L(0,0,0);
+	vector3f frac(1,1,1);
+	ray r = rr;
+	hit h = hh;
+	for (;;) {
+		auto &N = h.normal;
+		auto wo = -r.direction;
+		auto m = h.obj->material();
+		if (m->type == material::LIGHT)
+			return light(r, h, depth);
+		{
+		vector3f L_dir(0,0,0);
 		hit hit_l, hit_middle;
-		light_pdf = sc->samplelight(hit_l);
+		float light_pdf = sc->samplelight(hit_l);
 		auto dir = hit_l.point - h.point;
 		auto wi = dir.normalized();
 		auto eye = h.point + wi * EPSILON;
@@ -92,22 +96,33 @@ raytracer::pathtracing(const ray &r, const hit &h, int depth)
 			std::cout << " demo:" << (r_square * light_pdf) << std::endl;
 			*/
 			L_dir = L_i.cwiseProduct(f_r) * cos_prime * cos / (r_square * light_pdf);
+			L += L_dir.cwiseProduct(frac);
 			//std::cout << " Ldir:" << L_dir << std::endl;
 		}
-	}
-	if (1) {
+		}
+		if (1) {
 		float ksi = randomf();
 		if (ksi < 0.8) {
+			vector3f L_indir(0,0,0);
 			auto wi = m->sample(wo, N);
 			float pdf_ = m->pdf(wi, wo, N) + EPSILON;
 			auto f_r = m->brdf(h, wi, wo);
-			ray rr(h.point + EPSILON * wi, wi);
-			auto L_i = trace(rr, depth + 1);
 			auto cos = std::max(N.dot(wi), 0.f);
-			L_indir = L_i.cwiseProduct(f_r) * cos / (pdf_ * 0.8);
+			auto f = f_r * cos / (pdf_ * 0.8f);
+			frac = frac.cwiseProduct(f);
+			ray rx(h.point + EPSILON * wi, wi);
+			r = rx;
+			depth += 1;
+			if (!sc->intersect(r, h)) {
+				L += background.cwiseProduct(frac);
+				break;
+			}
+		} else {
+			break;
+		}
 		}
 	}
-	return L_dir + L_indir;
+	return L;
 }
 
 vector3f
