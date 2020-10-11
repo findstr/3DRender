@@ -117,7 +117,7 @@ material::sample(const vector3f &wo, const vector3f &N) const
 		float phi = 2 * PI * r1;
 		vector3f wm = spherical2cartesian(theta, phi);
 		vector3f wm_w = toWorld(wm, N);
-		vector3f wi = 2 * wm_w * wm_w.dot(wo) - wo;
+		vector3f wi = 2.f * wm_w * wm_w.dot(wo) - wo;
 		return wi.normalized();
 	}
 	default:
@@ -136,7 +136,7 @@ material::dump() const
 		"type:" << type <<
 		"roughness:" << roughness_or_kd <<
 		"metallic:" << metallic_or_ks <<
-		"albedo:" << albedo_.transpose() <<
+		"albedo:" << albedo_ <<
 		" tex:" << texture_.get() << std::endl;
 }
 

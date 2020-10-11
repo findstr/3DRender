@@ -8,11 +8,11 @@ mesh::mesh(const std::string &name, std::shared_ptr<struct material> &mt)
 	areatotal = 0.f;
 	bounds = AABB3f();
 	model_matrix = matrix4f::Identity();
-	scale_matrix <<
+	scale_matrix.assign(
 		1.f, 0, 0, 0,
 		0, 1.f, 0, 0,
 		0, 0, 1.f, 0,
-		0, 0, 0, 1;
+		0, 0, 0, 1);
 	objl::Loader loader;
 	loader.LoadFile(name);
 	auto &mesh = loader.LoadedMeshes[0];
@@ -136,28 +136,28 @@ mesh::sample(hit &h) const
 void
 mesh::scale(const vector3f &s)
 {
-	scale_matrix <<
+	scale_matrix.assign(
 		s.x(), 0, 0, 0,
 		0, s.y(), 0, 0,
 		0, 0, s.z(), 0,
-		0, 0, 0, 1;
+		0, 0, 0, 1);
 }
 
 void
 mesh::rot(float angle)
 {
-	Eigen::Matrix4f rotation;
+	matrix4f rotation;
 	angle = deg2rad(angle);
-	rotation <<
+	rotation.assign(
 		cos(angle), 0, sin(angle), 0,
 		0, 1, 0, 0,
 		-sin(angle), 0, cos(angle), 0,
-		0, 0, 0, 1;
-	Eigen::Matrix4f translate;
-	translate << 1, 0, 0, 0,
+		0, 0, 0, 1);
+	matrix4f translate;
+	translate.assign(1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
-			0, 0, 0, 1;
+			0, 0, 0, 1);
 
 	model_matrix = translate * rotation * scale_matrix;
 }

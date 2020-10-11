@@ -20,8 +20,8 @@ public:
 
 struct light
 {
-	Eigen::Vector3f position;
-	Eigen::Vector3f intensity;
+	vector3f position;
+	vector3f intensity;
 };
 
 

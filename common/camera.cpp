@@ -8,7 +8,7 @@ camera::camera(vector3f eye, float fov, float znear, float zfar)
 	this->znear = znear;
 	this->zfar = zfar;
 	this->forward = vector3f(0, 0, -1.f);
-	this->mrotation = Eigen::Matrix3f::Identity();
+	this->mrotation = matrix3f::Identity();
 }
 
 matrix4f
@@ -16,17 +16,13 @@ camera::view() const
 {
 	matrix4f view;
 	matrix4f translate;
-	view <<
-		0, 0, 0, 0,
-		0, 0, 0, 0,
-		0, 0, 0, 0,
-		0, 0, 0, 1;
-	view.block(0,0, 3,3) = mrotation;
-	translate <<
+	view.assign(mrotation);
+	view(3,3) = 1.f;
+	translate.assign(
 		1,0,0,-eye[0],
 		0,1,0,-eye[1],
 		0,0,1,-eye[2],
-		0,0,0,1;
+		0,0,0,1);
 	return view*translate;
 }
 
@@ -39,22 +35,22 @@ camera::projection(float aspect) const
 	float r = t * aspect;
 	float b = -t;
 	float l = -r;
-	Eigen::Matrix4f persp_to_ortho, move_to_origin, ortho_to_ndc;
-	persp_to_ortho <<
+	matrix4f persp_to_ortho, move_to_origin, ortho_to_ndc;
+	persp_to_ortho.assign(
 		n, 0, 0, 0,
 		0, n, 0, 0,
 		0, 0, n+f, -n*f,
-		0, 0, 1, 0;
-	move_to_origin <<
+		0, 0, 1, 0);
+	move_to_origin.assign(
 		1, 0, 0, -(l+r)/2,
 		0, 1, 0, -(t+b)/2,
 		0, 0, 1, -(n+f)/2,
-		0, 0, 0, 1;
-	ortho_to_ndc <<
+		0, 0, 0, 1);
+	ortho_to_ndc.assign(
 		2/(r-l), 0, 0, 0,
 		0, 2/(t-b), 0, 0,
 		0, 0, 2/(n-f), 0,
-		0, 0, 0, 1;
+		0, 0, 0, 1);
 	return ortho_to_ndc * move_to_origin * persp_to_ortho;
 }
 
@@ -91,10 +87,10 @@ camera::pitch(float angle) //x
 	float rad = deg2rad(-angle);
 	float c = cos(rad);
 	float s = sin(rad);
-	m <<
+	m.assign(
 		1, 0,  0,
 		0, c, -s,
-		0, s,  c;
+		0, s,  c);
 	mrotation = m * mrotation;
 }
 
@@ -105,10 +101,10 @@ camera::yaw(float angle) //y
 	float rad = deg2rad(-angle);
 	float c = cos(rad);
 	float s = sin(rad);
-	m <<
+	m.assign(
 		c, 0,  s,
 		0, 1,  0,
-		-s,0,  c;
+		-s,0,  c);
 	mrotation = m * mrotation;
 }
 
@@ -119,10 +115,10 @@ camera::roll(float angle)//-z
 	float rad = deg2rad(-angle*forward.z());
 	float c = cos(rad);
 	float s = sin(rad);
-	m <<
+	m.assign(
 		c, -s, 0,
 		s, c,  0,
-		0, 0,  1;
+		0, 0,  1);
 	mrotation = m * mrotation;
 }
 

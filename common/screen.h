@@ -16,7 +16,7 @@ public:
 		return (float)size.x() / (float)size.y();
 	}
 	void clear() {
-		Eigen::Vector3f ZERO(0, 0, 0);
+		vector3f ZERO(0, 0, 0);
 		auto INF = std::numeric_limits<float>::infinity();
 		std::fill(framebuf.begin(), framebuf.end(), ZERO);
 		std::fill(depthbuf.begin(), depthbuf.end(), INF);
