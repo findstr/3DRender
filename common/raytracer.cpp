@@ -171,9 +171,9 @@ raytracer::render(const scene &sc, screen &scrn, int spp)
 	int height = size.y();
 	std::cout << "spp:" << spp << " " << spp_n * 100 / spp << " %\r";
 	std::cout.flush();
-	if (spp_n % spp == 0)
+	if (spp_n == 0)
 		scrn.clear();
-	spp_n = spp_n % spp + 1;
+	spp_n = spp_n + 1;
 	scrn.scale(1.f / spp_n);
 	int total = (uint64_t)width * height;
 	#pragma omp parallel for
