@@ -16,6 +16,7 @@ public:
 		return (float)size.x() / (float)size.y();
 	}
 	void clear() {
+		scale_ = 1.f;
 		vector3f ZERO(0, 0, 0);
 		auto INF = std::numeric_limits<float>::infinity();
 		std::fill(framebuf.begin(), framebuf.end(), ZERO);
@@ -41,19 +42,14 @@ public:
 		int idx = x + size.x() * (size.y() - y - 1);
 		framebuf[idx] = color;
 	}
-
+	void scale(float s) {
+		scale_ = s;
+	}
 	void add(int x, int y, const vector3f &color) {
 		if (x < 0 || y < 0)
 			return ;
 		int idx = x + size.x() * (size.y() - y - 1);
 		framebuf[idx] += color;
-	}
-
-	void mul(int x, int y, float frac) {
-		if (x < 0 || y < 0)
-			return ;
-		int idx = x + size.x() * (size.y() - y - 1);
-		framebuf[idx] *= frac;
 	}
 
 	void dump(const char *name) {
@@ -62,22 +58,23 @@ public:
 		for (int i = 0; i < size.x() * size.y(); i++) {
 			unsigned char color[3];
 			vector3f &c = framebuf[i];
-			color[0] = (unsigned char)(255.f * std::pow(clamp(c.x()), 1.f/2.2f));
-			color[1] = (unsigned char)(255.f * std::pow(clamp(c.y()), 1.f/2.2f));
-			color[2] = (unsigned char)(255.f * std::pow(clamp(c.z()), 1.f/2.2f));
+			color[0] = (unsigned char)(255.f * std::pow(clamp(c.x() * scale_), 1.f/2.2f));
+			color[1] = (unsigned char)(255.f * std::pow(clamp(c.y() * scale_), 1.f/2.2f));
+			color[2] = (unsigned char)(255.f * std::pow(clamp(c.z() * scale_), 1.f/2.2f));
 			fwrite(color, 1, 3, fp);
 		}
 		fclose(fp);
 	}
 	void show() {
+		auto tmp = framebuf;
 		for (int i = 0; i < size.x() * size.y(); i++) {
-			vector3f &c = framebuf[i];
-			c.x() = (unsigned char)(255.f * std::pow(clamp(c.x()), 1.f/2.2f));
-			c.y() = (unsigned char)(255.f * std::pow(clamp(c.y()), 1.f/2.2f));
-			c.z() = (unsigned char)(255.f * std::pow(clamp(c.z()), 1.f/2.2f));
+			vector3f &c = tmp[i];
+			c.x() = (unsigned char)(255.f * std::pow(clamp(c.x() * scale_), 1.f/2.2f));
+			c.y() = (unsigned char)(255.f * std::pow(clamp(c.y() * scale_), 1.f/2.2f));
+			c.z() = (unsigned char)(255.f * std::pow(clamp(c.z() * scale_), 1.f/2.2f));
 		}
 		std::string filename = "output.png";
-		cv::Mat image(size.x(), size.y(), CV_32FC3, framebuf.data());
+		cv::Mat image(size.x(), size.y(), CV_32FC3, tmp.data());
 		image.convertTo(image, CV_8UC3, 1.f);
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 		cv::imshow("image", image);
@@ -86,6 +83,7 @@ public:
 		return size;
 	}
 private:
+	float scale_;
 	vector2i size;
 	std::vector<float> depthbuf;
 	std::vector<vector3f> framebuf;

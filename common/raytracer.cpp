@@ -143,20 +143,6 @@ raytracer::raytracing(const ray &r, const hit &h, int depth)
 	}
 }
 
-static uint64_t total = 1;
-static uint64_t progress = 0;
-static void thread_progress()
-{
-	while (progress < total) {
-		float f = (float)progress / (float)total;
-		std::cout << int(f * 100.0) << " %\r";
-		std::cout.flush();
-		usleep(1000);
-	}
-	std::cout << int(100.0) << " %\r";
-}
-
-
 vector3f
 raytracer::trace(ray r, int depth)
 {
@@ -170,6 +156,12 @@ raytracer::trace(ray r, int depth)
 }
 
 void
+raytracer::reset()
+{
+	spp_n = 0;
+}
+
+bool
 raytracer::render(const scene &sc, screen &scrn, int spp)
 {
 	this->sc = &sc;
@@ -177,24 +169,25 @@ raytracer::render(const scene &sc, screen &scrn, int spp)
 	float aspect = scrn.aspect();
 	int width = size.x();
 	int height = size.y();
-	std::cout << "spp:" << spp << std::endl;
-	std::thread thread(thread_progress);
-	float frac = 1.f / (float)spp;
-	total = (uint64_t)size.x() * size.y() * spp;
+	std::cout << "spp:" << spp << " " << spp_n * 100 / spp << " %\r";
+	std::cout.flush();
+	if (spp_n % spp == 0)
+		scrn.clear();
+	spp_n = spp_n % spp + 1;
+	scrn.scale(1.f / spp_n);
+	int total = (uint64_t)width * height;
 	#pragma omp parallel for
 	for (uint64_t n = 0; n < total; n++) {
-		int w = n/spp;
+		int w = n;
 		uint32_t i = w % width;
 		uint32_t j = w / width;
 		float x = (i + 0.5f) / (float)width;
 		float y = (j + 0.5f) / (float)height;
 		ray r = camera_.lookat(aspect, x, y);
-		auto c = tone_mapping(trace(r, 0)) * frac;
+		auto c = tone_mapping(trace(r, 0));
 		scrn.add(i, j, c);
-		#pragma omp atomic
-		++progress;
 	}
-	thread.join();
+	return (spp_n % spp == 0);
 }
 
 void

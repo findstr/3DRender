@@ -47,33 +47,35 @@ int main(int argc, const char *argv[])
 	if (argc == 2) {
 		while(key != 27)
 		{
-			scrn.clear();
 			R->render(scene1, scrn, spp);
 			scrn.show();
 			key = cv::waitKey(10);
-			std::cout << "key:" << key << std::endl;
+			std::cout << "key:" << key << std::endl << std::endl;
 			switch (key) {
 			case 'w':
-				std::cout << "w" << std::endl;
-				cam.move(1.f);
+				R->reset();
+				std::cout << "w" << std::endl << std::endl;
+				cam.move(10.f);
 				break;
 			case 's':
-				std::cout << "s" << std::endl;
-				cam.move(-1.f);
+				R->reset();
+				std::cout << "s" << std::endl << std::endl;
+				cam.move(-10.f);
 				break;
 			case 'a':
-				std::cout << "a" << std::endl;
+				R->reset();
+				std::cout << "a" << std::endl << std::endl;
 				cam.yaw(1.f);
 				break;
 			case 'd':
-				std::cout << "d" << std::endl;
+				R->reset();
+				std::cout << "d" << std::endl << std::endl;
 				cam.yaw(-1.f);
 				break;
 			}
 		}
 	} else {
-			scrn.clear();
-			R->render(scene1, scrn, spp);
+			while (!R->render(scene1, scrn, spp));
 			scrn.dump("out.ppm");
 	}
 	return 0;
