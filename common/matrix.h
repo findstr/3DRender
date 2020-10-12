@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <cmath>
 //////
 template<typename T, size_t N>
 struct vectorx {
@@ -9,12 +10,16 @@ public:
 		static_assert(N == 2, "vector2 constructor");
 		e[0] = x;
 		e[1] = y;
+		for (size_t i = 2; i < N; i++)
+			e[i] = T();
 	}
 	vectorx(T x, T y, T z) {
 		static_assert(N == 3, "vector3 constructor");
 		e[0] = x;
 		e[1] = y;
 		e[2] = z;
+		for (size_t i = 2; i < N; i++)
+			e[i] = T();
 	}
 	vectorx(T x, T y, T z, T w) {
 		static_assert(N == 4, "vector4 constructor");
@@ -64,7 +69,7 @@ public:
 	inline vectorx<T, N> cwiseProduct(const vectorx<T, N> &a) const;
 
 	friend std::ostream& operator<<(std::ostream& os, const vectorx<T, N> &v) {
-		for (int i = 0; i < N; i++)
+		for (size_t i = 0; i < N; i++)
 			os << v.e[i] << ",";
 		return os;
 	}
@@ -145,8 +150,8 @@ public:
 		e[3] = vectorx<T, N>(m03, m13, m23, m33);
 	}
 	inline void assign(const matrix<T, N-1> &a) {
-		for (int i = 0; i < N-1; i++) {
-			for (int j = 0; j < N-1; j++)
+		for (size_t i = 0; i < N-1; i++) {
+			for (size_t j = 0; j < N-1; j++)
 				e[j][i] = a(i, j);
 			e[N-1][i] = T();
 			e[i][N-1] = T();
@@ -155,14 +160,14 @@ public:
 public:
 	static matrix<T, N> Identity() {
 		matrix<T, N> x;
-		for (int i = 0; i < N; i++) {
+		for (size_t i = 0; i < N; i++) {
 			x.e[i].zero();
 			x.e[i][i] = 1;
 		}
 		return x;
 	};
 	friend std::ostream& operator<<(std::ostream& os, const matrix<T, N> &v) {
-		for (int i = 0; i < N; i++)
+		for (size_t i = 0; i < N; i++)
 			os << v.e[i] << ":";
 		return os;
 	}
@@ -180,7 +185,7 @@ template<typename T, size_t N>
 inline vectorx<T, N> vectorx<T, N>::operator - () const
 {
 	vectorx<T, N> r;
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		r.e[i] = -e[i];
 	return r;
 }
@@ -189,7 +194,7 @@ template<typename T, size_t N>
 inline vectorx<T, N> vectorx<T, N>::operator + (const vectorx<T, N> &a) const
 {
 	vectorx<T, N> r;
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		r.e[i] = e[i] + a.e[i];
 	return r;
 }
@@ -198,7 +203,7 @@ template<typename T, size_t N>
 inline vectorx<T, N> vectorx<T, N>::operator - (const vectorx<T, N> &a) const
 {
 	vectorx<T, N> r;
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		r.e[i] = e[i] - a.e[i];
 	return r;
 }
@@ -207,7 +212,7 @@ template<typename T, size_t N>
 inline vectorx<T, N> vectorx<T, N>::operator * (T a) const
 {
 	vectorx<T, N> r;
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		r.e[i] = e[i] * a;
 	return r;
 }
@@ -222,7 +227,7 @@ inline vectorx<T, N> vectorx<T, N>::operator / (T a) const
 template<typename T, size_t N>
 inline vectorx<T, N> &vectorx<T, N>::operator = (const vectorx<T, N> &a)
 {
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		e[i] = a.e[i];
 	return *this;
 }
@@ -230,7 +235,7 @@ inline vectorx<T, N> &vectorx<T, N>::operator = (const vectorx<T, N> &a)
 template<typename T, size_t N>
 inline vectorx<T, N> &vectorx<T, N>::operator += (const vectorx<T, N> &a)
 {
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		e[i] += a.e[i];
 	return *this;
 }
@@ -238,7 +243,7 @@ inline vectorx<T, N> &vectorx<T, N>::operator += (const vectorx<T, N> &a)
 template<typename T, size_t N>
 inline vectorx<T, N> &vectorx<T, N>::operator -= (const vectorx<T, N> &a)
 {
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		e[i] -= a.e[i];
 	return *this;
 }
@@ -247,7 +252,7 @@ inline vectorx<T, N> &vectorx<T, N>::operator -= (const vectorx<T, N> &a)
 template<typename T, size_t N>
 inline vectorx<T, N> &vectorx<T, N>::operator *= (T a)
 {
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		e[i] *= a;
 	return *this;
 }
@@ -256,7 +261,7 @@ template<typename T, size_t N>
 inline vectorx<T, N> &vectorx<T, N>::operator /= (T a)
 {
 	float div = 1.f / a;
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		e[i] *= div;
 	return *this;
 }
@@ -264,7 +269,7 @@ inline vectorx<T, N> &vectorx<T, N>::operator /= (T a)
 template<typename T, size_t N>
 inline void vectorx<T, N>::zero()
 {
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		e[i] = T();
 }
 
@@ -272,7 +277,7 @@ template<typename T, size_t N>
 float vectorx<T, N>::squaredNorm() const
 {
 	T sum = T();
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		sum += e[i] * e[i];
 	return sum;
 }
@@ -281,14 +286,14 @@ float vectorx<T, N>::squaredNorm() const
 template<typename T, size_t N>
 float vectorx<T, N>::norm() const
 {
-	return sqrt(squaredNorm());
+	return std::sqrt(squaredNorm());
 }
 
 template<typename T, size_t N>
 float vectorx<T, N>::dot(const vectorx<T, N> &a) const
 {
 	T sum = T();
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		sum += e[i] * a.e[i];
 	return sum;
 }
@@ -298,7 +303,7 @@ inline vectorx<T, N> vectorx<T, N>::normalized() const
 {
 	vectorx<T, N> r;
 	float div = 1.f / norm();
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		r.e[i] = e[i] * div;
 	return r;
 }
@@ -318,7 +323,7 @@ template<typename T, size_t N>
 inline vectorx<T, N> vectorx<T, N>::cwiseProduct(const vectorx<T, N> &a) const
 {
 	vectorx<T, N> r;
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		r.e[i] = e[i] * a.e[i];
 	return r;
 }
@@ -327,7 +332,7 @@ template<typename T, size_t N>
 inline vectorx<T, N> operator * (T k, const vectorx<T, N> &v)
 {
 	vectorx<T, N> r;
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		r[i] = k * v[i];
 	return r;
 }
@@ -339,7 +344,7 @@ inline vectorx<T, N> matrix<T, N>::operator * (const vectorx<T, N> &b) const
 {
 	vectorx<T, N> r;
 	r.zero();
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		r += e[i] * b[i];
 	return r;
 }
@@ -348,7 +353,7 @@ template<typename T, size_t N>
 inline matrix<T, N> matrix<T, N>::operator * (const matrix<T, N> &b) const
 {
 	matrix<T, N> r;
-	for (int i = 0; i < N; i++)
+	for (size_t i = 0; i < N; i++)
 		r.e[i] = (*this) * b.e[i];
 	return r;
 }
