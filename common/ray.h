@@ -22,11 +22,11 @@ struct hit {
 		obj = nullptr;
 		triangleidx = -1;
 		distance = std::numeric_limits<float>::infinity();
-		point = vector3f();
-		normal = vector3f();
-		color = vector3f();
-		texcoord = vector2f();
-		barycentric = vector3f();
+		point = vector3f(0,0,0);
+		normal = vector3f(0,0,0);
+		color = vector3f(0,0,0);
+		texcoord = vector2f(0,0);
+		barycentric = vector3f(0,0,0);
 	}
 	const primitive *obj;
 	int triangleidx;
