@@ -10,16 +10,12 @@ public:
 		static_assert(N == 2, "vector2 constructor");
 		e[0] = x;
 		e[1] = y;
-		for (size_t i = 2; i < N; i++)
-			e[i] = T();
 	}
 	vectorx(T x, T y, T z) {
 		static_assert(N == 3, "vector3 constructor");
 		e[0] = x;
 		e[1] = y;
 		e[2] = z;
-		for (size_t i = 2; i < N; i++)
-			e[i] = T();
 	}
 	vectorx(T x, T y, T z, T w) {
 		static_assert(N == 4, "vector4 constructor");
