@@ -42,7 +42,6 @@ int main(int argc, const char *argv[])
 	default:
 		assert(0);
 	}
-
 	if (argc == 2) {
 		int spp = 0;
 		scrn.clear();
@@ -87,6 +86,7 @@ int main(int argc, const char *argv[])
 	} else {
 			clock_t begin;
 			int spp = sl.getspp();
+			std::cout << "spp:" << spp << std::endl;
 			scrn.scale(1.f / spp);
 			begin = clock();
 			for (int i = 0; i < spp; i++) {

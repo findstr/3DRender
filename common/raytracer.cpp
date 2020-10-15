@@ -186,7 +186,6 @@ raytracer::trace(ray r, int depth)
 			return raytracing(r, h, depth);
 		else
 			return pathtracing(r, h, depth);
-		//return diffuse(r, h, depth);
 	default:
 		return vector3f(0,0,0);
 	}

@@ -1,0 +1,43 @@
+#screen width,height
+#camera eye(x,y,z) fov znear zfar yaw
+#render rasterize/raytracing/pathtracing
+#background r,g,b
+
+#texture texture_path
+#material diffuse/microfacet textureid albedo_color(x,y,z) roughness/Kd metallic/Ks ior
+#mesh model_path materialid
+#sphere center(x,y,z) radius materialid
+
+spp 128
+render pathtracing
+screen 400,400
+camera 278,273,-800 40 1 10 180
+background 128,128,0
+
+
+texture models/spot/spot_texture.png
+texture models/rock/rock.png
+#material microfacet texture color roughness/Kd metallic/Ks
+#light 0
+material light -1 47.8348,38.5664,31.0808  0 0 1
+#microfacet 1
+material microfacet -1 0.95,0.93,0.88 0.01 1.0 1
+#red 2
+material diffuse -1 0.63,0.065,0.05  0.8 0.2 1
+#green 3
+material diffuse -1 0.14,0.45,0.091  0.8 0.2 1
+#white 4
+material diffuse -1 0.725,0.71,0.68  0.8 0.2 1
+#glass 5
+material glass -1 0.725,0.71,0.68  0.8 0.2 1.3
+mesh 0,0,0 1 models/cornellbox/light.obj 0
+mesh 0,0,0 1 models/cornellbox/floor.obj 4
+mesh 0,0,0 1 models/cornellbox/left.obj 2
+mesh 0,0,0 1 models/cornellbox/right.obj 3
+#mesh 0,0,0 1 models/cornellbox/shortbox.obj 4
+#mesh 0,0,0 1 models/cornellbox/tallbox.obj 1
+
+sphere 370,80,70 80 5
+sphere 190,90,70 90 1
+
+
