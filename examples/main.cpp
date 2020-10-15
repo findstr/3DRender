@@ -1,4 +1,3 @@
-#include <unistd.h>
 #include "screen.h"
 #include "texture.h"
 #include "material.h"

@@ -1,6 +1,5 @@
 #include <omp.h>
 #include <thread>
-#include <unistd.h>
 #include "optics.h"
 #include "auxiliary.h"
 #include "raytracer.h"
@@ -33,7 +32,7 @@ raytracer::diffuse(const ray &r, const hit &h, int depth)
 	auto &dir = r.direction;
 	auto hit_point = r.move(h.distance);
 	vector3f ambient(0,0,0), specular(0,0,0);
-	float sign = dir.dot(N) < 0 ? 1 : -1;
+	float sign = dir.dot(N) < 0 ? 1.f : -1.f;
 	vector3f shadow_pos = hit_point + sign * N * EPSILON;
 	for (auto li:sc->getlights()) {
 		hit hs;
@@ -177,10 +176,10 @@ raytracer::render(const scene &sc, screen &scrn, int spp)
 	scrn.scale(1.f / spp_n);
 	int total = (uint64_t)width * height;
 	#pragma omp parallel for
-	for (uint64_t n = 0; n < total; n++) {
+	for (int n = 0; n < total; n++) {
 		int w = n;
-		uint32_t i = w % width;
-		uint32_t j = w / width;
+		int i = w % width;
+		int j = w / width;
 		float x = (i + 0.5f) / (float)width;
 		float y = (j + 0.5f) / (float)height;
 		ray r = camera_.lookat(aspect, x, y);
