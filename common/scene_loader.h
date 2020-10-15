@@ -7,6 +7,10 @@
 #include "primitive.h"
 #include "scene.h"
 
+#ifndef PATH_MAX
+#define PATH_MAX 260
+#endif
+
 class scene_loader {
 public:
 	enum render {

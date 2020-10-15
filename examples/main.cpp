@@ -42,39 +42,49 @@ int main(int argc, const char *argv[])
 		assert(0);
 	}
 
-	int spp = sl.getspp();
 	if (argc == 2) {
+		int spp = 0;
+		scrn.clear();
 		while(key != 27)
 		{
-			R->render(scene1, scrn, spp);
+			R->render(scene1, scrn);
+			++spp;
+			scrn.scale(1.f / spp);
 			scrn.show();
 			key = cv::waitKey(10);
 			std::cout << "key:" << key << std::endl << std::endl;
 			switch (key) {
 			case 'w':
-				R->reset();
+				spp = 0;
+				scrn.clear();
 				std::cout << "w" << std::endl << std::endl;
 				cam.move(10.f);
 				break;
 			case 's':
-				R->reset();
+				spp = 0;
+				scrn.clear();
 				std::cout << "s" << std::endl << std::endl;
 				cam.move(-10.f);
 				break;
 			case 'a':
-				R->reset();
+				spp = 0;
+				scrn.clear();
 				std::cout << "a" << std::endl << std::endl;
 				cam.yaw(1.f);
 				break;
 			case 'd':
-				R->reset();
+				spp = 0;
+				scrn.clear();
 				std::cout << "d" << std::endl << std::endl;
 				cam.yaw(-1.f);
 				break;
 			}
 		}
 	} else {
-			while (!R->render(scene1, scrn, spp));
+			int spp = sl.getspp();
+			scrn.scale(1.f / spp);
+			for (int i = 0; i < spp; i++)
+				R->render(scene1, scrn);
 			scrn.dump("out.ppm");
 	}
 	return 0;

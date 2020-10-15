@@ -155,26 +155,14 @@ raytracer::trace(ray r, int depth)
 }
 
 void
-raytracer::reset()
-{
-	spp_n = 0;
-}
-
-bool
-raytracer::render(const scene &sc, screen &scrn, int spp)
+raytracer::render(const scene &sc, screen &scrn)
 {
 	this->sc = &sc;
 	auto &size = scrn.getsize();
 	float aspect = scrn.aspect();
 	int width = size.x();
 	int height = size.y();
-	std::cout << "spp:" << spp << " " << spp_n * 100 / spp << " %\r";
-	std::cout.flush();
-	if (spp_n == 0)
-		scrn.clear();
-	spp_n = spp_n + 1;
-	scrn.scale(1.f / spp_n);
-	int total = (uint64_t)width * height;
+	int total = width * height;
 	#pragma omp parallel for
 	for (int n = 0; n < total; n++) {
 		int w = n;
@@ -186,7 +174,7 @@ raytracer::render(const scene &sc, screen &scrn, int spp)
 		auto c = tone_mapping(trace(r, 0));
 		scrn.add(i, j, c);
 	}
-	return (spp_n % spp == 0);
+	return ;
 }
 
 void

@@ -13,9 +13,9 @@ struct material {
 	};
 	material(std::shared_ptr<texture> t, type typ = DIFFUSE):
 		type(typ),
-		ior(1.3),
-		roughness_or_kd(0.8),
-		metallic_or_ks(0.2),
+		ior(1.3f),
+		roughness_or_kd(0.8f),
+		metallic_or_ks(0.2f),
 		albedo_(0,0,0),
 		texture_(t) {}
 	material(type typ, std::shared_ptr<texture> &tex,

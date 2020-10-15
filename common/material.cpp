@@ -38,7 +38,7 @@ material::brdf(const hit &h, const vector3f &wi, const vector3f &wo) const
 		break;
 	case material::MICROFACET: {
 		if (wo.dot(N) > 0.f) {
-			vector3f x0(0.04, 0.04, 0.04);
+			vector3f x0(0.04f, 0.04f, 0.04f);
 			vector3f albedo = this->albedo(h.texcoord);
 			auto f0 = lerp(x0, albedo, metallic_or_ks);
 			auto H = (wi + wo).normalized();
