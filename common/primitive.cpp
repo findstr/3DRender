@@ -2,8 +2,11 @@
 #include "auxiliary.h"
 #include "primitive.h"
 
-mesh::mesh(const std::string &name, std::shared_ptr<struct material> &mt)
-	:mat(mt)
+mesh::mesh(const std::string &name,
+	const vector3f &pos,
+	float scale_,
+	std::shared_ptr<struct material> &mt)
+	:name_(name),mat(mt)
 {
 	areatotal = 0.f;
 	bounds = AABB3f();
@@ -25,7 +28,7 @@ mesh::mesh(const std::string &name, std::shared_ptr<struct material> &mt)
 			auto &dp = mesh.Vertices[i+j].Position;
 			auto &dn = mesh.Vertices[i+j].Normal;
 			auto &dt = mesh.Vertices[i+j].TextureCoordinate;
-			v[j].position = vector3f(dp.X, dp.Y, dp.Z);
+			v[j].position = vector3f(dp.X, dp.Y, dp.Z) * scale_ + pos;
 			v[j].normal = vector3f(dn.X, dn.Y, dn.Z);
 			v[j].texcoord = vector2f(dt.X, dt.Y);
 			bounds.extend(v[j].position);
@@ -36,21 +39,6 @@ mesh::mesh(const std::string &name, std::shared_ptr<struct material> &mt)
 		areatotal += e1.cross(e2).norm() * 0.5f;
 	}
 }
-
-mesh::mesh(const std::vector<vector3f> &verts,
-	const std::vector<vector2f> &uv,
-	const std::vector<int> &tri,
-	std::shared_ptr<struct material> &mt):mat(mt)
-{
-	vertices.resize(verts.size());
-	for (size_t i = 0; i < verts.size(); i++) {
-		vertices[i].position = verts[i];
-		vertices[i].texcoord = uv[i];
-		bounds.extend(verts[i]);
-	}
-	triangles = tri;
-}
-
 
 bool
 mesh::intersect_tri(const ray &r, hit &h, int idx) const
@@ -180,6 +168,7 @@ mesh::fetch(std::vector<triangle> &tri) const
 
 sphere::sphere(const vector3f &c, float r, std::shared_ptr<struct material> &m):
 	center(c),
+	name_("sphere"),
 	radius(r),
 	radius2(r * r),
 	mat(m)
@@ -188,22 +177,19 @@ sphere::sphere(const vector3f &c, float r, std::shared_ptr<struct material> &m):
 bool
 sphere::intersect(const ray &r, hit &h) const
 {
-        // analytic solution
-        vector3f L = r.origin - center;
-	auto &dir = r.direction;
-        float a = dir.dot(dir);
-        float b = 2 * dir.dot(L);
-        float c = L.dot(L) - radius2;
-        float t0, t1;
-        if (!solve_quadratic(a, b, c, t0, t1))
-            return false;
-        if (t0 < 0)
-            t0 = t1;
-        if (t0 < 0)
-            return false;
+	vector3f oc = r.origin - center;
+	float a = r.direction.dot(r.direction);
+	float b = 2.0 * oc.dot(r.direction);
+	float c = oc.dot(oc) - radius*radius;
+	float discriminant = b*b - 4*a*c;
+	if(discriminant < 0)
+		return false;
+	float t = (-b - sqrt(discriminant)) / (2.0*a);
+	if (t < 0.f)
+		return false;
 	h.obj = this;
-	h.distance = t0;
-	h.point = r.point(t0);
+	h.distance = t;
+	h.point = r.point(t);
 	h.normal = (h.point - center).normalized();
 	h.color = vector3f(0.8f, 0.8f, 0.8f);
         return true;

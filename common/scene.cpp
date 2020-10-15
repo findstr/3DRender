@@ -20,6 +20,8 @@ scene::add(std::unique_ptr<primitive> &p)
 bool
 scene::intersect(const ray &r, hit &h) const
 {
+	h.obj = nullptr;
+	h.distance = std::numeric_limits<float>::infinity();
 	for (auto &p:primitives) {
 		hit th;
 		if (p->intersect(r, th) && th.distance < h.distance)

@@ -30,7 +30,7 @@ struct hit {
 	}
 	const primitive *obj;
 	int triangleidx;
-	float distance;
+	double distance;
 	vector3f point;
 	vector3f normal;
 	vector3f color;

@@ -30,6 +30,7 @@ struct light {
 class primitive {
 public:
 	virtual ~primitive() = default;
+	virtual const std::string &name() const = 0;
 	virtual float area() const = 0;
 	virtual float sample(hit &h) const = 0;
 	virtual vector3f position() const = 0;
@@ -41,16 +42,16 @@ class mesh : public primitive {
 public:
 	bool intersect(const ray &r, hit &h) const override;
 public:
-	mesh(const std::string &name, std::shared_ptr<struct material> &mt);
-	mesh(const std::vector<vector3f> &verts,
-		const std::vector<vector2f> &uv,
-		const std::vector<int> &tri,
+	mesh(const std::string &name,
+		const vector3f &pos,
+		float scale,
 		std::shared_ptr<struct material> &mt);
 	void fetch(std::vector<triangle> &tri) const;
 	void rot(float angle);
 	void scale(const vector3f &s);
 	float sample(hit &h) const override;
 	float area() const override {return areatotal;};
+	const std::string &name() const override { return name_; }
 	matrix4f model() const {return model_matrix;};
 	vector3f position() const override {return vector3f(0,0,0);};
 	const struct material *material() const override { return mat.get();};
@@ -59,6 +60,7 @@ private:
 private:
 	AABB3f bounds;
 	float areatotal;
+	std::string name_;
 	std::shared_ptr<struct material> mat;
 	matrix4f model_matrix;
 	matrix4f scale_matrix;
@@ -73,10 +75,12 @@ public:
 	bool intersect(const ray &r, hit &h) const override;
 	float sample(hit &h) const override { assert(0); return 0.f; }
 	float area() const override {return 4.f*PI*radius2;}
+	const std::string &name()const override { return name_; }
 	const struct material *material() const override {return mat.get(); };
 	vector3f position() const override {return center;};
-private:
+public:
 	vector3f center;
+	std::string name_;
 	float radius, radius2;
 	std::shared_ptr<struct material> mat;
 };

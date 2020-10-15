@@ -1,3 +1,4 @@
+#include "time.h"
 #include "screen.h"
 #include "texture.h"
 #include "material.h"
@@ -47,11 +48,14 @@ int main(int argc, const char *argv[])
 		scrn.clear();
 		while(key != 27)
 		{
+			clock_t begin = clock();
 			R->render(scene1, scrn);
+			float takes = (float)(clock() - begin) / CLOCKS_PER_SEC;
+			std::cout << "takes:" << takes << "s" << std::endl;
 			++spp;
 			scrn.scale(1.f / spp);
 			scrn.show();
-			key = cv::waitKey(10);
+			key = cv::waitKey(1);
 			std::cout << "key:" << key << std::endl << std::endl;
 			switch (key) {
 			case 'w':
@@ -81,14 +85,18 @@ int main(int argc, const char *argv[])
 			}
 		}
 	} else {
+			clock_t begin;
 			int spp = sl.getspp();
 			scrn.scale(1.f / spp);
+			begin = clock();
 			for (int i = 0; i < spp; i++) {
 				std::cout << (float)i / spp << "\r";
 				std::cout.flush();
 				R->render(scene1, scrn);
 			}
-			scrn.dump("out.ppm");
+			float takes = (float)(clock() - begin) / CLOCKS_PER_SEC;
+			std::cout << "takes:" << takes << "s" << std::endl;
+			scrn.dump(argv[2]);
 	}
 	return 0;
 }

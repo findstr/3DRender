@@ -25,8 +25,118 @@ raytracer::glass(const ray &r, const hit &h, int depth)
 }
 
 vector3f
-raytracer::diffuse(const ray &r, const hit &h, int depth)
+raytracer::light(const ray &r, const hit &h, int depth)
 {
+	return depth == 0 ? h.obj->material()->albedo(h.texcoord): vector3f(0,0,0);
+}
+
+vector3f
+raytracer::pathtracing_r(const ray &rr, const hit &hh, int depth)
+{
+	vector3f L(0,0,0);
+	vector3f frac(1,1,1);
+	ray r = rr;
+	hit h = hh;
+	for (;;) {
+		auto &N = h.normal;
+		auto wo = -r.direction;
+		auto m = h.obj->material();
+		if (m->type == material::LIGHT)
+			return light(r, h, depth);
+		{
+		vector3f L_dir(0,0,0);
+		hit hit_l, hit_middle;
+		float light_pdf = sc->samplelight(hit_l);
+		auto dir = hit_l.point - h.point;
+		auto wi = dir.normalized();
+		auto eye = h.point + N * EPSILON;
+		ray r(eye, wi);
+		sc->intersect(r, hit_middle);
+		if (hit_middle.obj == nullptr || hit_middle.obj == hit_l.obj) { //has no middle
+			auto L_i = hit_l.obj->material()->albedo(hit_l.texcoord);
+			auto f_r = m->brdf(h, wi, wo);
+			auto cos = std::max(N.dot(wi), 0.f);
+			auto cos_prime = std::max(hit_l.normal.dot(-wi), 0.f);
+			auto r_square = dir.squaredNorm();
+			light_pdf += EPSILON;
+
+			L_dir = L_i.cwiseProduct(f_r) * cos_prime * cos / (r_square * light_pdf);
+			L += L_dir.cwiseProduct(frac);
+		}
+		}
+		if (1) {
+		float ksi = randomf();
+		if (ksi < 0.8) {
+			vector3f L_indir(0,0,0);
+			auto wi = m->sample(wo, N);
+			float pdf_ = m->pdf(wi, wo, N) + EPSILON;
+			auto f_r = m->brdf(h, wi, wo);
+			auto cos = std::max(N.dot(wi), 0.f);
+			auto f = f_r * cos / (pdf_ * 0.8f);
+			frac = frac.cwiseProduct(f);
+			ray rx(h.point + EPSILON * N, wi);
+			r = rx;
+			depth += 1;
+			if (!sc->intersect(r, h))
+				break;
+		} else {
+			break;
+		}
+		}
+	}
+	return L;
+}
+
+vector3f
+raytracer::pathtracing(const ray &r, const hit &h, int depth)
+{
+	vector3f L(0,0,0);
+	auto &N = h.normal;
+	auto wo = -r.direction;
+	auto m = h.obj->material();
+	if (m->type == material::LIGHT)
+		return light(r, h, depth);
+{
+	vector3f L_dir(0,0,0);
+	hit hit_l, hit_middle;
+	float light_pdf = sc->samplelight(hit_l);
+	auto dir = hit_l.point - h.point;
+	auto wi = dir.normalized();
+	auto eye = h.point + N * EPSILON;
+	ray rx(eye, wi);
+	sc->intersect(rx, hit_middle);
+	if (hit_middle.obj == nullptr || hit_middle.obj == hit_l.obj) { //has no middle
+		auto L_i = hit_l.obj->material()->albedo(hit_l.texcoord);
+		auto f_r = m->brdf(h, wi, wo);
+		auto cos = std::max(N.dot(wi), 0.f);
+		auto cos_prime = std::max(hit_l.normal.dot(-wi), 0.f);
+		auto r_square = dir.squaredNorm();
+		light_pdf += EPSILON;
+		L_dir = L_i.cwiseProduct(f_r) * cos_prime * cos / (r_square * light_pdf);
+		L += L_dir;
+	}
+}
+if (1) {
+	float ksi = randomf();
+	if (ksi < 0.8) {
+		auto wi = m->sample(wo, N);
+		float pdf_ = m->pdf(wi, wo, N) + EPSILON;
+		auto f_r = m->brdf(h, wi, wo);
+		auto cos = std::max(N.dot(wi), 0.f);
+		auto f = f_r * cos / (pdf_ * 0.8f);
+		vector3f L_indir;
+		ray rx(h.point + EPSILON * N, wi);
+		L_indir = trace(rx, depth + 1).cwiseProduct(f);
+		L += L_indir;
+	}
+}
+	return L;
+}
+
+vector3f
+raytracer::raytracing(const ray &r, const hit &h, int depth)
+{
+	vector3f hitcolor(0,0,0);
 	auto m = h.obj->material();
 	auto &N = h.normal;
 	auto &dir = r.direction;
@@ -48,85 +158,20 @@ raytracer::diffuse(const ray &r, const hit &h, int depth)
 		specular += I * std::pow(std::max(0.f, h.dot(N)), 25.f);
 	}
 	vector3f diffuse = m->albedo(h.texcoord);
-	return ambient.cwiseProduct(diffuse) * m->Kd() + specular * m->Ks();
+	hitcolor = ambient.cwiseProduct(diffuse) * m->Kd() + specular * m->Ks();
+	return hitcolor;
 }
 
 vector3f
-raytracer::light(const ray &r, const hit &h, int depth)
+raytracer::trace(ray r, int depth)
 {
-	return depth == 0 ? h.obj->material()->albedo(h.texcoord): vector3f(0,0,0);
-}
-
-vector3f
-raytracer::pathtracing(const ray &rr, const hit &hh, int depth)
-{
-	vector3f L(0,0,0);
-	vector3f frac(1,1,1);
-	ray r = rr;
-	hit h = hh;
-	for (;;) {
-		auto &N = h.normal;
-		auto wo = -r.direction;
-		auto m = h.obj->material();
-		if (m->type == material::LIGHT)
-			return light(r, h, depth);
-		{
-		vector3f L_dir(0,0,0);
-		hit hit_l, hit_middle;
-		float light_pdf = sc->samplelight(hit_l);
-		auto dir = hit_l.point - h.point;
-		auto wi = dir.normalized();
-		auto eye = h.point + wi * EPSILON;
-		ray r(eye, wi);
-		sc->intersect(r, hit_middle);
-	//	if (hit_middle.obj == hit_l.obj) { //has no middle
-		if (hit_middle.distance - dir.norm() > -0.001f) { //has no middle
-			auto L_i = hit_l.obj->material()->albedo(hit_l.texcoord);
-			auto f_r = m->brdf(h, wi, wo);
-			auto cos = std::max(N.dot(wi), 0.f);
-			auto cos_prime = std::max(hit_l.normal.dot(-wi), 0.f);
-			auto r_square = dir.squaredNorm();
-			light_pdf += EPSILON;
-			/*
-			std::cout << "f_r:" << f_r << std::endl;
-			std::cout << "L_i:" << L_i << std::endl;
-			std::cout << "cos_prim:" << cos_prime << std::endl;
-			std::cout << "cos:" << cos << std::endl;
-			std::cout << " demo:" << (r_square * light_pdf) << std::endl;
-			*/
-			L_dir = L_i.cwiseProduct(f_r) * cos_prime * cos / (r_square * light_pdf);
-			L += L_dir.cwiseProduct(frac);
-			//std::cout << " Ldir:" << L_dir << std::endl;
-		}
-		}
-		if (1) {
-		float ksi = randomf();
-		if (ksi < 0.8) {
-			vector3f L_indir(0,0,0);
-			auto wi = m->sample(wo, N);
-			float pdf_ = m->pdf(wi, wo, N) + EPSILON;
-			auto f_r = m->brdf(h, wi, wo);
-			auto cos = std::max(N.dot(wi), 0.f);
-			auto f = f_r * cos / (pdf_ * 0.8f);
-			frac = frac.cwiseProduct(f);
-			ray rx(h.point + EPSILON * wi, wi);
-			r = rx;
-			depth += 1;
-			if (!sc->intersect(r, h)) {
-				L += background.cwiseProduct(frac);
-				break;
-			}
-		} else {
-			break;
-		}
-		}
+	hit h;
+	if (!sc->intersect(r, h)) {
+		if (mode_ != RAYTRACING && depth > 0)
+			return vector3f(0,0,0);
+		else
+			return background;
 	}
-	return L;
-}
-
-vector3f
-raytracer::raytracing(const ray &r, const hit &h, int depth)
-{
 	vector3f hitcolor(0,0,0);
 	if (depth > 6)
 		return hitcolor;
@@ -136,22 +181,16 @@ raytracer::raytracing(const ray &r, const hit &h, int depth)
 	case material::GLASS:
 		return glass(r, h, depth);
 	case material::DIFFUSE:
-		return diffuse(r, h, depth);
+	case material::MICROFACET:
+		if (mode_ == RAYTRACING)
+			return raytracing(r, h, depth);
+		else
+			return pathtracing(r, h, depth);
+		//return diffuse(r, h, depth);
 	default:
 		return vector3f(0,0,0);
 	}
-}
 
-vector3f
-raytracer::trace(ray r, int depth)
-{
-	hit h;
-	if (!sc->intersect(r, h))
-		return background;
-	if (mode_ == RAYTRACING)
-		return raytracing(r, h, depth);
-	else
-		return pathtracing(r, h, depth);
 }
 
 void
@@ -168,8 +207,8 @@ raytracer::render(const scene &sc, screen &scrn)
 		int w = n;
 		int i = w % width;
 		int j = w / width;
-		float x = (i + 0.5f) / (float)width;
-		float y = (j + 0.5f) / (float)height;
+		float x = (i + randomf()) / (float)width;
+		float y = (j + randomf()) / (float)height;
 		ray r = camera_.lookat(aspect, x, y);
 		auto c = tone_mapping(trace(r, 0));
 		scrn.add(i, j, c);

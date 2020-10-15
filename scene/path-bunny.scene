@@ -8,9 +8,9 @@
 #mesh model_path materialid
 #sphere center(x,y,z) radius materialid
 
-spp 16
+spp 1024
 render pathtracing
-screen 800,800
+screen 400,400
 camera 278,273,-800 40 1 10 180
 background 0,0,0
 
@@ -30,8 +30,10 @@ material diffuse -1 0.14,0.45,0.091  0.8 0.2 1
 material diffuse -1 0.725,0.71,0.68  0.8 0.2 1
 mesh 0,0,0 1 models/cornellbox/light.obj 0
 mesh 0,0,0 1 models/cornellbox/floor.obj 4
-mesh 0,0,0 1 models/cornellbox/shortbox.obj 4
-mesh 0,0,0 1 models/cornellbox/tallbox.obj 1
 mesh 0,0,0 1 models/cornellbox/left.obj 2
 mesh 0,0,0 1 models/cornellbox/right.obj 3
+
+mesh 370,80,70 1000 models/bunny/bunny.obj 4
+#sphere 370,80,70 80 4
+
 

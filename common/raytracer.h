@@ -25,11 +25,11 @@ public:
 private:
 	vector3f trace(ray r, int depth);
 	vector3f raytracing(const ray &r, const hit &h, int depth);
+	vector3f pathtracing_r(const ray &r, const hit &h, int depth);
 	vector3f pathtracing(const ray &r, const hit &h, int depth);
 private: //material
 	vector3f light(const ray &r, const hit &h, int depth);
 	vector3f glass(const ray &r, const hit &h, int depth);
-	vector3f diffuse(const ray &r, const hit &h, int depth);
 private:
 	int spp_n = 0;
 	enum mode mode_;

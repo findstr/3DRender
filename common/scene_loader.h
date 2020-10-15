@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <limits.h>
+#include <stdlib.h>
 #include "texture.h"
 #include "material.h"
 #include "primitive.h"
@@ -83,6 +84,9 @@ private:
 	void load_spp(const char *buff) {
 		int n = sscanf(buff, "%*s %d", &spp);
 		assert(n == 1);
+		const char *str = getenv("SPP");
+		if (str != nullptr)
+			spp = std::stoi(str);
 	}
 	void load_background(const char *buff) {
 		int n = sscanf(buff, "%*s %f,%f,%f",
@@ -136,13 +140,16 @@ private:
 	void load_mesh(const char *buff) {
 		char path[PATH_MAX];
 		unsigned int materialid;
-		int n = sscanf(buff, "%s %s %d", type, path, &materialid);
-		assert(n == 3);
+		vector3f pos;
+		float scale;
+		int n = sscanf(buff, "%s %f,%f,%f %f %s %d", type,
+			&pos.x(), &pos.y(), &pos.z(), &scale, path, &materialid);
+		assert(n == 7);
 		if (materialid >= materials.size()) {
 			fprintf(stderr, "line:%d incorrect material id:%d\n", line, materialid);
 			exit(0);
 		}
-		std::unique_ptr<primitive> obj(new mesh(path, materials[materialid]));
+		std::unique_ptr<primitive> obj(new mesh(path, pos, scale, materials[materialid]));
 		primitives.emplace_back(std::move(obj));
 	}
 	void load_sphere(const char *buff) {
