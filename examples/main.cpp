@@ -83,8 +83,11 @@ int main(int argc, const char *argv[])
 	} else {
 			int spp = sl.getspp();
 			scrn.scale(1.f / spp);
-			for (int i = 0; i < spp; i++)
+			for (int i = 0; i < spp; i++) {
+				std::cout << (float)i / spp << "\r";
+				std::cout.flush();
 				R->render(scene1, scrn);
+			}
 			scrn.dump("out.ppm");
 	}
 	return 0;
