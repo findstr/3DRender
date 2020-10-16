@@ -32,7 +32,7 @@ public:
 	virtual ~primitive() = default;
 	virtual const std::string &name() const = 0;
 	virtual float area() const = 0;
-	virtual float sample(hit &h) const = 0;
+	virtual float uniform_sample(hit &h) const = 0;
 	virtual vector3f position() const = 0;
 	virtual bool intersect(const ray &r, hit &h) const = 0;
 	virtual const struct material *material() const = 0;
@@ -49,7 +49,7 @@ public:
 	void fetch(std::vector<triangle> &tri) const;
 	void rot(float angle);
 	void scale(const vector3f &s);
-	float sample(hit &h) const override;
+	float uniform_sample(hit &h) const override;
 	float area() const override {return areatotal;};
 	const std::string &name() const override { return name_; }
 	matrix4f model() const {return model_matrix;};
@@ -73,7 +73,7 @@ class sphere : public primitive {
 public:
 	sphere(const vector3f &c, float r, std::shared_ptr<struct material> &m);
 	bool intersect(const ray &r, hit &h) const override;
-	float sample(hit &h) const override { assert(0); return 0.f; }
+	float uniform_sample(hit &h) const override {assert(0); return 0.f;}
 	float area() const override {return 4.f*PI*radius2;}
 	const std::string &name()const override { return name_; }
 	const struct material *material() const override {return mat.get(); };

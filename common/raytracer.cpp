@@ -29,7 +29,7 @@ raytracer::light(const ray &r, const hit &h, int depth)
 {
 	return depth == 0 ? h.obj->material()->albedo(h.texcoord): vector3f(0,0,0);
 }
-
+#if 0
 vector3f
 raytracer::pathtracing_r(const ray &rr, const hit &hh, int depth)
 {
@@ -41,9 +41,7 @@ raytracer::pathtracing_r(const ray &rr, const hit &hh, int depth)
 		auto &N = h.normal;
 		auto wo = -r.direction;
 		auto m = h.obj->material();
-		if (m->type == material::LIGHT)
-			return light(r, h, depth);
-		{
+	{
 		vector3f L_dir(0,0,0);
 		hit hit_l, hit_middle;
 		float light_pdf = sc->samplelight(hit_l);
@@ -63,7 +61,7 @@ raytracer::pathtracing_r(const ray &rr, const hit &hh, int depth)
 			L_dir = L_i.cwiseProduct(f_r) * cos_prime * cos / (r_square * light_pdf);
 			L += L_dir.cwiseProduct(frac);
 		}
-		}
+	}
 		if (1) {
 		float ksi = randomf();
 		if (ksi < 0.8) {
@@ -86,17 +84,14 @@ raytracer::pathtracing_r(const ray &rr, const hit &hh, int depth)
 	}
 	return L;
 }
+#endif
 
 vector3f
-raytracer::pathtracing(const ray &r, const hit &h, int depth)
+raytracer::directL(const ray &r, const hit &h, int depth)
 {
-	vector3f L(0,0,0);
 	auto &N = h.normal;
 	auto wo = -r.direction;
 	auto m = h.obj->material();
-	if (m->type == material::LIGHT)
-		return light(r, h, depth);
-{
 	vector3f L_dir(0,0,0);
 	hit hit_l, hit_middle;
 	float light_pdf = sc->samplelight(hit_l);
@@ -113,10 +108,17 @@ raytracer::pathtracing(const ray &r, const hit &h, int depth)
 		auto r_square = dir.squaredNorm();
 		light_pdf += EPSILON;
 		L_dir = L_i.cwiseProduct(f_r) * cos_prime * cos / (r_square * light_pdf);
-		L += L_dir;
 	}
+	return L_dir;
 }
-if (1) {
+
+vector3f
+raytracer::indirectL(const ray &r, const hit &h, int depth)
+{
+	vector3f L_indir(0,0,0);
+	auto &N = h.normal;
+	auto wo = -r.direction;
+	auto m = h.obj->material();
 	float ksi = randomf();
 	if (ksi < 0.8) {
 		auto wi = m->sample(wo, N);
@@ -124,12 +126,19 @@ if (1) {
 		auto f_r = m->brdf(h, wi, wo);
 		auto cos = std::max(N.dot(wi), 0.f);
 		auto f = f_r * cos / (pdf_ * 0.8f);
-		vector3f L_indir;
 		ray rx(h.point + EPSILON * N, wi);
 		L_indir = trace(rx, depth + 1).cwiseProduct(f);
-		L += L_indir;
 	}
+	return L_indir;
 }
+
+
+vector3f
+raytracer::pathtracing(const ray &r, const hit &h, int depth)
+{
+	vector3f L(0,0,0);
+	L += directL(r, h, depth);
+	L += indirectL(r, h, depth);
 	return L;
 }
 
@@ -172,9 +181,8 @@ raytracer::trace(ray r, int depth)
 		else
 			return background;
 	}
-	vector3f hitcolor(0,0,0);
 	if (depth > 6)
-		return hitcolor;
+		return vector3f(0,0,0);
 	switch (h.obj->material()->type) {
 	case material::LIGHT:
 		return light(r, h, depth);

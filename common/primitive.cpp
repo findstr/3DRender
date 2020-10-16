@@ -96,7 +96,7 @@ mesh::intersect(const ray &r, hit &h) const
 
 
 float
-mesh::sample(hit &h) const
+mesh::uniform_sample(hit &h) const
 {
 	float sum = 0.f;
 	float p = randomf() * areatotal;

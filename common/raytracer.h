@@ -24,8 +24,9 @@ public:
 	void render(const scene &sc, screen &scrn) override;
 private:
 	vector3f trace(ray r, int depth);
+	vector3f directL(const ray &r, const hit &h, int depth);
+	vector3f indirectL(const ray &r, const hit &h, int depth);
 	vector3f raytracing(const ray &r, const hit &h, int depth);
-	vector3f pathtracing_r(const ray &r, const hit &h, int depth);
 	vector3f pathtracing(const ray &r, const hit &h, int depth);
 private: //material
 	vector3f light(const ray &r, const hit &h, int depth);

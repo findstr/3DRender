@@ -41,7 +41,7 @@ scene::samplelight(hit &h) const
 	for (auto l:lights) {
 		emit_area_sum += l->area();
 		if (emit_area_sum >= p)
-			return l->sample(h);
+			return l->uniform_sample(h);
 	}
 	assert(!"never come here");
 	return 0.f;

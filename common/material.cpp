@@ -36,6 +36,7 @@ material::brdf(const hit &h, const vector3f &wi, const vector3f &wo) const
 			return 1.f / PI * color;
 		}
 		break;
+	case material::GLASS:
 	case material::MICROFACET: {
 		if (wo.dot(N) > 0.f) {
 			vector3f x0(0.04f, 0.04f, 0.04f);
