@@ -15,6 +15,7 @@
 
 ##Images
 
-![image](https://github.com/findstr/3DRender/blob/master/output/ray-whitted.png)
-![image](https://github.com/findstr/3DRender/blob/master/output/path-sphere.png)
+![image](https://github.com/findstr/3DRender/blob/master/output/ray-whitted.jpg)
+![image](https://github.com/findstr/3DRender/blob/master/output/path-cornellbox.jpg)
+![image](https://github.com/findstr/3DRender/blob/master/output/path-sphere.jpg)
 
