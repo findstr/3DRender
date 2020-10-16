@@ -3,6 +3,7 @@
 #include "type.h"
 #include "ray.h"
 #include "AABB.h"
+#include "BVH.h"
 #include "auxiliary.h"
 #include "material.h"
 #include "texture.h"
@@ -61,12 +62,13 @@ private:
 	AABB3f bounds;
 	float areatotal;
 	std::string name_;
-	std::shared_ptr<struct material> mat;
 	matrix4f model_matrix;
 	matrix4f scale_matrix;
 	std::vector<vector3f> normals;
 	std::vector<int> triangles;
 	std::vector<vertex> vertices;
+	std::shared_ptr<struct material> mat;
+	std::unique_ptr<class BVH> bvh;
 };
 
 class sphere : public primitive {

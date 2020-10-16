@@ -38,6 +38,7 @@ macosx:CCFLAG += -Xpreprocessor -fopenmp
 macosx:LDFLAG += -lomp
 
 SRC=\
+	common/BVH.cpp \
 	common/primitive.cpp \
 	common/auxiliary.cpp \
 	common/scene.cpp \

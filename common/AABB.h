@@ -11,6 +11,9 @@ struct AABB2f {
 		min = vector2f(inf, inf);
 		max = vector2f(-inf, -inf);
 	}
+	vector2f centroid() const {
+		return 0.5f * (min + max);
+	}
 	template<typename T> void extend(const T &v) {
 		for (int i = 0; i < 2; i++) {
 			min[i] = std::min(min[i], v[i]);
@@ -27,10 +30,19 @@ struct AABB3f {
 		min = vector3f(inf, inf, inf);
 		max = vector3f(-inf, -inf, -inf);
 	}
-	template<typename T> void extend(const T &v) {
+	vector3f centroid() const {
+		return 0.5f * (min + max);
+	}
+	void extend(const vector3f &v) {
 		for (int i = 0; i < 3; i++) {
 			min[i] = std::min(min[i], v[i]);
 			max[i] = std::max(max[i], v[i]);
+		}
+	}
+	void extend(const AABB3f &x) {
+		for (int i = 0; i < 3; i++) {
+			min[i] = std::min(min[i], x.min[i]);
+			max[i] = std::max(max[i], x.max[i]);
 		}
 	}
 	bool intersect(const ray &r) const {

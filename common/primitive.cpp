@@ -8,6 +8,7 @@ mesh::mesh(const std::string &name,
 	std::shared_ptr<struct material> &mt)
 	:name_(name),mat(mt)
 {
+	std::vector<AABB3f> objs;
 	areatotal = 0.f;
 	bounds = AABB3f();
 	model_matrix = matrix4f::Identity();
@@ -21,9 +22,11 @@ mesh::mesh(const std::string &name,
 	auto &mesh = loader.LoadedMeshes[0];
 	vertices.resize(mesh.Vertices.size());
 	triangles.resize(mesh.Vertices.size());
+	objs.reserve(mesh.Vertices.size()/3);
 	for (size_t i = 0; i < mesh.Vertices.size(); i += 3) {
 		auto *v = &vertices[i];
 		auto *t = &triangles[i];
+		AABB3f bound;
 		for (int j = 0; j < 3; j++) {
 			auto &dp = mesh.Vertices[i+j].Position;
 			auto &dn = mesh.Vertices[i+j].Normal;
@@ -31,13 +34,16 @@ mesh::mesh(const std::string &name,
 			v[j].position = vector3f(dp.X, dp.Y, dp.Z) * scale_ + pos;
 			v[j].normal = vector3f(dn.X, dn.Y, dn.Z);
 			v[j].texcoord = vector2f(dt.X, dt.Y);
+			bound.extend(v[j].position);
 			bounds.extend(v[j].position);
 			t[j] = i+j;
 		}
+		objs.emplace_back(bound);
 		auto e1 = v[1].position - v[0].position;
 		auto e2 = v[2].position - v[0].position;
 		areatotal += e1.cross(e2).norm() * 0.5f;
 	}
+	bvh.reset(new BVH(objs));
 }
 
 bool
@@ -67,6 +73,7 @@ mesh::intersect_tri(const ray &r, hit &h, int idx) const
 			b1 <= 1.f && b2 <= 1.f && b0 <= 1.f);
 	if (!inside)
 		return false;
+	h.obj = this;
 	h.triangleidx = idx;
 	h.distance = t;
 	h.point = r.point(t);
@@ -80,18 +87,28 @@ mesh::intersect_tri(const ray &r, hit &h, int idx) const
 bool
 mesh::intersect(const ray &r, hit &h) const
 {
-	if (!bounds.intersect(r))
+#if 1
+	static thread_local std::vector<int> result;
+	if (!bvh->intersect(r, result))
 		return false;
-//	printf("intersect ok\n");
+	h.obj = nullptr;
+	for (auto i:result) {
+		hit hx;
+		if (intersect_tri(r, hx, i) && hx.distance < h.distance)
+			h = hx;
+	}
+	return h.obj != nullptr;
+#else
 	int size = triangles.size() / 3;
 	for (int i = 0; i < size; i++) {
 		if (intersect_tri(r, h, i)) {
-			bounds.intersect(r);
-			h.obj = this;
-			return true;
+			hit hx;
+			if (intersect_tri(r, hx, i) && hx.distance < h.distance)
+				h = hx;
 		}
 	}
-	return false;
+	return h.obj != nullptr;
+#endif
 }
 
 
