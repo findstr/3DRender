@@ -1,1 +1,20 @@
-# rasterizer
+# 3DRender(rasterizer, raytracer, pathtracing)
+
+
+##Dependent
+
+> opencv
+
+##How to build(linux, macosx)
+
+	make
+
+##How to run
+
+	sh ./generate.sh
+
+##Images
+
+![image](https://github.com/findstr/3DRender/blob/master/output/ray-whitted.png)
+![image](https://github.com/findstr/3DRender/blob/master/output/path-sphere.png)
+
