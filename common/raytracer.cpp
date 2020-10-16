@@ -7,6 +7,9 @@
 vector3f
 raytracer::glass(const ray &r, const hit &h, int depth)
 {
+	float ksi = randomf();
+	if (ksi > 0.7f)
+		return vector3f(0,0,0);
 	auto &dir = r.direction;
 	auto &N = h.normal;
 	auto m = h.obj->material();
@@ -18,10 +21,13 @@ raytracer::glass(const ray &r, const hit &h, int depth)
 	ray reflect_ray(hit_point + reflect_offset * N, reflect_dir);
 	ray refract_ray(hit_point + refract_offset * N, refract_dir);
 	vector3f reflect_color, refract_color;
-	reflect_color = trace(reflect_ray, depth + 1);
-	refract_color = trace(refract_ray, depth + 1);
 	float kr = optics::fresnel(dir, N, m->ior);
-	return reflect_color * kr + refract_color * (1 - kr);
+	if (kr >= 1.0f)
+		return trace(reflect_ray, depth) / 0.7f;
+	reflect_color = trace(reflect_ray, depth);
+	refract_color = trace(refract_ray, depth);
+	vector3f color = reflect_color * kr + refract_color * (1 - kr);
+	return color / 0.7f;
 }
 
 vector3f
@@ -175,13 +181,9 @@ vector3f
 raytracer::trace(ray r, int depth)
 {
 	hit h;
-	if (!sc->intersect(r, h)) {
-		if (mode_ != RAYTRACING && depth > 0)
-			return vector3f(0,0,0);
-		else
-			return background;
-	}
-	if (depth > 6)
+	if (!sc->intersect(r, h))
+		return background;
+	if (mode_ == RAYTRACING && depth > 6)
 		return vector3f(0,0,0);
 	switch (h.obj->material()->type) {
 	case material::LIGHT:
