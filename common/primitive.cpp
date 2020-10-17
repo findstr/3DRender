@@ -194,21 +194,33 @@ sphere::sphere(const vector3f &c, float r, std::shared_ptr<struct material> &m):
 bool
 sphere::intersect(const ray &r, hit &h) const
 {
+	float t_min = 0.001f;
+	float t_max = std::numeric_limits<float>::infinity();
 	vector3f oc = r.origin - center;
 	float a = r.direction.dot(r.direction);
-	float b = 2.0 * oc.dot(r.direction);
+	float b = oc.dot(r.direction);
 	float c = oc.dot(oc) - radius*radius;
-	float discriminant = b*b - 4*a*c;
-	if(discriminant < 0)
-		return false;
-	float t = (-b - sqrt(discriminant)) / (2.0*a);
-	if (t < 0.f)
-		return false;
-	h.obj = this;
-	h.distance = t;
-	h.point = r.point(t);
-	h.normal = (h.point - center).normalized();
-	h.color = vector3f(0.8f, 0.8f, 0.8f);
-        return true;
+	float discriminant = b*b - a*c;
+	if (discriminant > 0) {
+		float temp = (-b - sqrt(discriminant))/a;
+		if (temp < t_max && temp > t_min) {
+			h.obj = this;
+			h.distance = temp;
+			h.point = r.point(temp);
+			h.normal = (h.point - center).normalized();
+			h.color = vector3f(0.8f, 0.8f, 0.8f);
+			return true;
+		}
+		temp = (-b + sqrt(discriminant)) / a;
+		if (temp < t_max && temp > t_min) {
+			h.obj = this;
+			h.distance = temp;
+			h.point = r.point(temp);
+			h.normal = (h.point - center).normalized();
+			h.color = vector3f(0.8f, 0.8f, 0.8f);
+			return true;
+		}
+	}
+	return false;
 }
 
