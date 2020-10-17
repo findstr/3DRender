@@ -32,7 +32,6 @@ private: //material
 	vector3f light(const ray &r, const hit &h, int depth);
 	vector3f glass(const ray &r, const hit &h, int depth);
 private:
-	int spp_n = 0;
 	enum mode mode_;
 	const camera &camera_;
 	const scene *sc = nullptr;

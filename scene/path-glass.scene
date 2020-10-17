@@ -12,7 +12,7 @@ spp 1024
 render pathtracing
 screen 800,800
 camera 278,273,-800 40 1 10 180
-background 128,128,0
+background 0,0,0
 
 
 texture models/spot/spot_texture.png
@@ -28,7 +28,7 @@ material diffuse -1 0.63,0.065,0.05  0.8 0.2 1
 #green 3
 material diffuse -1 0.14,0.45,0.091  0.8 0.2 1
 #white 4
-material diffuse 2 0.725,0.71,0.68  0.8 0.2 1
+material diffuse -1 0.725,0.71,0.68  0.8 0.2 1
 #glass 5
 material glass -1 0.725,0.71,0.68  0.8 0.2 1.33
 mesh 0,0,0 1 models/cornellbox/light.obj 0
