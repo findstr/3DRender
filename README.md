@@ -1,19 +1,19 @@
 # 3DRender(rasterizer, raytracer, pathtracing)
 
 
-##Dependent
+## Dependent
 
 > opencv
 
-##How to build(linux, macosx)
+## How to build(linux, macosx)
 
 	make
 
-##How to run
+## How to run
 
 	sh ./generate.sh
 
-##Images
+## Images
 
 ![image](https://github.com/findstr/3DRender/blob/master/output/ray-whitted.jpg)
 ![image](https://github.com/findstr/3DRender/blob/master/output/path-cornellbox.jpg)
